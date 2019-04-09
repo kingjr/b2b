@@ -1,0 +1,167 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.20 of 2017/10/04
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\begin{document}
+
+\title{Identifying representations from neuroimaging data with covarying features}
+
+\author{King, Jean-Remi\inst{1} \and Lopez-Paz, David \inst{1}}
+
+\institute{Facebook Artificial Intelligence Research, Paris, France
+\email{\{jeanremi,d.lopez\}@fb.com}}
+
+\maketitle              % typeset the header of the contribution
+
+\begin{abstract}
+The abstract should briefly summarize the contents of the paper in
+15--250 words.
+
+\keywords{Neuroimaging \and Decoding \and Encoding \and Multivariate Pattern Analyses.}
+\end{abstract}
+
+\section{Introduction}
+Sixty years ago, Hubel and Wiesel implanted an anesthetized cat with a microelectrode, and discovered that distinct neurons reliably spiked when a visual stimulus was presented with a specific orientation, while other neurons only spiked when the stimulus was oriented at a different angle. Since, a systematic mapping has been engaged in cognitive neuroscience to identify the contents encoded in brain activity. This quest has revealed that some neurons specifically responds to individual locations (place cell), whereas other respond to specific emotions () , or to specific individuals (). The mapping between neuronal activity and hypothetical features has been considerably accelerating with the development of functional Magnetic Resonance Imaginge (fMRI), eletro- and magneto-encephalography (E/MEG) as as well as with the accumulation of sensors on each microelectrode (neuropixel).
+
+The abundance of data produced by such recording devices now necessitate the design of statistical models optimized to identify neural representations. Two distinct analytical frameworks have been developed to address this issue: decoding and encoding. Both are based on the premise that a feature is represented in neuronal activity if and only if such a feature can be linearly and instantly read from that neuronal activity. This premise, discussed elsewhere (ref), capitalizes on the idea that neurons can be approximated as detector of particular combination of excitatory and inhibitory inputs, and can thus "read" information under a linear constrain.
+
+Encoding consists in predicting brain activity from a model. For example, an encoding model can be used to predict the brain responses to hand movements (ref), the identity of faces in a visual stimulus (ref), or to the nature of a syntactic operation (ref).
+Decoding consists in the reverse prediction: i.e. it is optimized to predict a feature from a brain activity pattern.
+
+In practice, a majority of fMRI studies are based on encoding analyses, whereas a majority of M/EEG studies are based on decoding analyses. This difference probably reflects the distinct limitations of these two types of neuroimaging.
+
+Indeed, fMRI produces brain images of relatively high spatial resolution: typically, each voxel specifically record neuronal activity over 3 mm cube, by measuring their blood-oxygen-level dependent (BOLD) response. The corresponding haemodynamic function that characterizes the BOLD is non-trivially linked to neuronal activity (ref), but is generally approximated as a temporal convolution of the neuronal activity. Consequently, in fMRI, the primary difficulty consists in disentangling the factors that have contributed to the modulation of the BOLD response. Encoding analyses can thus be used to quantify the contribution of multiple (potentially overlapping) features.
+
+By contrast, M/EEG record the magnetic and electric fields elicited by neuronal activity thanks via sensors distant from the brain. Unlike fMRI, the relationship between M/EEG signals and brain activity is both largely instantaneous and linear. However, M/EEG activity is a linear mixture of the brain activity: a unique brain area likely projects its activity onto multiple sensors, and a unique sensor likely records the activity of many brain areas. Furthermore, M/EEG sensors also pick up non-neuronal signals. In particular, the magnetic field of the earth, the presence of surrounding electronic devices, the heart, the electrically charged retina and their associated movements, as well as breathing, swallowing and jaw clenching can all elicit electro-magnetic signals orders of magnitude larger than those of our brain. Consequently, in M/EEG, the primary difficulty consists in detecting the specific activity that is associated with a model feature. Decoding analyses are thus used to discriminate, in this linear mixture of noise and signals.
+
+The respective advantages of encoding and decoding come at a costs. By focusing on univariate brain responses, encoding analyses cannot efficiently capture multivariate patterns of brain activity. For example, if the heart modulates the baseline activity of two voxels, then it can be difficult to show with a univariate analysis that each voxel also correlates with the feature of a model (Fig. X). To compensate for such issue, it is thus common to (1) incorporate physiological features (e.g. heart and breathing activity) in the encoding model and to (2) do repeated measurements in order to correct the variance explained by the model by the variance explained by an identical condition. This type of correction is thus limited to (1) observable artifacts as well as to (2) experimental effects that are independent from memory.
+
+By contrast, decoding analyses are fit to multivariate brain activity patterns, and can thus be more robust to the structured modulations induced by artefacts. However, by focusing on a single feature of a model (e.g. the presence of a face, the pitch of a tone etc), decoding cannot easily disentangle two covarying features (e.g. the contrast and the luminance of an image). To compensate for such an issue, it is thus common restrict the experimental protocols with synthetic stimuli whose features are orthogonal by design (e.g. images whose luminance and contrast are independently varied).
+
+In the present study, we introduce a novel method to get the best of the two approaches. We show on synthetic data that our approach systematically outperforms encoding and decoding methods, both in its specificity and sensitivity. We provide a proof that formalizes the conditions within which our method will be optimal. Finally we provide an extension to non-linear but monotonic activation functions in order to potentially in order to capture the saturation effects the BOLD and population responses.
+
+
+# RSA: in discussion
+- only applies to categorical effects
+- analyzed at the stimulus level, not the feature level
+
+\section{First Section}
+
+\begin{equation}
+Y\leftarrow (XS+N)F
+\end{equation}
+
+where Y is MEG activity, X are input features, S is encoding matrix, N is source noise and F is forward operator
+
+\subsection{LS from Y to X}
+
+\begin{equation}
+\begin{aligned}
+\min_G \left \| X-YG \right \| &= \min_G \left \| X - (XSF+NF)G\right\| \\
+&{}= \min_G \left \| X - XSFG\right\|  + \left \| NFG \right \| \\
+\end{aligned}
+\end{equation}
+
+Given that :
+\begin{equation}
+\mathop{\mathbb{E}}[N]=0
+\end{equation}
+
+and
+\begin{equation}
+\left \| X-XSFG \right \| \leq \left \| X \right \| \cdot  \left \| I-SFG \right \| \\
+\end{equation}
+
+Then
+\begin{equation}
+\min_G \left \| X-YG \right \| = \min_G \left \| I -SFG\right\| \\
+\Rightarrow \hat  G= (SF)^{\dagger}
+\end{equation}
+
+\subsection{LS from X to Y\^{G}}
+
+\begin{equation}
+\begin{aligned}
+\min_H \left \| Y \hat G - XH \right \| &= \min_H \left \| (XSF+NF) \hat G - XH \right \| \\
+&= \min_H \left \| XSF \hat G - XH \right \| \\
+&= \min_H \left \| SF \hat G - H \right \| \\
+&= \min_H \left \| SF (SF)^{\dagger} - H \right \| \\
+\end{aligned}
+\end{equation}
+
+Under the assumptions that S is an orthogonal projection
+\begin{equation}
+    S = S^2, S=S^T, S^{\dagger} = S
+\end{equation}
+
+And under the extra assumptions that :
+
+\begin{equation}
+(SF)^{\dagger} = F^{\dagger} S^{\dagger}
+\end{equation}
+
+Then,
+
+\begin{equation}
+\begin{aligned}
+\min_H \left \| SF (SF)^{\dagger} - H \right \| &= \min_H \left \| SFF^{\dagger}S^{\dagger} - H \right \| \\
+&= \min_H \left \| SS^{\dagger} - H \right \| \\
+&= \min_H \left \| SS - H \right \| \\
+&= \min_H \left \| S - H \right \|\\
+\Rightarrow \hat H = S
+\end{aligned}
+\end{equation}
+
+
+
+\section{Second Section}
+
+\begin{equation}
+Y\leftarrow \sigma((XS+N)F)
+\end{equation}
+
+
+%
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+% \bibliographystyle{splncs04}
+% \bibliography{mybibliography}
+%
+\begin{thebibliography}{8}
+\bibitem{ref_article1}
+Author, F.: Article title. Journal \textbf{2}(5), 99--110 (2016)
+
+\bibitem{ref_lncs1}
+Author, F., Author, S.: Title of a proceedings paper. In: Editor,
+F., Editor, S. (eds.) CONFERENCE 2016, LNCS, vol. 9999, pp. 1--13.
+Springer, Heidelberg (2016). \doi{10.10007/1234567890}
+
+\bibitem{ref_book1}
+Author, F., Author, S., Author, T.: Book title. 2nd edn. Publisher,
+Location (1999)
+
+\bibitem{ref_proc1}
+Author, A.-B.: Contribution title. In: 9th International Proceedings
+on Proceedings, pp. 1--2. Publisher, Location (2010)
+
+\bibitem{ref_url1}
+LNCS Homepage, \url{http://www.springer.com/lncs}. Last accessed 4
+Oct 2017
+\end{thebibliography}
+\end{document}
+
