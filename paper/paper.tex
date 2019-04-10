@@ -1,0 +1,122 @@
+\documentclass{article}
+
+\usepackage[final]{neurips_2019}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{amsmath}
+
+\title{Learning causal features with double regression}
+
+\author{%
+  Jean-Remi King\\
+  Facebook AI\\
+  \texttt{email} \\
+  \And
+  Fran\c{c}ois Charton\\
+  Facebook AI\\
+  \texttt{fcharton@fb.com}\\
+  \And
+  David Lopez-Paz\\
+  Facebook AI\\
+  \texttt{fcharton@fb.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    To be written.
+\end{abstract}
+
+\section{Introduction}
+
+
+A survey in deep learning \citep{deep_learning_nature}.
+
+\subsection{Contributions}
+
+\section{Problem formulation}
+\begin{equation}
+    Y = F(SX + N)
+    \label{eq:model}
+\end{equation}
+
+\subsection{Consistency proof}
+
+\begin{equation}
+\begin{aligned}
+\min_G \left \| X-YG \right \| &= \min_G \left \| X - (XSF+NF)G\right\| \\
+&{}= \min_G \left \| X - XSFG\right\|  + \left \| NFG \right \| \\
+\end{aligned}
+\end{equation}
+
+Given that :
+\begin{equation}
+\mathop{\mathbb{E}}[N]=0
+\end{equation}
+
+and
+\begin{equation}
+\left \| X-XSFG \right \| \leq \left \| X \right \| \cdot  \left \| I-SFG \right \| \\
+\end{equation}
+
+Then
+\begin{equation}
+\min_G \left \| X-YG \right \| = \min_G \left \| I -SFG\right\| \\
+\Rightarrow \hat  G= (SF)^{\dagger}
+\end{equation}
+
+\subsection{LS from X to Y\^{G}}
+
+\begin{equation}
+\begin{aligned}
+\min_H \left \| Y \hat G - XH \right \| &= \min_H \left \| (XSF+NF) \hat G - XH \right \| \\
+&= \min_H \left \| XSF \hat G - XH \right \| \\
+&= \min_H \left \| SF \hat G - H \right \| \\
+&= \min_H \left \| SF (SF)^{\dagger} - H \right \| \\
+\end{aligned}
+\end{equation}
+
+Under the assumptions that S is an orthogonal projection
+\begin{equation}
+    S = S^2, S=S^T, S^{\dagger} = S
+\end{equation}
+
+And under the extra assumptions that :
+
+\begin{equation}
+(SF)^{\dagger} = F^{\dagger} S^{\dagger}
+\end{equation}
+
+Then,
+
+\begin{equation}
+\begin{aligned}
+\min_H \left \| SF (SF)^{\dagger} - H \right \| &= \min_H \left \| SFF^{\dagger}S^{\dagger} - H \right \| \\
+&= \min_H \left \| SS^{\dagger} - H \right \| \\
+&= \min_H \left \| SS - H \right \| \\
+&= \min_H \left \| S - H \right \|\\
+\Rightarrow \hat H = S
+\end{aligned}
+\end{equation}
+
+
+\section{Experiments}
+
+\section{Conclusion}
+
+\clearpage
+\newpage
+
+\bibliographystyle{abbrvnat}
+\bibliography{paper}
+
+\end{document}
