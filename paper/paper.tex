@@ -39,75 +39,64 @@
 \section{Introduction}
 
 
-A survey in deep learning \citep{deep_learning_nature}. Blah.
+A survey in deep learning \citep{deep_learning_nature}. 
 
 \subsection{Contributions}
 
 \section{Problem formulation}
+Our problem may be formulated as
 \begin{equation}
-    Y = F(SX + N)
+    Y = F(EX + N)
     \label{eq:model}
 \end{equation}
+where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the features (X), and N a noise term, centred but not necessarily gaussian or diagonal.
 
-\subsection{Consistency proof}
+The first regression (X from Y), amounts to finding
+\begin{equation}
+\begin{aligned}
+\min_G \left \| X-GY \right \|^2 &= \min_G \left \| X - GF(EX+N)\right\|^2 \\
+&{}= \min_G \left \| (I-GFE)X\right\| ^2 + \left \| GFN\right \| ^2\\
+&{}\leq \min_G \left \| I-GFE\right\| ^2 \left \| X\right\| ^2 + k\left \| G\right \| ^2\\ 
+\end{aligned}
+\end{equation}
+since N is centred, and with k a positive constant which depends on the variance of FN.
+
+This amounts to finding the minimal norm generalized inverse of FE, or its Moore-Penrose inverse
+\begin{equation}
+\hat  G= (FE)^{\dagger}
+\end{equation}
+
+The second regression is from X to the predicted value of X in the above, or $\hat G  Y$
 
 \begin{equation}
 \begin{aligned}
-\min_G \left \| X-YG \right \| &= \min_G \left \| X - (XSF+NF)G\right\| \\
-&{}= \min_G \left \| X - XSFG\right\|  + \left \| NFG \right \| \\
+\min_H \left \| (FE)^{\dagger}Y - HX \right \|^2 &= \min_H \left \| (FE)^{\dagger}F(EX+N) - HX \right \|^2 \\
+&= \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2 + \left \| (FE)^{\dagger}FN \right \| ^2\\
+&= \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2\\
 \end{aligned}
 \end{equation}
 
-Given that :
-\begin{equation}
-\mathop{\mathbb{E}}[N]=0
-\end{equation}
-
-and
-\begin{equation}
-\left \| X-XSFG \right \| \leq \left \| X \right \| \cdot  \left \| I-SFG \right \| \\
-\end{equation}
-
-Then
-\begin{equation}
-\min_G \left \| X-YG \right \| = \min_G \left \| I -SFG\right\| \\
-\Rightarrow \hat  G= (SF)^{\dagger}
-\end{equation}
-
-\subsection{LS from X to Y\^{G}}
-
+Therefore, under the hypothese that N is centred, our regression method estimates 
 \begin{equation}
 \begin{aligned}
-\min_H \left \| Y \hat G - XH \right \| &= \min_H \left \| (XSF+NF) \hat G - XH \right \| \\
-&= \min_H \left \| XSF \hat G - XH \right \| \\
-&= \min_H \left \| SF \hat G - H \right \| \\
-&= \min_H \left \| SF (SF)^{\dagger} - H \right \| \\
+\hat H =(FE)^{\dagger}(FE)
 \end{aligned}
 \end{equation}
 
-Under the assumptions that S is an orthogonal projection
-\begin{equation}
-    S = S^2, S=S^T, S^{\dagger} = S
-\end{equation}
+For any matrix A, $A^\dagger A$ is the orthogonal projector over Img(A'), and $I-A^\dagger A$ the orthogonal projector over Ker(A). 
 
-And under the extra assumptions that :
-
-\begin{equation}
-(SF)^{\dagger} = F^{\dagger} S^{\dagger}
-\end{equation}
-
-Then,
-
+If E selects some features of X (ie Ex=0 on any unselected feature, and E full ranked over the set of selected features) and if F is full rank over the subspace spanned by the features selected by E, then 
 \begin{equation}
 \begin{aligned}
-\min_H \left \| SF (SF)^{\dagger} - H \right \| &= \min_H \left \| SFF^{\dagger}S^{\dagger} - H \right \| \\
-&= \min_H \left \| SS^{\dagger} - H \right \| \\
-&= \min_H \left \| SS - H \right \| \\
-&= \min_H \left \| S - H \right \|\\
-\Rightarrow \hat H = S
+Ker(FE) = Ker(E)  
 \end{aligned}
 \end{equation}
+$I - \hat H$ is the projector over Ker(E), the diagonal matrix that spans the unselected features, and $\hat H$ is the diagonal matrix corresponding to the selected features.
 
+Under such hypotheses, $\hat H$ retrieves the features of X that have a causal influence on Y, and should do it in a fairly resilient way, since it is diagonal, and all its eigenvalues (0 or 1) are well separated.
+
+\section{Estimator, and relation with Canonical Component Analysis}
+ 
 
 \section{Experiments}
 
