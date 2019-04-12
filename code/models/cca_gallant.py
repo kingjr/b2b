@@ -33,6 +33,7 @@ import joblib
 import numpy as np
 from scipy.linalg import eigh
 from sklearn.preprocessing import StandardScaler
+from sklearn.base import BaseEstimator
 
 
 __copyright__ = 'Copyright 2016, UC Berkeley, Gallant lab.'
@@ -376,9 +377,9 @@ def _make_kernel(d, normalize=True, ktype='linear', gausigma=1.0, degree=2):
     return kernel
 
 
-class KernelCCA(object):
+class KernelCCA(BaseEstimator):
     """Object to make pyrcca have sklearn API"""
-    def __init__(self, reg=0, n_components=2, kernel='linear'):
+    def __init__(self, reg=0, n_components=-1, kernel='linear'):
         if kernel == 'linear':
             self.cca = CCA(reg=reg, kernelcca=False,
                            numCC=n_components)
@@ -389,18 +390,22 @@ class KernelCCA(object):
             self.cca = CCA(reg=reg, ktype=kernel_, kernelcca=True,
                            numCC=n_components)
         self.kernel = kernel
+        self.n_components = n_components
 
     def fit(self, X, Y):
         self.x_scaler_ = StandardScaler()
         X = self.x_scaler_.fit_transform(X)
         self.y_scaler_ = StandardScaler()
         Y = self.y_scaler_.fit_transform(Y)
+        if self.n_components == -1:
+            self.cca.numCC = X.shape[1]
         self.cca.train([X, Y])
         wx, wy = self.cca.ws
         self.x_weights_ = wx
         self.y_weights_ = wy
         iwy = np.linalg.pinv(wy, rcond=self.cca.cutoff)
         self.coef_ = iwy.T @ wx.T
+        self.coef_ = self.coef_.T  # to match sklearn CCA
         # TODO: find var mapping with sklearn
         return self
 
@@ -408,7 +413,7 @@ class KernelCCA(object):
         if self.kernel != 'linear':
             print('kernel prediction are probably not valid')
         X = self.x_scaler_.transform(X)
-        Y_hat = (self.coef_ @ X.T).T
+        Y_hat = (self.coef_.T @ X.T).T
         Y_hat = self.y_scaler_.inverse_transform(Y_hat)
         return Y_hat
 
