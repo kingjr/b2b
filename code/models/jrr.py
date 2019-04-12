@@ -28,7 +28,7 @@ class JRR(object):
         self.zero_off_diag = zero_off_diag
 
     def fit(self, X, Y):
-        if self.bagging is False:
+        if self.bagging in (0, False, None):
             Gset = range(len(X))
             Hset = range(len(X))
             ensemble = [(Gset, Hset)]
