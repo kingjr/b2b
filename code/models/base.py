@@ -31,6 +31,7 @@ class EstimatorCV(BaseEstimator):
         self.estimator_ = GridSearchCV(self.base_estimator,
                                        dict(n_components=components))
         self.estimator_.fit(X, y)
+        self.coef_ = self.estimator_.best_estimator_.coef_
         return self
 
     def predict(self, X):
