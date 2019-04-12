@@ -70,7 +70,7 @@ if __name__ == '__main__':
     n = 1000
     nE = nX = 10
     nY = 10
-    snr = .5  # signal to noise ratio
+    snr = .25  # signal to noise ratio
     selected = .5  # number of X feature selected by E
 
     selected = min(int(np.floor(selected*nX)) + 1, nX-1)
