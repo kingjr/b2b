@@ -16,6 +16,7 @@ import numpy as np
 from scipy import randn
 from scipy.sparse import eye
 from scipy.linalg import pinv, svd
+from sklearn.base import BaseEstimator
 
 
 def ideal_data(num, dimX, dimY, rrank, noise=1):
@@ -26,7 +27,7 @@ def ideal_data(num, dimX, dimY, rrank, noise=1):
     return X, Y
 
 
-class ReducedRankRegressor(object):
+class ReducedRankRegressor(BaseEstimator):
     """
     Reduced Rank Regressor (linear 'bottlenecking' or 'multitask learning')
     - X is an n-by-d matrix of features.
@@ -34,21 +35,21 @@ class ReducedRankRegressor(object):
     - rrank is a rank constraint.
     - reg is a regularization parameter (optional).
     """
-    def __init__(self, rank, reg=0):
+    def __init__(self, n_components=-1, reg=0):
         self.reg = reg
-        self.rank = rank
+        self.n_components = n_components
 
     def fit(self, X, Y):
         CXX = X.T @ X + self.reg * eye(X.shape[1])
         CXY = X.T @ Y
         _U, _S, V = svd(CXY.T @ pinv(CXX) @ CXY)
-        self.W_ = V[:self.rank, :].T
-        self.A_ = (pinv(CXX) @ CXY @ self.W_).T
+        self.W_ = V[:self.n_components, :].T
+        self.coef_ = pinv(CXX) @ CXY @ self.W_
         return self
 
     def predict(self, X):
         """Predict Y from X."""
-        return X @ self.A_.T @ self.W_.T
+        return X @ self.coef_ @ self.W_.T
 
     def score(self, X, y, sample_weight=None):
         from sklearn.metrics import r2_score
@@ -94,8 +95,8 @@ if __name__ == '__main__':
     # Fit method
     rrr = ReducedRankRegressor(3)
     train, test = range(0, n, 2), range(1, n, 2)
-    coef = rrr.fit(X[train], Y[train]).A_
-    E_hat = np.mean(coef**2, 0)
+    coef = rrr.fit(X[train], Y[train]).coef_
+    E_hat = np.mean(coef**2, 1)
     score = rrr.score(X[test], Y[test])
 
     print('E_auc', roc_auc_score(np.diag(E), E_hat))
