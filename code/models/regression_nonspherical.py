@@ -5,6 +5,8 @@
 """Implement regularized regression with non-spherical priors as described in:
    Nunez-Elizalde*, Huth* & Gallant (2016) Improving predictive models using
    non-spherical Gaussian priors, Society for Neuroscience (Poster).
+
+   Unclear in which condition it will be useful?
 """
 import numpy as np
 from numpy.random import rand, randn
@@ -45,7 +47,6 @@ if __name__ == '__main__':
     r_ridge, r_ns_prior = list(), list()  # initialize scoring metrics
 
     for voxel in range(100):
-        print(voxel)
         # Simulate data
         n_samples, n_features = 200, 500
 
