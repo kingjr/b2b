@@ -20,6 +20,8 @@ def make_data(n: int = 1000,  # number of samples
 
     if E is None:
         E = np.zeros((nE, nX))
+        # selected must be between 1 and nX-1 to ensure that there is at least
+        # one selected and one unselected X feature
         selected = min(int(np.floor(selected*nX)) + 1, nX-1)
         E[:, :selected] = np.random.randn(nE, selected)
     else:
@@ -49,4 +51,4 @@ def make_data(n: int = 1000,  # number of samples
     X = scale(X)
     Y = scale(Y)
 
-    return X, Y, E
+    return X, Y, E, F
