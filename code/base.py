@@ -13,9 +13,11 @@ def make_data(n: int = 1000,  # number of samples
               F: np.ndarray = None,  # mixing matrix
               Cx: np.ndarray = None,  # feature covariance
               heteroscedastic: bool = False,  # noise type
-              ) -> (np.ndarray, np.ndarray, np.ndarray):
+              ) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
-    """Y = F(EX+N)"""
+    """Y = F(EX+N*snr)
+    returns X, Y, E, F
+    """
     np.random.seed(random_seed)
 
     if E is None:
