@@ -15,7 +15,7 @@ from tqdm import trange
 import warnings
 warnings.filterwarnings('ignore')
 
-alphas = np.logspace(3, 3, 10)
+alphas = np.logspace(-3, 3, 10)
 
 
 models = dict(
