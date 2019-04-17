@@ -15,15 +15,15 @@ from tqdm import trange
 import warnings
 warnings.filterwarnings('ignore')
 
-alphas = np.logspace(2, 2, 5)
+alphas = np.logspace(3, 3, 10)
 
 
 models = dict(
     ols=LinearRegression(),
     ridge=RidgeCV(alphas=alphas),
-    lasso=MultiTaskLassoCV(alphas=alphas),  # default alphas better but slow
+    lasso=MultiTaskLassoCV(eps=1e2),  # default alphas better but slow
     pca_l2=EstimatorCV(Encoding(ols=RidgeCV()), dim='Y'),
-    pca_l1=EstimatorCV(Encoding(ols=MultiTaskLassoCV(alphas=alphas)), dim='Y'),
+    pca_l1=EstimatorCV(Encoding(ols=MultiTaskLassoCV(eps=1e2)), dim='Y'),
     cca=EstimatorCV(CCA(), dim='X'),
     # cca_l2=GridSearchCV(KernelCCA(kernel='linear'), {'reg': alphas}),  # bug
     pls=EstimatorCV(PLSRegression(), dim='X'),
