@@ -45,14 +45,14 @@ A survey in deep learning \citep{deep_learning_nature}.
 
 \section{Math corner}
 
-\subsection{Problem formulation, asymptotic estimates}
+\subsection{Model formulation, average behaviour}
 
 Our problem may be formulated as
 \begin{equation}
     Y = F(EX + N)
     \label{eq:model}
 \end{equation}
-where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the features (X), and N a noise term, centred but not necessarily gaussian or diagonal.
+where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the ftkvdkkdtgbcifnndifftgetecfdbjujjeatures (X), and N a noise term, centred but not necessarily gaussian or diagonal.
 
 The first regression (X from Y), amounts to finding
 \begin{equation}
@@ -121,16 +121,23 @@ In double regression, we first calculate the regression of X from Y, and calcula
 \end{equation}
 Under ideal conditions (good conditioning of $X'X$ and $Y'Y$), this should recover a diagonal binary matrix, the 1 on the diagonal corresponding the the features of X used by Y. In a noisy environment, double regression tries to extract the useful features of X (ie those having an influence on Y) as non zero elements of the diagonal of (9).
 
-
-(here be statistical test for the diagonal, and rationale for it)
-
-
-
 Formula (9) shows that double regression can be understood as a special case of canonical component analysis (CCA). In CCA, given two matrixes (n,p and n,q) X and Y describing different features measured on the same data sample, one tries to characterise the closeness between X and Y (ie between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y. This is done by finding vectors $a$ and $b$ such that $Xa$ and $Yb$ display maximal correlation, or by maximising $a'X'Yb$ over unit-normed $a$ and $b$. To find a, one calculates the eigenvectors of (9). The largest one is the direction with maximal correlation, the second one the maximal correlation direction orthogonal to the first, and so on. For each canonical dimension, the corresponding eigenvalue is the square of the cosine between the corresponding direction along X and the subspace spanned by Y.  
 
 If (9) is diagonal, for instance in the model presented above, the features of X are eigenvectors. If all eigenvalues are either 0 or 1, since they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues). 
 
 Thus, double regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X. The closer we are to this hypothesis, the closer the results of CCA and double regression will be.
+
+\subsection{Double regression as feature extraction}
+
+Testing for non zero elements on the diagonal of (9) can be viewed as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done on maximising the ratio of inter-group variance over total variance (ie minimising intra-group variance). In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal. 
+
+If s and r are the average values of the two clusters, and p and n-p their size, we are maximising 
+\begin{equation}
+\begin{aligned}
+{p (n-p)\over n^2} (s-r)^2 
+\end{aligned}
+\end{equation}
+ and selecting the p features corresponding to the largest values.
 
 \subsection{Stability analysis}
 
