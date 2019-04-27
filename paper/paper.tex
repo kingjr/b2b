@@ -26,6 +26,10 @@
   David Lopez-Paz\\
   Facebook AI\\
   \texttt{dlp@fb.com}
+  \And
+  Maxime Oquab\\
+  Facebook AI\\
+  \texttt{qas@fb.com}
 }
 
 \begin{document}
@@ -34,16 +38,44 @@
 
 \begin{abstract}
     To be written.
-\end{abstract}
-
-\section{Introduction}
-
+This is an example of citation
 
 A survey in deep learning \citep{deep_learning_nature}. 
+\end{abstract}
 
-\subsection{Contributions}
+\section{Inverse problems}
+Many causal problems are inverse problems: trying to tell causes from their effects. We are given experimental data (effects), possible explanations (causes), and are tasked to find the causes that account for the observations, knowing that other non causal (contingent, random) factors are at work.
 
-\section{Math corner}
+This can be modelled in the following way. We measure a phenomenon Y, via an apparatus F. We are given a set X of possible causal features, some of which are active (account for the observed effects). We note EX the subset of active features (E being a binary diagonal matrix, ie all zeroes except a few ones on the diagonal). Besides EX, the measured phenomenon is influenced by other factors, which we represent as noise N. Assuming that the noise is centred (equal to zero on average) and that dependences can be represented as linear transformations, we can summarize our model by the following equation: $Y = F(EX + N)$. Our goal, given observations of X and Y, is to find E.
+ 
+ **********Description of the neuroscience side of the problem***********
+ 
+
+\section{Double regression}
+A natural approach to inverse problems is anticausal regression, where one tries to predict the different features of X from the observations Y. Because of noise, loss of information in the measuring apparatus (F not being full rank, or well conditioned), possible correlations between features of X, and the fact that only a few of these features account for Y, such an approach will not retrieve X, but some approximation of it, $\hat X$. 
+
+On the other hand, since we are given a statistical model for calculating Y from X, we could, by assuming some properties of N, use the opposite approach, and predict the different features of Y from X. Again this discounts the correlations between features of Y, the fact that not all features of X are active and the effect of noise.
+
+Double regression tries to combine both approaches by conducting first an anticausal regression, and then trying to predict its result $\hat X$ from X. In other words, the anticausal step (from Y to X) provides us with intermediary features, which the causak step tries to predict from X. Since matrices X and Y are likely to be multicollinear, stable estimators are needed, and we use ridge regression. Besides, since conducting two regressions from the same data sample would cause some of the shared noise to be learnt, we split our sample, and use half of it for each of the regressions, therefore "decorrelating" the two steps.
+
+Under our hypotheses (centred noise, E a binary diagonal), and even under heavy noise, experiments suggest that H provides a good approximation to E. In particular, H is close to diagonal, and binary clustering of its diagonal elements using a Sonquist and Morgan statistics, recovers the original E. 
+
+In a nutshell, double regression is performed as follows:
+	
+	1- Randomly split the data sample
+	
+	2- From the first half sample, find G such that GY is the regularized least square approximation of X
+	
+	3- From the second half of the sample, calculate $\hat X=GY$, and find H such that HX is the regularized least square approximation of $\hat X$
+	
+	4- Using the Sonquist and Morgan criterion, select the largest diagonal elements of H, set them to one and the rest of H to zero
+	
+	5- Use the resulting matrix as a estimator of E, the active features in the causal process
+
+	6- Alternatively, use recovered E to predict Y from X 
+
+
+\section{Mathematics}
 
 \subsection{Model formulation, average behaviour}
 
@@ -52,7 +84,7 @@ Our problem may be formulated as
     Y = F(EX + N)
     \label{eq:model}
 \end{equation}
-where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the ftkvdkkdtgbcifnndifftgetecfdbjujjeatures (X), and N a noise term, centred but not necessarily gaussian or diagonal.
+where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the features (X), and N a noise term, centred but not necessarily gaussian or diagonal.
 
 The first regression (X from Y), amounts to finding
 \begin{equation}
@@ -143,6 +175,27 @@ If s and r are the average values of the two clusters, and p and n-p their size,
 
 \subsection{Related approaches}
 (PLS, 2 way, 3 fold...)
+
+\section{Experiments - simulated data}
+Experiments on simulated data serve three goals: compare double regression with other known techniques (CCA, OLS, PLS...) both as regression and feature extraction methods, provide evidence for our claim on stability, invariance to environment, and behavior as a causal detector, and understand the strengths and limitations of double regression, and directions for future improvement.
+
+\subsection{Experimenting with double regression}
+In these experiments, we focus on double regression as a feature detector. Given p features X, exhibiting various levels of correlations and observed on a sample of size n, matrix E extracts a (small) set of d features. A noise term N (p, n) of various covariance and signal to noise ratio (compared to EX) is then added, and the result is transformed by a random (q,p) matrix F, to yield an (q,n) Y.
+
+In data generation, we experiment on the size of feature spaces (p,q), the proportion of selected features (d/p), signal to noise ratios, and the conditioning of X (feature multicollinearity), N (noise covariance) and F. In the algorithm, we test various ways of regularizing the two regressions (namely pseudo inversion of X and Y), of splitting data samples between the regressions, of extracting the selected features, and of using the information recovered to improve prediction of Y.
+
+In all experiments, the figure of merit is the quality of the reconstruction of E, measured as the Hamming distance (total number of misclassifications) between the selection performed by E and the features extracted 
+
+\subsection{Comparison with other methods - feature extraction}
+
+\subsection{Comparison with other methods - predicting Y}
+
+\subsection{Comparison with other methods - stable regression}
+In this section, we perform the same tests as in the previous one, but the test set is taken from a different distribution of X than the training set. In practice, we test the same trained predictors of Y over test samples generated fro; a distribution of X with a different covariance.
+
+The rationale behind such tests is that whereas double regression, being a feature extraction method, might not be as efficient as dedicated porediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments. 
+
+********** here be results and discussion ************
 
 \section{Experiments}
 
