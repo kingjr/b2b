@@ -4,7 +4,6 @@ from sklearn.preprocessing import scale
 
 def make_data(n: int = 1000,  # number of samples
               nX: int = 100,  # dimensionality of X
-              nE: int = 10,  # dimensionality of E
               nY: int = 10,  # dimensionality of Y
               random_seed: int = None,
               snr: float = 1e-1,  # signal to noise ratio
@@ -15,19 +14,20 @@ def make_data(n: int = 1000,  # number of samples
               heteroscedastic: bool = False,  # noise type
               ) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
-    """Y = F(EX+N*snr)
+    """Y = F(EX*snr + N)
     returns X, Y, E, F
     """
     np.random.seed(random_seed)
 
     if E is None:
-        E = np.zeros((nE, nX))
+        E = np.zeros(nX)
         # selected must be between 1 and nX-1 to ensure that there is at least
         # one selected and one unselected X feature
         selected = min(int(np.floor(selected*nX)) + 1, nX-1)
-        E[:, :selected] = np.random.randn(nE, selected)
+        E[:selected] = 1
+        E = np.diag(E)
     else:
-        nE, nX = E.shape
+        nX, nX = E.shape
 
     if Cx is None:
         Cx = np.random.randn(nX, nX)
@@ -36,19 +36,18 @@ def make_data(n: int = 1000,  # number of samples
         nX = len(Cx)
     X = np.random.multivariate_normal(np.zeros(nX), Cx, n)
 
-    N = np.random.randn(n, nE)
+    N = np.random.randn(n, nX)
     if heteroscedastic:
-        Cn = np.random.randn(nE, nE)
-        Cn = Cn.dot(Cn.T) / nE  # sym pos-semidefin
-        N = np.random.multivariate_normal(np.zeros(nE), Cn, n)
+        Cn = np.random.randn(nX, nX)
+        Cn = Cn.dot(Cn.T) / nX  # sym pos-semidefin
+        N = np.random.multivariate_normal(np.zeros(nX), Cn, n)
 
     if F is None:
-        F = np.random.randn(nY, nE)
+        F = np.random.randn(nY, nX)
     else:
         nY = len(F)
 
-    S = (X @ E.T) * snr
-    Y = (S+N) @ F.T
+    Y = ((X @ E.T) * snr + N) @ F.T
 
     X = scale(X)
     Y = scale(Y)

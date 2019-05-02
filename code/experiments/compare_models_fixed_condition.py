@@ -90,8 +90,7 @@ if __name__ == '__main__':
     # signal-to-noise ratios
 
     for snr in (.5, .3):
-        E = np.diag(np.r_[np.zeros(20), np.ones(5)])
-        X, Y, E, F = make_data(nY=30, nX=30, selected=.2, snr=snr, E=E,
+        X, Y, E, F = make_data(nY=30, nX=30, selected=.2, snr=snr,
                                random_seed=0)
 
         EF = E @ F.T
@@ -125,8 +124,7 @@ if __name__ == '__main__':
     scores = list()
     for repeat in trange(50):
         snr = .3
-        E = np.diag(np.r_[np.zeros(20), np.ones(5)])
-        X, Y, E, F = make_data(nY=30, nX=30, selected=.2, snr=snr, E=E,
+        X, Y, E, F = make_data(nY=30, nX=30, selected=.2, snr=snr,
                                random_seed=repeat)
 
         # evaluate each model
