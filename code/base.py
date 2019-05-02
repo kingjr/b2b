@@ -5,16 +5,18 @@ from sklearn.preprocessing import scale
 def make_data(n: int = 1000,  # number of samples
               nX: int = 100,  # dimensionality of X
               nY: int = 10,  # dimensionality of Y
+              nM: int = 10,  # dimensionality of source
               random_seed: int = None,
               snr: float = 1e-1,  # signal to noise ratio
               selected: float = .5,  # proportion of selected feature in E
               E: np.ndarray = None,  # selecting matrix
+              M: np.ndarray = None,  # selecting matrix
               F: np.ndarray = None,  # mixing matrix
               Cx: np.ndarray = None,  # feature covariance
               heteroscedastic: bool = False,  # noise type
               ) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
-    """Y = F(EX*snr + N)
+    """Y = F(MEX+N*snr)
     returns X, Y, E, F
     """
     np.random.seed(random_seed)
@@ -29,6 +31,12 @@ def make_data(n: int = 1000,  # number of samples
     else:
         nX, nX = E.shape
 
+    if M is None:
+        M = np.random.randn(nM, nX)
+        M /= np.sqrt(np.sum(M**2, 1, keepdims=True))
+    else:
+        nM = len(M)
+
     if Cx is None:
         Cx = np.random.randn(nX, nX)
         Cx = Cx.dot(Cx.T) / nX  # sym pos-semidefin
@@ -36,18 +44,18 @@ def make_data(n: int = 1000,  # number of samples
         nX = len(Cx)
     X = np.random.multivariate_normal(np.zeros(nX), Cx, n)
 
-    N = np.random.randn(n, nX)
+    N = np.random.randn(n, nM)
     if heteroscedastic:
-        Cn = np.random.randn(nX, nX)
+        Cn = np.random.randn(nM, nM)
         Cn = Cn.dot(Cn.T) / nX  # sym pos-semidefin
         N = np.random.multivariate_normal(np.zeros(nX), Cn, n)
 
     if F is None:
-        F = np.random.randn(nY, nX)
+        F = np.random.randn(nY, nM)
     else:
         nY = len(F)
 
-    Y = ((X @ E.T) * snr + N) @ F.T
+    Y = ((X @ E.T @ M.T) * snr + N) @ F.T
 
     X = scale(X)
     Y = scale(Y)
