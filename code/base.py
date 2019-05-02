@@ -17,7 +17,7 @@ def make_data(n: int = 1000,  # number of samples
               ) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
 
     """Y = F(MEX+N*snr)
-    returns X, Y, E, F
+    returns X, Y, E, F, M
     """
     np.random.seed(random_seed)
 
@@ -60,4 +60,4 @@ def make_data(n: int = 1000,  # number of samples
     X = scale(X)
     Y = scale(Y)
 
-    return X, Y, E, F
+    return X, Y, E, F, M
