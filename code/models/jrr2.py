@@ -3,6 +3,24 @@ from sklearn.linear_model import RidgeCV
 from sklearn.model_selection import ShuffleSplit
 
 
+def sonquist_morgan(x):
+    z=np.sort(x)
+    n=z.size
+    m1=0
+    m2=np.sum(z)
+    mx=0
+    best=-1
+    for i in range(n-1): 
+        m1+=z[i]
+        m2-=z[i]
+        ind=(i+1)*(n-i-1)*(m1/(i+1)-m2/(n-i-1))**2
+        if ind>mx :
+            mx=ind
+            best=z[i]
+    K=mx/(np.var(x)*n) #significance indicator, not used for now
+    return 1*(x>(best+1.0e-6))
+
+
 class JRR(object):
     """Finds E in:
         Y = F(EX+N)
@@ -44,7 +62,8 @@ class JRR(object):
         # Estimate E
         self.E_ = np.mean(H, 0).T  # TODO: check transpose
         if self.zero_off_diag:
-            self.E_ = np.diag(np.diag(self.E_))
+            #self.E_ = np.diag(np.diag(self.E_))
+            self.E_ = np.diag(sonquist_morgan(np.diag(self.E_)))
         # Filter X by E hat and estimate F
         self.F.fit(X @ self.E_, Y)
         return self
@@ -99,5 +118,10 @@ if __name__ == '__main__':
     E_hat = jrr.fit(X[train], Y[train]).E_
     score = jrr.score(X[test], Y[test])
 
+    #compare extraction to E
+    extraction_score=np.sum(abs(np.diag(E)-np.diag(E_hat))
+
+    #WARNING: this might change now that E_at has been replaced by the sonquist version...
+    # it should make us better, as we don't care anymore about the order of diagonal coeffs, just their class
     print('E_auc', roc_auc_score(np.diag(E), np.diag(E_hat)))
     print('Y_score', score)
