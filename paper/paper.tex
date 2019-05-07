@@ -38,55 +38,53 @@
 
 \begin{abstract}
     To be written.
-This is an example of citation
-
-A survey in deep learning \citep{deep_learning_nature}. 
 \end{abstract}
 
-\section{Inverse problems}
-Many causal problems are inverse problems: trying to tell causes from their effects. We are given experimental data (effects), possible explanations (causes), and are tasked to find the causes that account for the observations, knowing that other non causal (contingent, random) factors are at work.
+\section{Introduction}
+Causal discovery, telling causes from their effects, is an inverse problem. Given experimental data (effects) and possible explanations (causes), we are tasked to find the causes that account for the observations, knowing that other non causal factors (contingent, random) are at work. 
 
-This can be modelled in the following way. We measure a phenomenon Y, via an apparatus F. We are given a set X of possible causal features, some of which are active (account for the observed effects). We note EX the subset of active features (E being a binary diagonal matrix, ie all zeroes except a few ones on the diagonal). Besides EX, the measured phenomenon is influenced by other factors, which we represent as noise N. Assuming that the noise is centred (equal to zero on average) and that dependences can be represented as linear transformations, we can summarize our model by the following equation: $Y = F(EX + N)$. Our goal, given observations of X and Y, is to find E.
- 
- **********Description of the neuroscience side of the problem***********
- 
+This can be modelled in the following way. Through an apparatus F, we measure a phenomenon Y, which result from a set of possible causes X and from unknown other factors that will be modelled as a noise N. Of all possible causes in X, only a few are active, and account for the observed Y. Let EX be the subset of such active features, E being a binary diagonal matrix (all zeroes except a few 1 on the diagonal). Assuming that noise is centred (by adding if necessary an intercept on top of the causal features, to capture the bias in N), and that all dependences can be represented as linear transformation, we can write our model as $Y = F(MEX + N)$. We are given experimental measures of X and Y, and our goal is to recover E, the causes of Y, with M, N and F unknown.
+
+Such problems can be attacked in two different ways. In the direct approach, we may use the above equation as a statistical model, try to express Y as a function of X, and test whether the coefficients associated with specific features of X are zero. Alternatively, we may try an inverse approach, and express various features of X as a function of Y, and estimate their variation as Y changes. In the presence of noise, and a large number of features of X, Y and N, both methods are limited, because they fail to take advantage of the correlations between features of the variable they are modelling (or guard against their multicollinearity). In the direct approach, features of Y are modelled separately (which also complicates testing for nullity of coefficients). In the indirect method, correlations between features of X, and possibly with various random factors, are unaccounted for. In effect, we do not retrieve matrix X (or an approximation of it) but some estimator $\hat X$ of it.
+
+In this paper, we introduce double regression, a method that combines both approaches. We first predict X from Y, as in the inverse approach, and retrieve an estimator $\hat X$, that we then try to predict from X. We prove that the estimator of $\hat X$, from X provides a good approximation of E, is robust to noise and environment change, and can be used either to extract causal features or to better predict Y from X. We expose the links between double regression and canonical component analysis, show that it compares favourably with other methods, test its limiting cases and the influence of various aspects of the problem (dimensionality, signal to noise ratios) and illustrate its use on an example from neurosciences. 
 
 \section{Double regression}
-A natural approach to inverse problems is anticausal regression, where one tries to predict the different features of X from the observations Y. Because of noise, loss of information in the measuring apparatus (F not being full rank, or well conditioned), possible correlations between features of X, and the fact that only a few of these features account for Y, such an approach will not retrieve X, but some approximation of it, $\hat X$. 
+We are given two set of measurements, over a sample of N individuals. Y are multidimensional effects, and X are multidimensional causal features. We believe that the values of Y result from a small number of features of X, denoted as EX, and some large multidimensional noise N, and try to recover E, the list of causal features. 
 
-On the other hand, since we are given a statistical model for calculating Y from X, we could, by assuming some properties of N, use the opposite approach, and predict the different features of Y from X. Again this discounts the correlations between features of Y, the fact that not all features of X are active and the effect of noise.
+Double regression first performs a least squares estimation of X from Y, that is finds $\hat G$ such that $\hat X=\hat G Y$ is the least square predictor of X. This retrieve some best approximation of the causes of Y in X. Since the covariance matrix of Y might exhibit multicollinearity (the effects measured in Y being correlated), we used a regularised method for estimation the least square solution (Ridge regression with the regularisation coefficient determined by cross validation).
 
-Double regression tries to combine both approaches by conducting first an anticausal regression, and then trying to predict its result $\hat X$ from X. In other words, the anticausal step (from Y to X) provides us with intermediary features, which the causak step tries to predict from X. Since matrices X and Y are likely to be multicollinear, stable estimators are needed, and we use ridge regression. Besides, since conducting two regressions from the same data sample would cause some of the shared noise to be learnt, we split our sample, and use half of it for each of the regressions, therefore "decorrelating" the two steps.
+The second step of double regression performs a least square estimation of $\hat X$ fromX, that finds $\hat H$ such that $\hat \hat X=\hat H X$ is the least square predictor of $\hat X$. Again, to avoid the effects of multicollinearity in the covariance matrix of X, cross validated ridge regression is used once again. Also, to prevent spurious correlations between the two regression steps (should the be performed on the same sample), our original sample is randomly split into two halves, and each step is performed over one of them, effectively decorrelating the two regressions. Optionally, these two regressions can be repeated on many split samples, and their results averaged. Over small samples, such bagging compensates for the reduction in sample size due to splitting.  
 
-Under our hypotheses (centred noise, E a binary diagonal), and even under heavy noise, experiments suggest that H provides a good approximation to E. In particular, H is close to diagonal, and binary clustering of its diagonal elements using a Sonquist and Morgan statistics, recovers the original E. 
+Under our hypotheses (centred noise, E a binary diagonal), and even under heavy noise, $\hat H$ is close to diagonal, and provides, up to a scaling factor that depends on the dimensions of X, Y and N and the signal to noise ratio of the problem considered, a good approximation to E. To recover a binary diagonal matrix (an estimate of E), we extract the diagonal of $\hat H$ and select its largest elements using a binary clustering algorithm (AID, Sonquist and Morgan). The diagonal matrix $\hat E$, having the largest elements of H as its unit diagonal coefficients (the rest being zero) is our estimate of E. This allow us to retrieve the causal features of E. Since E and $\hat E$ are binary, the Hamming distance between both matrices (or their diagonal) quantifies the goodness of fit.
+
+To use double regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform (on a test sample) a cross validated ridge regression of each feature of Y from $\hat E X$.
 
 In a nutshell, double regression is performed as follows:
-	
-	1- Randomly split the data sample
-	
-	2- From the first half sample, find G such that GY is the regularized least square approximation of X
-	
-	3- From the second half of the sample, calculate $\hat X=GY$, and find H such that HX is the regularized least square approximation of $\hat X$
-	
-	4- Using the Sonquist and Morgan criterion, select the largest diagonal elements of H, set them to one and the rest of H to zero
-	
-	5- Use the resulting matrix as a estimator of E, the active features in the causal process
+\begin{enumerate}
+\item Randomly split the data sample.
+\item From the first half sample, find $\hat G$ such that $\hat X = \hat G Y$ is the regularised least square approximation of X.
+\item From the second half sample, calculate $\hat X = \hat G Y$, and find $\hat H$ such that $\hat H X$ is the regularized least square approximation of $\hat X$.
+\item (optional) Repeat steps 1 to 3 and average the results.
+\item Using the Sonquist and Morgan criterion, select the largest diagonal elements of $\hat H$, set them to one and the rest of $\hat  H$ to zero.
+\item Use the resulting matrix $\hat E$ as an estimator of E, the active features in the causal process
+\item Alternatively, use $\hat E$ to predict Y from X, by performing a regularised least square regression of Y from $\hat E X$. 
+\end{enumerate}
 
-	6- Alternatively, use recovered E to predict Y from X 
+\section{Related work}
+not sure whether this should be here of after the math part... 
 
+We need to discuss other methods of feature extraction (if any) and list the regression methods we will compare to
 
-\section{Mathematics}
+we should also discuss the way we can us regression methods for feature extraction (and the opposite)
 
-\subsection{Model formulation, average behaviour}
+\section{The mathematics of double regression}
 
-Our problem may be formulated as
-\begin{equation}
-    Y = F(EX + N)
-    \label{eq:model}
-\end{equation}
-where F is an unknown matrix, presumably full or high rank, corresponding to the measurement apparatus, E is a low rank transformation carried on the features (X), and N a noise term, centred but not necessarily gaussian or diagonal.
+\subsection{Model formulation and asymptotic behaviour}
 
-The first regression (X from Y), amounts to finding
+As seen in the introduction, our problem is modelled as $Y = F(MEX + N)$, with X an (N, dx) matrix of possible causes, E a (dx,dx) binary diagonal matrix, that selects active features from X. M an unknown (possibly full rank) (dz,dx) transformation of EX, N a (dz,N) homoscedastic noise matrix, F and unknown (possibly full rank) (dy,dz) transformation corresponding to the measuring apparatus, and Y a (dx,dy) matrix of measured effects.
+
+Since N is centred, the first least square regression (X from Y), amounts to finding
 \begin{equation}
 \begin{aligned}
 \min_G \left \| X-GY \right \|^2 &= \min_G \left \| X - GF(EX+N)\right\|^2 \\
@@ -94,56 +92,30 @@ The first regression (X from Y), amounts to finding
 &{}\leq \min_G \left \| I-GFE\right\| ^2 \left \| X\right\| ^2 + k\left \| G\right \| ^2\\ 
 \end{aligned}
 \end{equation}
-since N is centred, and with k a positive constant which depends on the variance of FN.
+with k a positive constant which depends on the variance of FN.
 
-This amounts to finding the minimal norm generalized inverse of FE, or its Moore-Penrose inverse
-\begin{equation}
-\hat  G= (FE)^{\dagger}
-\end{equation}
+This amounts to finding the minimal norm generalized inverse of FE, or its Moore-Penrose inverse $\hat  G= (FE)^{\dagger}$.
 
 The second regression is from X to the predicted value of X in the above, or $\hat G  Y$
 
 \begin{equation}
 \begin{aligned}
-\min_H \left \| (FE)^{\dagger}Y - HX \right \|^2 &= \min_H \left \| (FE)^{\dagger}F(EX+N) - HX \right \|^2 \\
-&= \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2 + \left \| (FE)^{\dagger}FN \right \| ^2\\
-&= \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2\\
-\end{aligned}
-\end{equation}
-
-Therefore, under the hypothesis that N is centred, our regression method estimates 
-\begin{equation}
-\begin{aligned}
-\hat H =(FE)^{\dagger}(FE)
+arg \min_H \left \| (FE)^{\dagger}Y - HX \right \|^2 &= arg \min_H \left \| (FE)^{\dagger}F(EX+N) - HX \right \|^2 \\
+&= arg \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2 + \left \| (FE)^{\dagger}FN \right \| ^2\\
+&= arg \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2\\
+&=(FE)^{\dagger}(FE)
 \end{aligned}
 \end{equation}
 
 For any matrix A, $A^\dagger A$ is the orthogonal projector over $Img(A')$, and $I-A^\dagger A$ the orthogonal projector over $Ker(A)$. 
 
-If E selects some features of X (ie $Ex=0$ on any unselected feature, and E full ranked over the set of selected features) and if F is full rank over the subspace spanned by the features selected by E, then 
-\begin{equation}
-\begin{aligned}
-Ker(FE) = Ker(E)  
-\end{aligned}
-\end{equation}
-$I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is the diagonal matrix corresponding to the selected features.
+In our case, $Ker(FE)\supseteq Ker(E)$. If F has full rank over the subspace spanned by the features selected by E (this will happen for almost all random F), then $Ker(FE) = Ker(E)$,. This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is the diagonal matrix corresponding to the selected features, that is E.
 
-Under such hypotheses, $\hat H$ retrieves the features of X that have a causal influence on Y, and should do it in a fairly resilient way, since it is diagonal, and all its eigenvalues (0 or 1) are well separated.
+Under such hypotheses, $\hat H$ retrieves E, the features of X that have a causal influence on Y. Since it is diagonal with eigenvalues well separated (0 and 1), it should do so in a fairly resilient way.
 
-\subsection{The double regression estimator, and canonical component analysis}
+\subsection{Double regression estimator, link with canonical component analysis}
 
-For any real matrices of X and Y, the least square regression of Y from X is calculated by the formula (X' denoting the transpose of X)
-\begin{equation}
-\begin{aligned}
-(X'X)^{-1} X'Y
-\end{aligned}
-\end{equation}
-and the prediction of Y thus obtained (from X) can be written
-\begin{equation}
-\begin{aligned}
-X(X'X)^{-1} X'Y
-\end{aligned}
-\end{equation}
+For any real matrices of X and Y, the least square regression of Y from X is calculated by the formula (X' denoting the transpose of X) $(X'X)^{-1} X'Y$ and the prediction of Y thus obtained (from X) can be written $X(X'X)^{-1} X'Y$. (To account for regularisation, a diagonal term should be added to the covariance matrix, which becomes $X'X+kI$, we do not mention it here, to simplify notation).
  
 In double regression, we first calculate the regression of X from Y, and calculate $\hat X$ the corresponding prediction as $Y(Y'Y)^{-1} Y'X$. The regression of $\hat X$ from X then becomes
 \begin{equation}
@@ -151,33 +123,37 @@ In double regression, we first calculate the regression of X from Y, and calcula
 (X'X)^{-1} X'Y(Y'Y)^{-1} Y'X
 \end{aligned}
 \end{equation}
-Under ideal conditions (good conditioning of $X'X$ and $Y'Y$), this should recover a diagonal binary matrix, the 1 on the diagonal corresponding the the features of X used by Y. In a noisy environment, double regression tries to extract the useful features of X (ie those having an influence on Y) as non zero elements of the diagonal of (9).
+Under ideal conditions (good conditioning of $X'X$ and $Y'Y$, no noise), this should recover a diagonal binary matrix, the 1 on the diagonal corresponding the the features of X used by Y. In a noisy environment, double regression tries to extract the useful features of X (ie those having an influence on Y) as non zero elements of the diagonal of (3).
 
-Formula (9) shows that double regression can be understood as a special case of canonical component analysis (CCA). In CCA, given two matrixes (n,p and n,q) X and Y describing different features measured on the same data sample, one tries to characterise the closeness between X and Y (ie between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y. This is done by finding vectors $a$ and $b$ such that $Xa$ and $Yb$ display maximal correlation, or by maximising $a'X'Yb$ over unit-normed $a$ and $b$. To find a, one calculates the eigenvectors of (9). The largest one is the direction with maximal correlation, the second one the maximal correlation direction orthogonal to the first, and so on. For each canonical dimension, the corresponding eigenvalue is the square of the cosine between the corresponding direction along X and the subspace spanned by Y.  
+Formula (3) shows that double regression can be understood as a special case of canonical component analysis (CCA). In CCA, given two matrixes (n,p and n,q) X and Y describing different features measured on the same data sample, one tries to characterise the closeness between X and Y (ie between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y. This is done by finding vectors $a$ and $b$ such that $Xa$ and $Yb$ display maximal correlation, or by maximising $a'X'Yb$ over unit-normed $a$ and $b$. To find a, one calculates the eigenvectors of (3). The largest one is the direction with maximal correlation, the second one the maximal correlation direction orthogonal to the first, and so on. For each canonical dimension, the corresponding eigenvalue is the square of the cosine between the corresponding direction along X and the subspace spanned by Y.  
 
-If (9) is diagonal, for instance in the model presented above, the features of X are eigenvectors. If all eigenvalues are either 0 or 1, since they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues). 
-
-Thus, double regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X. The closer we are to this hypothesis, the closer the results of CCA and double regression will be.
+If (3) is diagonal, for instance in the model presented above, the features of X are eigenvectors. If all eigenvalues are either 0 or 1, since they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues). Thus, double regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X. The closer we are to this hypothesis, the closer the results of CCA and double regression will be.
 
 \subsection{Double regression as feature extraction}
 
-Testing for non zero elements on the diagonal of (9) can be viewed as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done on maximising the ratio of inter-group variance over total variance (ie minimising intra-group variance). In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal. 
+Recovering non zero elements on the diagonal of (3) could be viewed as a statistical test problem. Since $\hat H$ is the coefficient matrix of a least square regression, a one-sided t value test, as used in regression analyses, could be used. However, this supposes that the coefficients of $\hat H$ are centered and follow a chi square distribution, something our method does not guarantee. Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximising the ratio of inter-group variance over total variance (ie minimising intra-group variance). In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal. 
 
-If s and r are the average values of the two clusters, and p and n-p their size, we are maximising 
-\begin{equation}
-\begin{aligned}
-{p (n-p)\over n^2} (s-r)^2 
-\end{aligned}
-\end{equation}
- and selecting the p features corresponding to the largest values.
+If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we are maximising the Sonquist and Morgan criterion $$K = {p (n-p) \over n} {(s-r)^2 \over V}$$ and selecting the p features corresponding to the largest values. If diagonal elements of (3) are normally distributed, K follows a chi-square distribution with one degree of freedom. At 95\% confidence level, a value of K superior to 3.84 makes our selection significant (for 99\% confidence, the corresponding value of K is 6.63) \citep{Kass_75}
 
 \subsection{Stability analysis}
 
-\subsection{Related approaches}
-(PLS, 2 way, 3 fold...)
-
 \section{Experiments - simulated data}
-Experiments on simulated data serve three goals: compare double regression with other known techniques (CCA, OLS, PLS...) both as regression and feature extraction methods, provide evidence for our claim on stability, invariance to environment, and behavior as a causal detector, and understand the strengths and limitations of double regression, and directions for future improvement.
+Experiments on simulated data serve three goals: compare double regression with other known techniques (CCA, OLS, PLS...) both as regression and feature extraction methods, provide evidence for our claims on stability, invariance to environment, and behavior as a causal detector, and understand the strengths and limitations of double regression, and directions for future improvement.
+
+The model used for simulation is $Y=F(snr MEX+N)$, with X a random (dx,N) matrix, E a square binary diagonal of dimension dx with the nc last elements equal to 1 (this means that of the dx features of X, only the nc last have some influence on Y), M, N and F (dz,dx), (dz,N) and (dy,dz) random matrices. snr is a real number measuring the amount of noise. Our simulation therefore depends upon 6 free parameters : 
+
+\begin{itemize}
+\item dx : number of features of X
+\item nc: number of active features (in EX)
+\item dz: number of noise features
+\item snr: signal to noise ratio
+\item dy: number of features in Y
+\item N: size of sample
+\end{itemize}
+
+Random matrices X, F, N and M are populated with centred gaussian random coefficients with unit variance, divided by $ \surd n$ where n is the smallest dimension of the matrix. Since a random square matrix with unit gaussian coefficients of dimension n has eigenvalues between $ \surd n $ and $\surd n $, this allows us to compare problems with different dimensions (values of dx, dy, dz and N). 
+
+We evaluate the performance of double regression and other algorithms in two different roles : as a feature extractor, where we try to recover the non-zero elements of E (the active features of X), and as a regression method, where we try to predict over a test sample the values of Y from those of X. Feature extraction produces a list of active features, ie a binary vector of size dx. Its goodness of fit is judged by comparing this vector with the diagonal of E, and counting the number of disagreements (Hamming distance which should be minimised). For regression, we use a test set of N additional measurements, and calculate the R-squared ratio of variances (which should be maximised).
 
 \subsection{Experimenting with double regression}
 In these experiments, we focus on double regression as a feature detector. Given p features X, exhibiting various levels of correlations and observed on a sample of size n, matrix E extracts a (small) set of d features. A noise term N (p, n) of various covariance and signal to noise ratio (compared to EX) is then added, and the result is transformed by a random (q,p) matrix F, to yield an (q,n) Y.
@@ -192,8 +168,8 @@ In all experiments, the figure of merit is the quality of the reconstruction of 
 
 \subsection{Comparison with other methods - stable regression}
 In this section, we perform the same tests as in the previous one, but the test set is taken from a different distribution of X than the training set. In practice, we test the same trained predictors of Y over test samples generated fro; a distribution of X with a different covariance.
-
-The rationale behind such tests is that whereas double regression, being a feature extraction method, might not be as efficient as dedicated porediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments. 
+\
+The rationale behind such tests is that whereas double regression, being a feature extraction method, might not be as efficient as dedicated prediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments. 
 
 ********** here be results and discussion ************
 
@@ -208,3 +184,4 @@ The rationale behind such tests is that whereas double regression, being a featu
 \bibliography{paper}
 
 \end{document}
+ 
