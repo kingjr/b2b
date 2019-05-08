@@ -71,12 +71,12 @@ In a nutshell, double regression is performed as follows:
 \item Alternatively, use $\hat E$ to predict Y from X, by performing a regularised least square regression of Y from $\hat E X$. 
 \end{enumerate}
 
-\section{Related work}
-not sure whether this should be here of after the math part... 
+\section{Related works}
+FC: this section either here or after the maths, unsure... 
+This should list other methods of feature extraction, if any (I don't know...)
+And discuss similar methods of regression, that can be used for feature extraction
+And maybe have something about other causal discovery methods
 
-We need to discuss other methods of feature extraction (if any) and list the regression methods we will compare to
-
-we should also discuss the way we can us regression methods for feature extraction (and the opposite)
 
 \section{The mathematics of double regression}
 
@@ -87,29 +87,29 @@ As seen in the introduction, our problem is modelled as $Y = F(MEX + N)$, with X
 Since N is centred, the first least square regression (X from Y), amounts to finding
 \begin{equation}
 \begin{aligned}
-\min_G \left \| X-GY \right \|^2 &= \min_G \left \| X - GF(EX+N)\right\|^2 \\
-&{}= \min_G \left \| (I-GFE)X\right\| ^2 + \left \| GFN\right \| ^2\\
-&{}\leq \min_G \left \| I-GFE\right\| ^2 \left \| X\right\| ^2 + k\left \| G\right \| ^2\\ 
+\min_G \left \| X-GY \right \|^2 &= \min_G \left \| X - GF(MEX+N)\right\|^2 \\
+&{}= \min_G \left \| (I-GFME)X\right\| ^2 + \left \| GFN\right \| ^2\\
+&{}\leq \min_G \left \| I-GFME\right\| ^2 \left \| X\right\| ^2 + k\left \| G\right \| ^2\\ 
 \end{aligned}
 \end{equation}
 with k a positive constant which depends on the variance of FN.
 
-This amounts to finding the minimal norm generalized inverse of FE, or its Moore-Penrose inverse $\hat  G= (FE)^{\dagger}$.
+This amounts to finding the minimal norm generalized inverse of FME, or its Moore-Penrose inverse $\hat  G= (FME)^{\dagger}$.
 
 The second regression is from X to the predicted value of X in the above, or $\hat G  Y$
 
 \begin{equation}
 \begin{aligned}
-arg \min_H \left \| (FE)^{\dagger}Y - HX \right \|^2 &= arg \min_H \left \| (FE)^{\dagger}F(EX+N) - HX \right \|^2 \\
-&= arg \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2 + \left \| (FE)^{\dagger}FN \right \| ^2\\
-&= arg \min_H \left \| ((FE)^{\dagger}(FE)-H)X \right \| ^2\\
-&=(FE)^{\dagger}(FE)
+arg \min_H \left \| (FME)^{\dagger}Y - HX \right \|^2 &= arg \min_H \left \| (FME)^{\dagger}F(MEX+N) - HX \right \|^2 \\
+&= arg \min_H \left \| ((FME)^{\dagger}(FME)-H)X \right \| ^2 + \left \| (FME)^{\dagger}FN \right \| ^2\\
+&= arg \min_H \left \| ((FME)^{\dagger}(FME)-H)X \right \| ^2\\
+&=(FME)^{\dagger}(FME)
 \end{aligned}
 \end{equation}
 
 For any matrix A, $A^\dagger A$ is the orthogonal projector over $Img(A')$, and $I-A^\dagger A$ the orthogonal projector over $Ker(A)$. 
 
-In our case, $Ker(FE)\supseteq Ker(E)$. If F has full rank over the subspace spanned by the features selected by E (this will happen for almost all random F), then $Ker(FE) = Ker(E)$,. This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is the diagonal matrix corresponding to the selected features, that is E.
+In our case, $Ker(FME)\supseteq Ker(E)$. If FM has full rank over the subspace spanned by the features selected by E (this is assumed for M and will happen for almost all random F), then $Ker(FME) = Ker(E)$,. This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is the diagonal matrix corresponding to the selected features, that is E.
 
 Under such hypotheses, $\hat H$ retrieves E, the features of X that have a causal influence on Y. Since it is diagonal with eigenvalues well separated (0 and 1), it should do so in a fairly resilient way.
 
@@ -129,13 +129,17 @@ Formula (3) shows that double regression can be understood as a special case of 
 
 If (3) is diagonal, for instance in the model presented above, the features of X are eigenvectors. If all eigenvalues are either 0 or 1, since they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues). Thus, double regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X. The closer we are to this hypothesis, the closer the results of CCA and double regression will be.
 
-\subsection{Double regression as feature extraction}
+\subsection{Feature extraction}
 
 Recovering non zero elements on the diagonal of (3) could be viewed as a statistical test problem. Since $\hat H$ is the coefficient matrix of a least square regression, a one-sided t value test, as used in regression analyses, could be used. However, this supposes that the coefficients of $\hat H$ are centered and follow a chi square distribution, something our method does not guarantee. Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximising the ratio of inter-group variance over total variance (ie minimising intra-group variance). In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal. 
 
 If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we are maximising the Sonquist and Morgan criterion $$K = {p (n-p) \over n} {(s-r)^2 \over V}$$ and selecting the p features corresponding to the largest values. If diagonal elements of (3) are normally distributed, K follows a chi-square distribution with one degree of freedom. At 95\% confidence level, a value of K superior to 3.84 makes our selection significant (for 99\% confidence, the corresponding value of K is 6.63) \citep{Kass_75}
 
+FC need to add something about values of $\hat H$, why active diagonal coefficients are not close to one, why inactive coeffs are not zero centered...  
+Discussion about bias induced by regularisation goes here 
+
 \subsection{Stability analysis}
+FC: to be written, at a loss right now, but two weeks left...
 
 \section{Experiments - simulated data}
 Experiments on simulated data serve three goals: compare double regression with other known techniques (CCA, OLS, PLS...) both as regression and feature extraction methods, provide evidence for our claims on stability, invariance to environment, and behavior as a causal detector, and understand the strengths and limitations of double regression, and directions for future improvement.
@@ -151,37 +155,61 @@ The model used for simulation is $Y=F(snr MEX+N)$, with X a random (dx,N) matrix
 \item N: size of sample
 \end{itemize}
 
-Random matrices X, F, N and M are populated with centred gaussian random coefficients with unit variance, divided by $ \surd n$ where n is the smallest dimension of the matrix. Since a random square matrix with unit gaussian coefficients of dimension n has eigenvalues between $ \surd n $ and $\surd n $, this allows us to compare problems with different dimensions (values of dx, dy, dz and N). 
+Random matrices X, F, N and M are populated with centred gaussian random coefficients with unit variance, divided by $ \surd n$ where n is the smallest dimension of the matrix. Since a random square matrix with unit gaussian coefficients of dimension n has eigenvalues between $ \surd n $ and $\surd n $, this allows meaningful comparison of results when dimensions N, dx, dy and dz vary. 
 
-We evaluate the performance of double regression and other algorithms in two different roles : as a feature extractor, where we try to recover the non-zero elements of E (the active features of X), and as a regression method, where we try to predict over a test sample the values of Y from those of X. Feature extraction produces a list of active features, ie a binary vector of size dx. Its goodness of fit is judged by comparing this vector with the diagonal of E, and counting the number of disagreements (Hamming distance which should be minimised). For regression, we use a test set of N additional measurements, and calculate the R-squared ratio of variances (which should be maximised).
+We evaluate the performance of double regression in two different roles : as a feature extractor, recovering the non-zero elements of E (the active features of X), and as a regression method, predicting Y from X over a test sample. For feature extraction, the quality of the fit is measured as the number of disagreements between our estimator and the diagonal of E (ie, their Hamming distance, which should be minimised). For regression, we use a test set of N additional measurements, and calculate the R-squared ratio of variances (which should be maximised).
 
 \subsection{Experimenting with double regression}
-In these experiments, we focus on double regression as a feature detector. Given p features X, exhibiting various levels of correlations and observed on a sample of size n, matrix E extracts a (small) set of d features. A noise term N (p, n) of various covariance and signal to noise ratio (compared to EX) is then added, and the result is transformed by a random (q,p) matrix F, to yield an (q,n) Y.
+In these experiments, we try to understand how various parameters of double regression (dimension, active features, signal to noise ratio) influence the quality of feature extraction and regression. For regression, we are also investigating different ways of taking extracted features into account, and the impact of varying environments (having training and test samples from different distributions).
 
-In data generation, we experiment on the size of feature spaces (p,q), the proportion of selected features (d/p), signal to noise ratios, and the conditioning of X (feature multicollinearity), N (noise covariance) and F. In the algorithm, we test various ways of regularizing the two regressions (namely pseudo inversion of X and Y), of splitting data samples between the regressions, of extracting the selected features, and of using the information recovered to improve prediction of Y.
+Working from a fixed sample of 1000, and 15 active features, and varying values of dx, dy, dz (from 50 to 200) and snr (from 0.2 to 1), we observe that, all other factors being equal, the quality of feature extraction and regression decrease when dx increases (X has more inactive features), dz increase (more noise dimensions) and snr decreases (less signal, more noise). The dimensionality of Y plays a much smaller role, except for very small values of dy (less than 10). 
 
-In all experiments, the figure of merit is the quality of the reconstruction of E, measured as the Hamming distance (total number of misclassifications) between the selection performed by E and the features extracted 
+For feature extraction, double regression either works very well (Hamming distance less than 2) or very badly, with a sharp change over small variations of the parameters. The following graphs show the boundary between values of dx and dz that allow for features extractions (dx lower than boundary, or dz larger), for different values of dy (level curves on the graph), and different values of signal to noise ratio and number of active variables.
 
-\subsection{Comparison with other methods - feature extraction}
+FC: add graphs here, see whether it is better to have nc fixed, or a proportion of dx, note : part of this can be moved to appendix if lack of space
 
-\subsection{Comparison with other methods - predicting Y}
+For values of ... in ..., an empirical formula can be provided. Double regression allows for good feature extraction if : 
 
-\subsection{Comparison with other methods - stable regression}
-In this section, we perform the same tests as in the previous one, but the test set is taken from a different distribution of X than the training set. In practice, we test the same trained predictors of Y over test samples generated fro; a distribution of X with a different covariance.
-\
+For regression, we want to understand how feature extraction helps predict Y from X. To this effect, we compare four approaches to regression:
+\begin{itemize}
+\item standard ridge regression of Y from X, where no features are extracted this is our baseline
+\item weighted ridge regression, of Y from $\hat H X$, where features of X are weighted according to the diagonal of $\hat H$
+\item filtered ridge regression, of Y from $\hat E X$, where active features are first extracted (as above), and Y is predicted from the extracted features only  
+\item perfect filtered (oracle) ridge regression of Y from EX, where E is supposed known 
+\end{itemize}
+Over a large set of parameters, we observe that filtered regression is on average better than weighted, which is on average better than standard regression. This demonstrates that double regression can be used as a regression method, over the areas in parameter space where feature extraction performs well.
+
+FC graphs go here
+
+The quality of regression is independent from dy (except for very small values), increase with snr, decreases with dx, and increases with dz if it is larger than dx 
+FC graphs go here
+
+\subsection{Comparison with other methods}
+Maxime territory
+
+\subsection{Double regression in multiple environments}
+In this section, we perform the same tests as in the previous one, but the test set is taken from a different distribution of X than the training set. In practice, we test the same trained predictors of Y over test samples generated from a distribution of X with a different covariance.
+
 The rationale behind such tests is that whereas double regression, being a feature extraction method, might not be as efficient as dedicated prediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments. 
 
-********** here be results and discussion ************
+FC: ideally, we'd like to assess the multiple env performance of jrr, and compare it with others. Are multiple environments limited to regression analyses? How should environments be generated (not just variance of X, I expect)?
 
-\section{Experiments}
+
+\section{Experiments - real case}
+Jean Remi and Maxime territory
 
 \section{Conclusion}
+
 
 \clearpage
 \newpage
 
 \bibliographystyle{abbrvnat}
 \bibliography{paper}
+
+\section{Appendices}
+
+This should hold part of the tests, explanations on simulation, detailed results and stuff on meg data
 
 \end{document}
  
