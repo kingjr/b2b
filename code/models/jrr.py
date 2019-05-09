@@ -29,6 +29,8 @@ class JRR(object):
         self.zero_off_diag = zero_off_diag
         self.fit_encoding = fit_encoding
         self.apply_sonquist = apply_sonquist
+        if apply_sonquist and not zero_off_diag:
+            raise ValueError('sonquist only works on diagonal')
 
     def fit(self, X, Y):
         if self.bagging in (0, False, None):
@@ -46,11 +48,11 @@ class JRR(object):
 
         # Estimate E
         self.E_ = np.mean(H, 0).T  # TODO: check transpose
-        if self.zero_off_diag:
-            self.E_ = np.diag(self.E_)
         if self.apply_sonquist:
-            self.E_ = sonquist_morgan(self.E_)
-        self.E_ = np.diag(self.E_)
+            self.E_ = np.diag(sonquist_morgan(np.diag(self.E_)))
+        elif self.zero_off_diag:
+            self.E_ = np.diag(np.diag(self.E_))
+
         # Filter X by E hat and estimate F
         if self.fit_encoding:
             self.F.fit(X @ self.E_, Y)
