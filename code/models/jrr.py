@@ -21,7 +21,7 @@ class JRR(object):
     """
 
     def __init__(self, G=None, H=None, F=None, bagging=10, zero_off_diag=True,
-                 fit_encoding=True, apply_sonquist=False):
+                 fit_encoding=True, apply_sonquist=False, transform_X=None):
         self.G = RidgeCV() if G is None else G
         self.H = RidgeCV() if H is None else H
         self.F = RidgeCV() if F is None else F
@@ -31,20 +31,28 @@ class JRR(object):
         self.apply_sonquist = apply_sonquist
         if apply_sonquist and not zero_off_diag:
             raise ValueError('sonquist only works on diagonal')
+        self.transform_X = transform_X
 
     def fit(self, X, Y):
         if self.bagging in (0, False, None):
             Gset = range(len(X))
             Hset = range(len(X))
             ensemble = [(Gset, Hset)]
-        else:
+        elif isinstance(self.bagging, int):
             bagging = ShuffleSplit(self.bagging, test_size=.5)
             ensemble = [split for split in bagging.split(X, Y)]
+        else:
+            ensemble = [split for split in self.bagging.split(X, Y)]
 
         H = list()
         for train, test in ensemble:
-            X_hat = self.G.fit(Y[train], X[train]).predict(Y)
-            H += [self.H.fit(X[test], X_hat[test]).coef_, ]
+            x = X[train]
+            if self.transform_X is not None:
+                x = self.transform_X.transform(x)
+            X_hat = self.G.fit(Y[train], x).predict(Y[test])
+            if self.transform_X is not None:
+                X_hat = self.transform_X.inverse_transform(X_hat)
+            H += [self.H.fit(X[test], X_hat).coef_, ]
 
         # Estimate E
         self.E_ = np.mean(H, 0).T  # TODO: check transpose
