@@ -2,40 +2,56 @@ import numpy as np
 from sklearn.model_selection import KFold
 from scipy.linalg import pinv, sqrtm
 from sklearn.base import BaseEstimator
+from sklearn.metrics import r2_score
 
 
 class PretrainedRidgeCV(BaseEstimator):
-    def __init__(self, Cx, alphas=(.1, 1., 10.), cv=3, non_spherical=False):
+    def __init__(self, Cx, alphas=(.1, 1., 10.), cv=3, non_spherical=False,
+                 fit_intercept=None):
         self.Cx = Cx
-        if isinstance(alphas, (float, int)):
-            alphas = [alphas, ]
+        if fit_intercept is not None:
+            raise NotImplementedError
+
         self.alphas = alphas
 
         # initialize all precisions
-        self.Cx_invs = [pinv(Cx + alpha * np.identity(len(Cx)))
-                        for alpha in self.alphas]
-        self.cv = KFold(cv)
+        self.cv = cv
         self.non_spherical = non_spherical
         if non_spherical:
             self.Cx_sqrt = sqrtm(Cx)
 
+    def _prepare(self,):
+        alphas = self.alphas
+        if isinstance(alphas, (float, int)):
+            alphas = [alphas, ]
+
+        self._Cx_invs = [pinv(self.Cx + alpha * np.identity(len(self.Cx)))
+                         for alpha in alphas]
+
     def fit(self, X, Y):
+        if not hasattr(self, '_Cx_invs'):
+            self._prepare()
+
+        cv = self.cv
+        if isinstance(cv, int):
+            cv = KFold(cv)
         # Grid search alpha
-        loss = np.zeros((self.cv.n_splits, len(self.alphas)))
-        for split, (train, test) in enumerate(self.cv.split(X, Y)):
+        loss = np.zeros((cv.n_splits, len(self.alphas)))
+        for split, (train, test) in enumerate(cv.split(X, Y)):
             Cxy = X[train].T @ Y[train]
-            for idx, Cx_inv in enumerate(self.Cx_invs):
+            for idx, Cx_inv in enumerate(self._Cx_invs):
                 coef = Cx_inv @ Cxy
                 if self.non_spherical:
                     coef = self.Cx_sqrt @ coef
                 Y_hat = X[test] @ coef
-                loss[split, idx] = np.sum((Y[test] - Y_hat)**2)
+                # np.sum((Y[test] - Y_hat)**2)
+                loss[split, idx] = r2_score(Y[test], Y_hat)
 
         best_alpha_idx = np.argmin(loss.mean(0))
         self.best_alpha_ = self.alphas[best_alpha_idx]
 
         # refit
-        self.coef_ = self.Cx_invs[best_alpha_idx] @ X.T @ Y
+        self.coef_ = self._Cx_invs[best_alpha_idx] @ X.T @ Y
         if self.non_spherical:
             self.coef_ = self.Cx_sqrt @ self.coef_
         return self
