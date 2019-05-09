@@ -20,12 +20,14 @@ class JRR(object):
     Step 3: F = ls(XE, Y)
     """
 
-    def __init__(self, G=None, H=None, F=None, bagging=10, zero_off_diag=True):
+    def __init__(self, G=None, H=None, F=None, bagging=10, zero_off_diag=True,
+                 fit_encoding=True):
         self.G = RidgeCV() if G is None else G
         self.H = RidgeCV() if H is None else H
         self.F = RidgeCV() if F is None else F
         self.bagging = bagging
         self.zero_off_diag = zero_off_diag
+        self.fit_encoding = fit_encoding
 
     def fit(self, X, Y):
         if self.bagging in (0, False, None):
@@ -46,7 +48,8 @@ class JRR(object):
         if self.zero_off_diag:
             self.E_ = np.diag(np.diag(self.E_))
         # Filter X by E hat and estimate F
-        self.F.fit(X @ self.E_, Y)
+        if self.fit_encoding:
+            self.F.fit(X @ self.E_, Y)
         return self
 
     def predict(self, X):
