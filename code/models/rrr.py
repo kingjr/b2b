@@ -17,6 +17,7 @@ from scipy import randn
 from scipy.sparse import eye
 from scipy.linalg import pinv, svd
 from sklearn.base import BaseEstimator
+from sklearn.linear_model import Ridge, RidgeCV, LinearRegression
 
 
 def ideal_data(num, dimX, dimY, rrank, noise=1):
@@ -43,13 +44,48 @@ class ReducedRankRegressor(BaseEstimator):
         CXX = X.T @ X + self.reg * eye(X.shape[1])
         CXY = X.T @ Y
         _U, _S, V = svd(CXY.T @ pinv(CXX) @ CXY)
-        self.W_ = V[:self.n_components, :].T
+        if self.n_components != -1:
+            V = V[:self.n_components, :]
+        self.W_ = V.T
         self.coef_ = pinv(CXX) @ CXY @ self.W_
         return self
 
     def predict(self, X):
         """Predict Y from X."""
         return X @ self.coef_ @ self.W_.T
+
+    def score(self, X, y, sample_weight=None):
+        from sklearn.metrics import r2_score
+        return r2_score(y, self.predict(X), sample_weight=sample_weight,
+                        multioutput='variance_weighted')
+
+
+class RRR(BaseEstimator):
+    """JR implementation of regularized reduced rank regression"""
+    def __init__(self, n_components=-1, alpha=0.):
+        self.alpha = alpha
+        self.n_components = n_components
+
+    def fit(self, X, Y):
+        # Regularized inv(X'X)
+        if isinstance(self.alpha, (float, int)):
+            if self.alpha == 0:
+                least_square = LinearRegression(fit_intercept=False)
+            else:
+                least_square = Ridge(alpha=self.alpha, fit_intercept=False)
+        else:
+            least_square = RidgeCV(alphas=self.alpha, fit_intercept=False)
+        coef = least_square.fit(X, Y).coef_.T
+
+        Y_hat = least_square.predict(X)
+        _U, _S, V = svd(Y.T @ Y_hat)
+        if self.n_components != -1:
+            V = V[:self.n_components, :]
+        self.coef_ = coef @ V.T @ V
+        return self
+
+    def predict(self, X):
+        return X @ self.coef_
 
     def score(self, X, y, sample_weight=None):
         from sklearn.metrics import r2_score
@@ -68,7 +104,7 @@ if __name__ == '__main__':
     # Problem dimensionality
     n = 1000
     nE = nX = 10
-    nY = 10
+    nY = 20
     snr = .25  # signal to noise ratio
     selected = .5  # number of X feature selected by E
 
@@ -101,3 +137,13 @@ if __name__ == '__main__':
 
     print('E_auc', roc_auc_score(np.diag(E), E_hat))
     print('Y_score', score)
+
+    # jr implementation
+    rrr = RRR(3)
+    train, test = range(0, n, 2), range(1, n, 2)
+    coef = rrr.fit(X[train], Y[train]).coef_
+    E_hat = np.mean(coef**2, 1)
+    score = rrr.score(X[test], Y[test])
+
+    print('jr: E_auc', roc_auc_score(np.diag(E), E_hat))
+    print('jr: Y_score', score)
