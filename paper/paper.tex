@@ -1,8 +1,29 @@
 \documentclass{article}
 
-\usepackage{amsmath, amsfonts, microtype}
+\usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx}
 \usepackage[hidelinks]{hyperref}
 \usepackage[]{neurips_2019}
+
+\usetikzlibrary{calc}
+
+\tikzset{
+    ncbar angle/.initial=90,
+    ncbar/.style={
+        to path=(\tikztostart)
+        -- ($(\tikztostart)!#1!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztotarget)$)
+        -- ($(\tikztotarget)!($(\tikztostart)!#1!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztotarget)$)!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztostart)$)
+        -- (\tikztotarget)
+    },
+    ncbar/.default=0.5cm,
+}
+
+\tikzset{round left paren/.style={ncbar=0.5cm,out=110,in=-110}}
+\tikzset{round right paren/.style={ncbar=0.5cm,out=70,in=-70}}
+
+\newcommand{\dlp}[1]{{\color{red} (DLP: #1)}}
+\newcommand{\mo}[1]{{\color{green} (MO: #1)}}
+\newcommand{\jrk}[1]{{\color{blue} (JRK: #1)}}
+\newcommand{\fc}[1]{{\color{orange} (FC: #1)}}
 
 \title{Learning causal features with double regression}
 
@@ -33,6 +54,7 @@
 \end{abstract}
 
 \section{Introduction}
+
 
 Causal discovery, telling causes from their effects, is an inverse problem.
 %
@@ -83,7 +105,65 @@ By experimenting with simulated data, we demonstrate its robustness and use case
 Finally, we illustrate its use on an example from neuroscience.
 
 \section{Double regression}
+
+\begin{figure}[t!]
+    \centering
+    \begin{tikzpicture}
+    \newcommand\posY{0}
+    \newcommand\posX{3}
+    \newcommand\posE{5}
+    \newcommand\posN{7}
+    \newcommand\posF{9.5}
+
+    \node[thick, draw=black, minimum height=3cm, minimum width=2cm, fill=yellow!10] (Y) at (\posY, 0){};
+    \node[] (eq) at (1.5, 0){$=$};
+    \node[] (times) at (4, 0){$\times$};
+    \node[thick, draw=black, minimum height=3cm, minimum width=1cm, fill=yellow!10] (X) at (\posX, 0){};
+    \node[thick, draw=black, minimum height=1cm, minimum width=1cm, fill=red!10] (E) at (\posE, 0){};
+
+    \draw[fill=white] (\posE - 0.5 + 0.0, 0.5 - 0.0) rectangle (\posE - 0.5 + 0.0 + 0.1, 0.5 - 0.0 - 0.1);
+    \draw[fill=black] (\posE - 0.5 + 0.1, 0.5 - 0.1) rectangle (\posE - 0.5 + 0.1 + 0.1, 0.5 - 0.1 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.2, 0.5 - 0.2) rectangle (\posE - 0.5 + 0.2 + 0.1, 0.5 - 0.2 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.3, 0.5 - 0.3) rectangle (\posE - 0.5 + 0.3 + 0.1, 0.5 - 0.3 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.4, 0.5 - 0.4) rectangle (\posE - 0.5 + 0.4 + 0.1, 0.5 - 0.4 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.5, 0.5 - 0.5) rectangle (\posE - 0.5 + 0.5 + 0.1, 0.5 - 0.5 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.6, 0.5 - 0.6) rectangle (\posE - 0.5 + 0.6 + 0.1, 0.5 - 0.6 - 0.1);
+    \draw[fill=black] (\posE - 0.5 + 0.7, 0.5 - 0.7) rectangle (\posE - 0.5 + 0.7 + 0.1, 0.5 - 0.7 - 0.1);
+    \draw[fill=white] (\posE - 0.5 + 0.8, 0.5 - 0.8) rectangle (\posE - 0.5 + 0.8 + 0.1, 0.5 - 0.8 - 0.1);
+    \draw[fill=black] (\posE - 0.5 + 0.9, 0.5 - 0.9) rectangle (\posE - 0.5 + 0.9 + 0.1, 0.5 - 0.9 - 0.1);
+
+    \node[] (plus) at (6, 0){$+$};
+    \node[thick, draw=black, minimum height=3cm, minimum width=1cm, fill=blue!10] (N) at (\posN, 0){};
+    \node[thick, draw=black, minimum height=2cm, minimum width=1cm, fill=red!10] (F) at (\posF, 0){};
+    \draw [thick] (2.25, -1.5) to [round left paren ] (2.25, 1.5);
+    \draw [thick] (7.75, -1.5) to [round right paren ] (7.75, 1.5);
+    
+    \node[] (times2) at (8.5, 0){$\times$};
+    
+    \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times q}$}};
+    \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d}$}};
+    \node[] (annE) at (\posE, -1.8){\scalebox{0.85}{$E \in \mathbb{D}^{d \times d}$}};
+    \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d}$}};
+    \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d \times q}$}};
+
+    \node[] (labY) at (\posY, 2){observed effects};
+    \node[] (labX) at (\posX, 2.3){world};
+    \node[] (labX) at (\posX, 2){features};
+    \node[] (labE) at (\posE, 2.3){cause};
+    \node[] (labE) at (\posE, 2){selection};
+    \node[] (labN) at (\posN, 2){noise};
+    \node[] (labF) at (\posF, 2.3){cause-effect};
+    \node[] (labF) at (\posF, 2){mapping};
+    
+    \node[] (reg1) at (5,-3.25) {$\hat{E} = \overbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\underbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}_{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}^{\text{2) regression from } X \text{ to } \hat{X}} $};
+    \end{tikzpicture}
+    \caption{Summary of our method blah blah blah}
+    \label{fig:}
+\end{figure}
+
+
 \subsection{The method}
+
 We are given two set of measurements over a sample of N individuals.
 %
 Y are ny multidimensional effects, and X are nx multidimensional possible causes.
