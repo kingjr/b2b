@@ -155,6 +155,8 @@ Finally, we illustrate its use on an example from neuroscience.
     \node[] (labF) at (\posF, 2.3){cause-effect};
     \node[] (labF) at (\posF, 2){mapping};
     
+    \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
+    \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
     \node[] (reg1) at (5,-3.25) {$\hat{E} = \overbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\underbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}_{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}^{\text{2) regression from } X \text{ to } \hat{X}} $};
     \end{tikzpicture}
     \caption{Summary of our method blah blah blah}
