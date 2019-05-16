@@ -132,7 +132,7 @@ And maybe have something about other causal discovery methods
 
 
 \section{Experiments - simulated data}
-Experiments on simulated data serve three goals: compare double regression with other known techniques (CCA, OLS, PLS...) both as regression and feature extraction methods, provide evidence for our claims on stability, invariance to environment, and behavior as a causal detector, and understand the strengths and limitations of double regression, and directions for future improvement.
+Experiments on simulated data serve three purposes: compare double regression with other known techniques (CCA, OLS, PLS...) both as a regression and a feature extraction method, measure its performance for various values of its parameters and provide evidence for our claims about stability, invariance to environment, and behavior as a causal detector.
 
 The model used for simulation is $Y=f(snr MEX+N)$, with X a random (dx,N) matrix, E a square binary diagonal of dimension dx with the nc last elements equal to 1 (this means that of the dx features of X, only the nc last have some influence on Y), M and N (dz,dx) and (dz,N) random matrices, and f a function from $\mathbb{R}^{dz}$ to $\mathbb{R}^{dy}$, that can be linear or non linear. In the linear case, the model becomes $Y=F(MEX+N)$, with F a (dy,dz) matrix. In the non linear case, F becomes $FSH$ where F and H are matrices of dimensions (dz,dz) and (dy,dz), and S a vector of dz sigmoid transformations. Finally, $snr$ is a real number measuring the amount of noise. 
 
@@ -148,6 +148,7 @@ Our simulation therefore depends upon 6 free parameters :
 
 Random matrices X, M, N, H and F are populated with centred gaussian random coefficients with unit variance, divided by $ \surd n$ where n is the smallest dimension of the matrix. Since a random square matrix with unit gaussian coefficients of dimension n has eigenvalues between $ \surd n $ and $\surd n $, such  scaling allows for meaningful comparisons when dimensions dx, dy and dz vary. 
 
+In the non linear case, sigmoid functions are...
 FC: insert comment about scaling sigmoids, and maybe something about uniform coeffs
 
 We evaluate the performance of double regression in two different roles : as a feature extractor recovering E, and as a regression method, predicting Y from X over a test sample. For feature extraction, the quality of fit is the number of disagreements between our estimator and the diagonal of E (ie, their Hamming distance, which should be minimised). For regression, we use a test set of N additional measurements, and calculate the R-squared ratio of variances (which should be maximised). Performance indicators are calculated by averaging the results of several experiments.
