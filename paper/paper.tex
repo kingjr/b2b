@@ -50,7 +50,24 @@
 \maketitle
 
 \begin{abstract}
-Identifying causes from observations is at the core of science. This endeavor is particularly challenging when i) potential factors are difficult to manipulate individually and ii) observations are complex and multi-dimensional. To address this issue, we introduce ``back-and-forth regression'' (BFR), a method that optimally identifies the most plausible causal factors from a set of covarying candidates. BFR consists in i) predicting the potential causes $X$ from the observable $Y$, and subsequently ii) identifying the only factors that contributed to those predictions. After detailing the proof of convergence, we show that BFR outperforms least-squares and related regression techniques, as well as cross-decomposition methods (e.g. canonical correlation analysis, and partial least squares) on two causal identification and prediction out of distribution. We apply BFR to several empirical datasets to show that it retrieves plausible results. In particular, we apply BFR to neuroimaging recordings of 102 subjects presented with word sequences, and show, as expected, that the early brain responses appear to be specifically caused by low-level visual factors whereas late brain responses appear to be caused lexico-semantic factors, despite the fact that these factors covary. We finish extending BFR to nonlinear cause-effect relationships.
+Identifying causes from observations is at the core of science. This endeavor
+is particularly challenging when i) potential factors are difficult to
+manipulate individually and ii) observations are complex and multi-dimensional.
+To address this issue, we introduce ``back-and-forth regression'' (BFR), a
+method that optimally identifies the most plausible causal factors from a set
+of covarying candidates. BFR consists in i) predicting the potential causes $X$
+from the observable $Y$, and subsequently ii) identifying the only factors that
+contributed to those predictions. After detailing the proof of convergence, we
+show that BFR outperforms least-squares and related regression techniques, as
+well as cross-decomposition methods (e.g. canonical correlation analysis, and
+partial least squares) on two causal identification and prediction out of
+distribution. We apply BFR to several empirical datasets to show that it
+retrieves plausible results. In particular, we apply BFR to neuroimaging
+recordings of 102 subjects presented with word sequences, and show, as
+expected, that the early brain responses appear to be specifically caused by
+low-level visual factors whereas late brain responses appear to be caused
+lexico-semantic factors, despite the fact that these factors covary. We finish
+extending BFR to nonlinear cause-effect relationships.
 \end{abstract}
 
 \section{Introduction}
