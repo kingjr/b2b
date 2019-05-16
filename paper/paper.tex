@@ -50,7 +50,7 @@
 \maketitle
 
 \begin{abstract}
-    To be written.
+Identify causes from observations is a core challenge to most empirical sciences. This endeavor is particularly challenging when (i) potential factors are difficult to manipulate separately and (ii) when observations are complex and/or multidimensional. To address this issue, we introduce in this paper the “back-and-forth regression” (BFR), a method that optimally identifies the most plausible causal factors from a set of covarying candidates. BFR consists in optimally (i) predicting the potential causes X from the observable Y, and subsequently (ii) identifying the only factors that contributed to those predictions. After detailing the proof of convergence, we show that BFR can systematically outperform least-square and related regression techniques, as well as cross-decomposition methods (e.g. canonical correlation analysis, partial least squares) on two distinct aspects: (i) causal identification and (ii) predictions outside independent and identically distributed datasets. We apply this method to empirical datasets and show that it retrieves plausible results. In particular, we apply BFR to neuroimaging recordings of 102 subjects presented with word sequences, and show, as expected, that the early brain responses appear to be specifically caused by low-level visual factors whereas late brain responses appear to be caused lexico-semantic factors, despite the fact that these two sets of factors are co-varying. We finish the paper by extending our approach to nonlinear cause-effects relationships. conclusion
 \end{abstract}
 
 \section{Introduction}
@@ -62,7 +62,7 @@ Given experimental data (effects) and possible explanations (causes), we are tas
 
 More precisely, we measure, via an apparatus F, a multidimensional signal Y, that is a function of possible causes X, and other, unknown, factors that can be understood as noise N: $Y=f(X,N)$.
 %
-Of all possible cause (features of X), only a few account for Y, let them be represented as EX, with E a binary diagonal matrix: all zeroes except a few ones on the diagonal, which correspond to active causal features of X.
+Of all possible causes (features of X), only a few account for Y, let them be represented as EX, with E a binary diagonal matrix: all zeroes except a few ones on the diagonal, which correspond to active causal features of X.
 %
 Let us assume that noise N is centred (adding, if need be, an intercept to the active causal features, to capture the bias in N), and additive (not a very strong assumption in the absence of further constraints on N).
 %
@@ -137,9 +137,9 @@ Finally, we illustrate its use on an example from neuroscience.
     \node[thick, draw=black, minimum height=2cm, minimum width=1cm, fill=red!10] (F) at (\posF, 0){};
     \draw [thick] (2.25, -1.5) to [round left paren ] (2.25, 1.5);
     \draw [thick] (7.75, -1.5) to [round right paren ] (7.75, 1.5);
-    
+
     \node[] (times2) at (8.5, 0){$\times$};
-    
+
     \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times q}$}};
     \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d}$}};
     \node[] (annE) at (\posE, -1.8){\scalebox{0.85}{$E \in \mathbb{D}^{d \times d}$}};
@@ -154,7 +154,7 @@ Finally, we illustrate its use on an example from neuroscience.
     \node[] (labN) at (\posN, 2){noise};
     \node[] (labF) at (\posF, 2.3){cause-effect};
     \node[] (labF) at (\posF, 2){mapping};
-    
+
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
     \node[] (reg1) at (5,-3.25) {$\hat{E} = \overbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\underbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}_{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}^{\text{2) regression from } X \text{ to } \hat{X}} $};
@@ -335,7 +335,7 @@ In the non linear case, F becomes $FSH$ where F and H are matrices of dimensions
 %
 Finally, $snr$ is a real number measuring the amount of noise.
 
-Our simulation therefore depends upon 6 free parameters : 
+Our simulation therefore depends upon 6 free parameters :
 \begin{itemize}
 \item dx : number of features of X
 \item nc: number of active features (in EX)
@@ -378,7 +378,7 @@ In other words, for each values of the parameters, one may determine a value of 
 %
 At this level, all the errors are false negatives.
 
-Figure 2 
+Figure 2
 
 Working from a fixed sample of 1000, and 15 active features, and varying values of dx, dy, dz (from 50 to 200) and snr (from 0.2 to 1), we observe that, all other factors being equal, the quality of feature extraction and regression decrease when dx increases (X has more inactive features), dz increase (more noise dimensions) and snr decreases (less signal, more noise).
 %
@@ -394,7 +394,7 @@ For values of ...
 %
 in ..., an empirical formula can be provided.
 %
-Double regression allows for good feature extraction if : 
+Double regression allows for good feature extraction if :
 
 \subsection{Feature extraction - nonlinear case}
 
@@ -406,8 +406,8 @@ To this effect, we compare four approaches to regression:
 \begin{itemize}
 \item standard ridge regression of Y from X, where no features are extracted this is our baseline
 \item weighted ridge regression, of Y from $\hat H X$, where features of X are weighted according to the diagonal of $\hat H$
-\item filtered ridge regression, of Y from $\hat E X$, where active features are first extracted (as above), and Y is predicted from the extracted features only  
-\item perfect filtered (oracle) ridge regression of Y from EX, where E is supposed known 
+\item filtered ridge regression, of Y from $\hat E X$, where active features are first extracted (as above), and Y is predicted from the extracted features only
+\item perfect filtered (oracle) ridge regression of Y from EX, where E is supposed known
 \end{itemize}
 Over a large set of parameters, we observe that filtered regression is on average better than weighted, which is on average better than standard regression.
 %
@@ -415,7 +415,7 @@ This demonstrates that double regression can be used as a regression method, ove
 
 FC graphs go here
 
-The quality of regression is independent from dy (except for very small values), increase with snr, decreases with dx, and increases with dz if it is larger than dx 
+The quality of regression is independent from dy (except for very small values), increase with snr, decreases with dx, and increases with dz if it is larger than dx
 FC graphs go here
 
 \subsection{Comparison with other methods}
