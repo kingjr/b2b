@@ -36,28 +36,23 @@ class JRR(object):
 
 
 results = list()
-for repeat in trange(50):
+for repeat in trange(10):
     n_samples = 1000  # number of samples
     dim_x = 30
     dim_y = 30
     nc = 5  # number of selected components
     snr = .5  # signal to noise ratio
 
-    # feature covariance in context 1
-    Cx1 = np.random.randn(dim_x, dim_x)
-    Cx1 = Cx1.dot(Cx1.T) / dim_x
+    def make_cov(dim_x):
+        Cx = np.random.randn(dim_x, dim_x)
+        Cx = Cx.dot(Cx.T) / dim_x  # sym pos-semidefin
+        return Cx
 
-    Cn1 = np.random.randn(dim_x, dim_x)
-    Cn1 = Cn1.dot(Cn1.T) / dim_x
+    Cx1 = make_cov(dim_x)  # feature covariance in environments 1
+    Cn1 = make_cov(dim_x)  # noise covariance in environments 1
+    Cx2 = make_cov(dim_x)  # feature covariance in environments 2
+    Cn2 = make_cov(dim_x)  # noise covariance in environments 1
 
-    # feature covariance in context 2
-    Cx2 = np.random.randn(dim_x, dim_x)
-    Cx2 = Cx2.dot(Cx2.T) / dim_x  # sym pos-semidefin
-
-    Cn2 = np.random.randn(dim_x, dim_x)
-    Cn2 = Cn2.dot(Cn2.T) / dim_x
-
-    # masking transformation
     E = np.array([0] * (dim_x - nc) + [1] * (nc))
     np.random.shuffle(E)
     E = np.diag(E)
@@ -65,21 +60,23 @@ for repeat in trange(50):
     # Observation matrix
     F = np.random.randn(dim_x, dim_y)
 
+    def make_data(n_samples, Cx, Cn, E, F, snr):
+        X = scale(np.random.multivariate_normal(
+            np.zeros(dim_x), Cx, n_samples))
+        N = np.random.multivariate_normal(np.zeros(dim_x), Cn, n_samples)
+        Y = scale((X @ E * snr + N) @ F)
+        return X, Y
+
     # train set
-    X1a = scale(np.random.multivariate_normal(np.zeros(dim_x), Cx1, n_samples))
-    N1a = np.random.multivariate_normal(np.zeros(dim_x), Cn1, n_samples)
-    Y1a = scale((X1a @ E * snr + N1a) @ F)
+    X1a, Y1a = make_data(n_samples, Cx1, Cn1, E, F, snr)
 
     # test set: iid
-    X1b = scale(np.random.multivariate_normal(np.zeros(dim_x), Cx1, n_samples))
-    N1b = np.random.multivariate_normal(np.zeros(dim_x), Cn1, n_samples)
-    Y1b = scale((X1b @ E * snr + N1b) @ F)
+    X1b, Y1b = make_data(n_samples, Cx1, Cn1, E, F, snr)
 
-    # validation set: new X context (and/or new noise, both work)
-    X2 = scale(np.random.multivariate_normal(np.zeros(dim_x), Cx2, n_samples))
-    N2 = np.random.multivariate_normal(np.zeros(dim_x), Cn2, n_samples)
-    Y2 = scale((X2 @ E * snr + N2) @ F)
+    # validation set: new X environments (and/or new noise, both work)
+    X2, Y2 = make_data(n_samples, Cx2, Cn2, E, F, snr)
 
+    # Models
     alphas = np.logspace(-3, 3, 10)
     models = dict(
         ridge=RidgeCV(),
@@ -89,6 +86,7 @@ for repeat in trange(50):
         jrr=JRR(RidgeCV(alphas), RidgeCV(alphas)),
       )
 
+    # Run
     for name, model in models.items():
         model.fit(X1a, Y1a)
         train, _ = pearsonr(model.predict(X1a).ravel(), Y1a.ravel())
