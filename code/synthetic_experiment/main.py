@@ -1,8 +1,9 @@
 from data import Synthetic
-from models import jrr, OLS
+from models import jrr, OLS, Oracle
 
 import numpy as np
 import argparse
+import random
 
 
 def nmse(y_pred, y_true):
@@ -30,7 +31,11 @@ if __name__ == "__main__":
     parser.add_argument('--snr', type=float, default=0.1)
     parser.add_argument('--nc', type=int, default=5)
     parser.add_argument('--nonlinear', type=int, default=0)
+    parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
 
     synthetic = Synthetic(args.dim_x,
                           args.dim_y,
@@ -51,6 +56,8 @@ if __name__ == "__main__":
 
     if args.model == "ols":
         model = OLS()
+    elif args.model == "oracle":
+        model = Oracle(synthetic.solution())
     elif args.model == "jrr":
         raise NotImplementedError
     else:
@@ -68,9 +75,9 @@ if __name__ == "__main__":
     false_positives = compute_false_positives(mask, synthetic.solution())
     false_negatives = compute_false_negatives(mask, synthetic.solution())
 
+    # fit a basic model on the selected causes
     selected = np.nonzero(mask)[0]
 
-    # fit a basic model on the selected causes
     model = OLS()
     model.fit(x_tr[:, selected], y_tr)
 

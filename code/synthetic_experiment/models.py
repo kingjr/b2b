@@ -56,10 +56,6 @@ def jrr(X, Y):
     H, _, _ = ridge_cv(X, X_hat)
     return np.diag(H)
 
-def ols(X, Y):
-    H, _, _ = ridge_cv(X, Y)
-    return np.diag(H)
-
 
 class OLS(object):
     def __init__(self):
@@ -67,6 +63,7 @@ class OLS(object):
 
     def fit(self, X, Y):
         self.coef = np.linalg.pinv(X.T @ X) @ X.T @ Y
+        return self
 
     def predict(self, X):
         return X @ self.coef
@@ -75,4 +72,17 @@ class OLS(object):
         return sonquist_morgan(np.power(self.coef, 2).sum(1))
 
 
+class Oracle(object):
+    def __init__(self, true_mask):
+        self.true_mask = true_mask 
+        self.selected = np.nonzero(self.true_mask)[0]
 
+    def fit(self, X, Y):
+        self.coef = OLS().fit(X[:, self.selected], Y).coef
+
+    def predict(self, X):
+        XS = X[:, self.selected]
+        return XS @ self.coef
+    
+    def solution(self):
+        return self.true_mask 
