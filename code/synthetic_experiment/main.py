@@ -1,5 +1,5 @@
-from data import Synthetic
 from models import JRR, OLS, Oracle
+from data import Synthetic
 
 import numpy as np
 import argparse
@@ -84,9 +84,12 @@ if __name__ == "__main__":
     error_in_mask = nmse(model.predict(x_te_in[:, selected]), y_te_in)
     error_out_mask = nmse(model.predict(x_te_out[:, selected]), y_te_out)
 
-    print(f"{error_in_all:.5f}",
-          f"{error_out_all:.5f}",
-          f"{error_in_mask:.5f}",
-          f"{error_out_mask:.5f}",
-          f"{false_positives:.5f}",
-          f"{false_negatives:.5f}")
+    result = dict(vars(args))
+    result["result_error_in_all"] = error_in_all
+    result["result_error_out_all"] = error_out_all
+    result["result_error_in_mask"] = error_in_mask
+    result["result_error_out_mask"] = error_out_mask
+    result["result_false_positives"] = false_positives
+    result["result_false_negatives"] = false_negatives
+
+    print(result)
