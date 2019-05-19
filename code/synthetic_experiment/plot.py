@@ -13,14 +13,14 @@ stats = {
     "result_false_negatives" : "false_negatives"
 }
         
-plt.rc('text', usetex=True)
-plt.rc('text.latex', preamble=r'\usepackage{times}')
-plt.rc('font', family='serif')
-plt.rc('font', size=16)
+#plt.rc('text', usetex=True)
+#plt.rc('text.latex', preamble=r'\usepackage{times}')
+#plt.rc('font', family='serif')
+#plt.rc('font', size=16)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--file', type=str, default='result_jrr.txt')
+    parser.add_argument('--file', type=str, default='results.txt')
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
@@ -93,7 +93,6 @@ if __name__ == "__main__":
                 jrr_mean = results[eid]["jrr"]["mean"][r]
                 jrr_variance = results[eid]["jrr"]["variance"][r]
 
-                print(jrr_mean, competitor_variance)
                 plt.errorbar(jrr_mean,
                              competitor_mean,
                              xerr=jrr_variance,
@@ -103,4 +102,5 @@ if __name__ == "__main__":
             ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".8")
             plt.margins(0)
             plt.tight_layout(0, 0, 0)
+            plt.savefig(model + "_" + result + ".pdf")
             plt.show()
