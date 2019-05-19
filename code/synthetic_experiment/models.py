@@ -2,9 +2,10 @@ from utils import sonquist_morgan
 from sklearn.linear_model import RidgeCV, LinearRegression
 import numpy as np
 
+
 def basic_regression(X, Y, regularize=True):
     if regularize:
-        alphas = np.logspace(-5, 5, 20) 
+        alphas = np.logspace(-5, 5, 20)
         w = RidgeCV(fit_intercept=False, alphas=alphas).fit(X, Y).coef_
     else:
         w = LinearRegression(fit_intercept=False).fit(X, Y).coef_
@@ -18,7 +19,7 @@ class JRR(object):
 
     def fit(self, X, Y):
         E = 0
-        for _ in range(self.n_splits): 
+        for _ in range(self.n_splits):
             perm = np.random.permutation(range(len(X)))
             G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
             E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
@@ -33,30 +34,6 @@ class JRR(object):
         return self.E
 
 
-# class JRR(object):
-#     def __init__(self, G=None, H=None, n_splits=10):
-#         self.G = RidgeCV() if G is None else G
-#         self.H = RidgeCV() if H is None else H
-#         self.n_splits = n_splits
-# 
-#     def fit(self, X, Y):
-#         H = list()
-#         for _ in range(self.n_splits):
-#             p = np.random.permutation(range(len(X)))
-#             set1, set2 = p[::2], p[1::2]
-#             self.G.fit(Y[set1], X[set1])
-#             X_hat = self.G.predict(Y)
-#             H += [self.H.fit(X[set2], X_hat[set2]).coef_, ]
-# 
-#         # new step to allow predict Y from X
-#         self.E_ = np.diag(np.diag(np.mean(H, 0)))
-#         self.G.fit(X @ self.E_, Y)
-#         return self
-# 
-#     def predict(self, X):
-#         return self.G.predict(X @ self.E_)
-
-
 class OLS(object):
     def __init__(self):
         pass
@@ -67,7 +44,7 @@ class OLS(object):
 
     def predict(self, X):
         return X @ self.coef
-    
+
     def solution(self):
         return sonquist_morgan(np.power(self.coef, 2).sum(1))
 
@@ -81,7 +58,6 @@ class Oracle(object):
 
     def predict(self, X):
         return X @ self.true_mask @ self.coef
-    
+
     def solution(self):
         return np.diag(self.true_mask)
-
