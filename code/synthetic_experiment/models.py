@@ -1,60 +1,60 @@
 from utils import sonquist_morgan
+from sklearn.linear_model import RidgeCV, LinearRegression
 import numpy as np
 
-def ridge_cv(X,
-             Y,
-             alphas=np.logspace(-5, 5, 20),
-             independent_alphas=True):
-    """
-    Similar to sklearn RidgeCV but
-    (1) can optimize a different alpha for each column of Y (independent_alphas=True)
-    (2) return leave-one-out Y_hat
-    """
-    if isinstance(alphas, (float, int)):
-        alphas = np.array([alphas, ], np.float64)
-    n, n_x = X.shape
-    n, n_y = Y.shape
-    # Decompose X
-    U, s, _ = np.linalg.svd(X, full_matrices=0)
-    v = s**2
-    UY = U.T @ Y
-
-    # For each alpha, solve leave-one-out error coefs
-    cv_duals = np.zeros((len(alphas), n, n_y))
-    cv_errors = np.zeros((len(alphas), n, n_y))
-    for alpha_idx, alpha in enumerate(alphas):
-        # Solve
-        w = ((v + alpha) ** -1) - alpha ** -1
-        c = U @ np.diag(w) @ UY + alpha ** -1 * Y
-        cv_duals[alpha_idx] = c
-
-        # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
-        G_diag = (w * U ** 2).sum(axis=-1) + alpha ** -1
-        error = c / G_diag[:, np.newaxis]
-        cv_errors[alpha_idx] = error
-
-    # identify best alpha for each column of Y independently
-    if independent_alphas:
-        best_alphas = (cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = np.transpose([cv_duals[b, :, i]
-                              for i, b in enumerate(best_alphas)])
-        cv_errors = np.transpose([cv_errors[b, :, i]
-                                  for i, b in enumerate(best_alphas)])
+def basic_regression(X, Y, regularize=True):
+    if regularize:
+        alphas = np.logspace(-5, 5, 20) 
+        w = RidgeCV(fit_intercept=False, alphas=alphas).fit(X, Y).coef_
     else:
-        _cv_errors = cv_errors.reshape(len(alphas), -1)
-        best_alphas = (_cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = cv_duals[best_alphas]
-        cv_errors = cv_errors[best_alphas]
+        w = LinearRegression(fit_intercept=False).fit(X, Y).coef_
 
-    coefs = duals.T @ X
-    Y_hat = Y - cv_errors
-    return coefs, best_alphas, Y_hat
+    return w.T
 
 
-def jrr(X, Y):
-    _, _, X_hat = ridge_cv(Y, X)
-    H, _, _ = ridge_cv(X, X_hat)
-    return np.diag(H)
+class JRR(object):
+    def __init__(self, n_splits=10):
+        self.n_splits = n_splits
+
+    def fit(self, X, Y):
+        E = 0
+        for _ in range(self.n_splits): 
+            perm = np.random.permutation(range(len(X)))
+            G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
+            E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
+
+        self.E = sonquist_morgan(E / self.n_splits)
+        self.coef = basic_regression(X @ np.diag(self.E), Y)
+
+    def predict(self, X):
+        return X @ np.diag(self.E) @ self.coef
+
+    def solution(self):
+        return self.E
+
+
+# class JRR(object):
+#     def __init__(self, G=None, H=None, n_splits=10):
+#         self.G = RidgeCV() if G is None else G
+#         self.H = RidgeCV() if H is None else H
+#         self.n_splits = n_splits
+# 
+#     def fit(self, X, Y):
+#         H = list()
+#         for _ in range(self.n_splits):
+#             p = np.random.permutation(range(len(X)))
+#             set1, set2 = p[::2], p[1::2]
+#             self.G.fit(Y[set1], X[set1])
+#             X_hat = self.G.predict(Y)
+#             H += [self.H.fit(X[set2], X_hat[set2]).coef_, ]
+# 
+#         # new step to allow predict Y from X
+#         self.E_ = np.diag(np.diag(np.mean(H, 0)))
+#         self.G.fit(X @ self.E_, Y)
+#         return self
+# 
+#     def predict(self, X):
+#         return self.G.predict(X @ self.E_)
 
 
 class OLS(object):
@@ -62,7 +62,7 @@ class OLS(object):
         pass
 
     def fit(self, X, Y):
-        self.coef = np.linalg.pinv(X.T @ X) @ X.T @ Y
+        self.coef = basic_regression(X, Y)
         return self
 
     def predict(self, X):
@@ -74,15 +74,14 @@ class OLS(object):
 
 class Oracle(object):
     def __init__(self, true_mask):
-        self.true_mask = true_mask 
-        self.selected = np.nonzero(self.true_mask)[0]
+        self.true_mask = np.diag(true_mask)
 
     def fit(self, X, Y):
-        self.coef = OLS().fit(X[:, self.selected], Y).coef
+        self.coef = basic_regression(X @ self.true_mask, Y)
 
     def predict(self, X):
-        XS = X[:, self.selected]
-        return XS @ self.coef
+        return X @ self.true_mask @ self.coef
     
     def solution(self):
-        return self.true_mask 
+        return np.diag(self.true_mask)
+

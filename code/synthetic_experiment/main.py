@@ -1,5 +1,5 @@
 from data import Synthetic
-from models import jrr, OLS, Oracle
+from models import JRR, OLS, Oracle
 
 import numpy as np
 import argparse
@@ -22,7 +22,7 @@ def compute_false_negatives(e_pred, e_true):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--model', type=str, default='ols')
+    parser.add_argument('--model', type=str, default='jrr')
     parser.add_argument('--n_samples', type=int, default=1000)
     parser.add_argument('--dim_x', type=int, default=50)
     parser.add_argument('--dim_y', type=int, default=30)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     elif args.model == "oracle":
         model = Oracle(synthetic.solution())
     elif args.model == "jrr":
-        raise NotImplementedError
+        model = JRR() 
     else:
         raise NotImplementedError
 
