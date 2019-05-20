@@ -10,7 +10,8 @@ stats = {
     "result_error_in_mask": "error in-domain (masked)",
     "result_error_out_mask": "error out-domain (masked)",
     "result_false_positives": "false positives",
-    "result_false_negatives": "false negatives"
+    "result_false_negatives": "false negatives",
+    "result_auc": "AUC"
 }
 
 plt.rc('text', usetex=True)
@@ -98,6 +99,7 @@ if __name__ == "__main__":
                 plt.title(stats[result], fontsize=10)
 
             for eid in results:
+                if ("JRR" in results[eid]) and (model in results[eid]):
                     competitor_mean = results[eid][model]["mean"][r]
                     competitor_variance = results[eid][model]["variance"][r]
 

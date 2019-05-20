@@ -50,14 +50,14 @@ class JRR(object):
             G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
             E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
 
-        self.E = sonquist_morgan(E / self.n_splits)
+        self.E = E / self.n_splits
         self.coef = basic_regression(X @ np.diag(self.E), Y)
 
     def predict(self, X):
         return X @ np.diag(self.E) @ self.coef
 
     def solution(self):
-        return self.E
+        return sonquist_morgan(self.E)
 
 
 class Oracle(object):
@@ -93,7 +93,8 @@ class OLS(SKModel):
 
 class Ridge(SKModel):
     def fit(self, X, Y):
-        self.coef = RidgeCV(fit_intercept=False).fit(X, Y).coef_.T
+        self.coef = RidgeCV(fit_intercept=False,
+                            alphas=np.logspace(-3, 3, 10)).fit(X, Y).coef_.T
         return self
 
 
