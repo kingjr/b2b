@@ -7,9 +7,15 @@ def rolling_covariance(rho, dim):
         return np.eye(dim)
 
     cov = np.zeros((dim, dim))
+    sign = int(np.sign(rho))
+    rho_abs = np.abs(rho)
+
     for i in range(cov.shape[0]):
         for j in range(cov.shape[1]):
-            cov[i, j] = np.power(rho, np.abs(i - j) / dim)
+            if i == j:
+                cov[j, j] = 1.0
+            else:
+                cov[i, j] = sign * np.power(rho_abs, np.abs(i - j) / dim)
     return cov
 
 

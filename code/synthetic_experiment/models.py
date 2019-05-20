@@ -6,6 +6,7 @@ from sklearn.base import BaseEstimator
 from sklearn.metrics import r2_score
 import numpy as np
 
+N_JOBS = 1
 
 def sonquist_morgan(x):
     z = np.sort(x)
@@ -99,7 +100,7 @@ class Ridge(SKModel):
 class PLS(SKModel):
     def fit(self, X, Y):
         grid = {"n_components": np.linspace(1, X.shape[1], 10).astype(int)}
-        pls = GridSearchCV(PLSRegression(), grid, n_jobs=-1, cv=5)
+        pls = GridSearchCV(PLSRegression(), grid, n_jobs=N_JOBS, cv=5)
         self.coef = pls.fit(X, Y).best_estimator_.coef_
         return self
 
@@ -113,7 +114,7 @@ class Lasso(SKModel):
         self.coef = MultiTaskLassoCV(fit_intercept=False,
                                      selection="random",
                                      n_alphas=10,
-                                     n_jobs=-1,
+                                     n_jobs=N_JOBS,
                                      cv=5).fit(X[p], Y[p]).coef_.T
         return self
 
@@ -149,6 +150,6 @@ class RRR(SKModel):
             "reg": np.logspace(-3, 3, 10)
         }
 
-        rrr = GridSearchCV(RRROne(), grid, n_jobs=-1, cv=5)
+        rrr = GridSearchCV(RRROne(), grid, n_jobs=N_JOBS, cv=5)
         self.coef = rrr.fit(X, Y).best_estimator_.coef
         return self
