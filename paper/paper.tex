@@ -3,6 +3,7 @@
 \usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx}
 \usepackage[hidelinks]{hyperref}
 \usepackage[]{neurips_2019}
+\DeclareMathOperator{\Tr}{Tr}
 
 \usetikzlibrary{calc}
 
@@ -79,7 +80,7 @@ Given experimental data (effects) and possible explanations (causes), we are tas
 
 More precisely, we measure, via an apparatus F, a multidimensional signal Y, that is a function of possible causes X, and other, unknown, factors that can be understood as noise N: $Y=f(X,N)$.
 %
-Of all possible causes (features of X), only a few account for Y, let them be represented as EX, with E a binary diagonal matrix: all zeroes except a few ones on the diagonal, which correspond to active causal features of X.
+Of all possible causes (features of X), only a few account for Y, let them be represented as EX, with E a binary diagonal matrix: a diagonal of zeroes and ones, which correspond to active causal features of X.
 %
 Let us assume that noise N is centred (adding, if need be, an intercept to the active causal features, to capture the bias in N), and additive (not a very strong assumption in the absence of further constraints on N).
 %
@@ -107,9 +108,7 @@ In the inverse approaches, correlations between features of X are not accounted 
 
 In this paper, we introduce back and forth regression, which combines direct and inverse approaches.
 %
-We first predict X from Y, as in the inverse approach, and retrieve a regularised least square estimate $\hat X$.
-%
-Then, we calculate a regularised least square estimator of $\hat X$ from X.
+We first predict X from Y, as in the inverse approach, and retrieve a robust least square estimate $\hat X$. Then, we calculate a robust least square estimator of $\hat X$ from X.
 %
 If the active features of X are represented as EX, with E a binary diagonal, this provides a good approximation of E, robust to noise and environment change.
 %
@@ -203,11 +202,13 @@ In matrix form, we have $\hat G=(Y'Y)^{-1} Y'X$, and
 \begin{equation} \hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X\end{equation}
 Under good conditions (close to linear dependence between X and Y, and covariance matrices of X and Y well conditioned), this recovers a scaled approximation to E.
 
-In practice, since the covariance matrices of Y and X might exhibit multicollinearity, we use regularisation in both matrix inversions. This amounts to replacing $(X'X)^{-1}$ and $(Y'Y)^{-1}$ by $(X'X+\lambda)^{-1}$ and $(Y'Y+\mu)^{-1}$, and is done by using ridge regression, regularisation parameters being estimated by leave one out cross validation.
+In practice, the covariance matrices of Y and X might exhibit multicollinearity and be badly conditioned, which make their inversion unstable. To guard against this, we compute their singular value decompositions, and truncate their lowest eigenvalues so as to reach a specific condition number in the Frobenius norm. We prefer the truncated SVD approach over the more common regularisation (ridge regression) because it introduces less bias in the estimation. A small amount of regularisation is still used, for numerical stability purposes.
+
+If $X'X=U'DU$, U orthogonal and D diagonal, and D* is D with the lowest diagonal elements set to zero, this amounts to replacing $(X'X)^{-1}$ by $U(D*^{-1}+\epsilon I)U'$, with $\epsilon$ a positive number close to machine floating point accuracy. D is truncated so as to have a certain condition number that is determined by leave one out cross validation.
 %
 Also, to prevent spurious correlations between the two steps (should they be performed on the same sample), our original sample is randomly split into two halves, and each step is performed over one of them, effectively decorrelating the two steps.
 %
-This is repeated over several (10) splits, and the resulting $\hat H$ are averaged.
+This is repeated over several (100) splits, and the resulting $\hat H$ are averaged.
 %
 This bagging compensates for the reduction in sample size caused by splitting.
 
@@ -259,7 +260,23 @@ If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (n, dx) matrix of
 %
 N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (n,dy) matrix of measured effects.
 
-The two steps of back and forth regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth being Frobenius norms).
+The two steps of back and forth regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
+
+For the first step, replacing Y, and since N is centred, we have 
+\begin{equation}
+\begin{aligned}
+\arg \min_G \left \| X-GY \right \|^2 &= \arg \min_G \left \| X - GF(EX+N)\right\|^2 \\
+&{}= \arg \min_G \left \| (I-GFE)X\right\| ^2  + \left \| GFN\right \| ^2\\
+&{}= \arg \min_G \Tr (X'(I-GFE)'(I-GFE)X) + \Tr (N'F'G'GFN)\\
+&{}= \arg \min_G \Tr ((I-GFE)'(I-GFE)XX') + \Tr (G'G(FN)(FN)')\\
+\end{aligned}
+\end{equation}
+
+As noise N gets close to zero, and if F and X have full rank, then the solution tends to $(FE)^\dagger$, the pseudo inverse of FE. 
+
+If matrices X'X and (FN)'(FN) have low condition numbers, and denoting by VarX and VarN the variance of X and FN, we have $$\min_G \Tr ((I-GFE)'(I-GFE)XX') + \Tr (G'GFNN'F') \approx \left \| (I-GFE)\right\| ^2 VarX  + \left \| G\right \| ^2 VarN$$and the solution has the form $k(FE)^\dagger$, k a positive constant below one. To determine an approximate value of k, note that if r is the rank of FE (the number of ones in E) $$\left \| (I-GFE)\right\| ^2 = r (1-k)^2 + dx - r$$ and that under the hypothesis of F having a low condition number, the squared norm of $k(FE)^\dagger$ should be close to $k^2r$. We are therefore minimising a quantity close to $$ VarX (r (1-k)^2 + dx - r) + VarN k^2 r$$ Zeroing the derivative in k yields an approximate value of k, as $$k= \frac {VarX}{VarX + VarN}=\frac{1}{1+nsr}$$ nsr the noise to signal ratio, VarN divided by VarX.
+
+FC: something needed here about F and X'X not full rank or badly conditioned
 
 The second step is straightforward, replacing Y and since N is centred, we have
 \begin{equation}
@@ -271,25 +288,7 @@ The second step is straightforward, replacing Y and since N is centred, we have
 \end{aligned}
 \end{equation}
 
-For the first step, we have 
-\begin{equation}
-\begin{aligned}
-\min_G \left \| X-GY \right \|^2 &= \min_G \left \| X - GF(EX+N)\right\|^2 \\
-&= \min_G \left \| (I-GFE)X\right\| ^2 + \left \| GFN\right \| ^2\\
-&= \min_G \sum_{i} \left \| (I-GFE)X_{i}\right\| ^2 + \left \| GFN_{i}\right \| ^2\\
-&{}= \min_G \alpha \left \| I-GFE\right\| ^2  + \beta \left \| G\right \| ^2\\
-\end{aligned}
-\end{equation}
-with $\alpha$ and $\beta$ positive constants, the latter equal to the norm of FN. We are balancing two minimisation, with $\alpha$ close to zero, the solution is the null matrix, with $\beta$ close to zero, it is the pseudo inverse of $FE$.  
-%
-FC: lost here . I'd like to prove that we recover a scales version $(FE)^\dagger D$ with D a diagonal scaling over dimensions of X, according to signal noise ratio, covariance of X and covariance of N. This is what we sort of get from
-
-SVD of X, USV, so the minimum becomes 
-
-
-In the general case, $\beta=\left \| FN\right \| ^2$, and the solution is $k (FE)^\dagger$, with $k= {\alpha\over{\alpha+\beta}}$. 
-
-Thus, in the linear case, back and forth regression retrieves $k(FE)^{\dagger}(FE)$. In many cases, if v s the variance of $FN$, k can be approximated as $k= {1\over{1+v}}$, it quantifies the amount of noise added to the causal process, and the difficulty of recovering the causal features.
+Thus, in the linear case, back and forth regression retrieves $\hat H = \frac{1}{1+nsr}(FE)^{\dagger}(FE)$. 
 
 For any matrix A, $A^\dagger A$ is the orthogonal projector over $Img(A')$, and $I-A^\dagger A$ the orthogonal projector over $Ker(A)$.
 %
@@ -298,6 +297,7 @@ In our case, $Ker(FE)\supseteq Ker(E)$.
 If F has full rank over $Img(E)$, the subspace spanned by E, then $Ker(FE) = Ker(E)$,.
 %
 This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is k times the diagonal matrix corresponding to the selected features, that is kE. Since it is diagonal with eigenvalues 0 and k, if k is large enough, it should allow us to retrieve causal features in a fairly robust way.
+
 \subsection{Asymptotic behaviour - non linear case}
 
 \subsection{Stability analysis}
