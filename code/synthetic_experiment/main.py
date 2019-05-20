@@ -2,11 +2,10 @@
 # TODO: uniform distributions
 
 from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR
-from sklearn.exceptions import ConvergenceWarning
+from sklearn.metrics import roc_auc_score
 from data import Synthetic
 
 import numpy as np
-import warnings
 import argparse
 import random
 
@@ -81,7 +80,7 @@ def run_experiment(args):
             # fit a basic model on the selected causes
             sel = np.nonzero(mask)[0]
 
-            model = OLS()
+            model = Ridge()
             model.fit(x_tr[:, sel], y_tr)
 
             error_in_mask = nmse(model.predict(x_te_in[:, sel]), y_te_in)
@@ -96,6 +95,7 @@ def run_experiment(args):
             result["result_error_out_mask"] = error_out_mask
             result["result_false_positives"] = false_positives
             result["result_false_negatives"] = false_negatives
+            result["result_auc"] = roc_auc_score(mask, mask_true) 
             results.append(result)
 
             print(results[-1])
@@ -108,14 +108,10 @@ if __name__ == "__main__":
     parser.add_argument('--n_samples', type=int, default=1000)
     parser.add_argument('--dim_x', type=int, default=100)
     parser.add_argument('--dim_y', type=int, default=100)
-    parser.add_argument('--rho_x', type=float, default=0.5)
-    parser.add_argument('--rho_n', type=float, default=0.5)
     parser.add_argument('--snr', type=float, default=0.1)
     parser.add_argument('--nc', type=int, default=5)
     parser.add_argument('--nonlinear', type=int, default=0)
     parser.add_argument('--n_seeds', type=int, default=10)
     args = parser.parse_args()
-
-    warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
     run_experiment(args)
