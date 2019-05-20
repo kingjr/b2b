@@ -1,0 +1,28 @@
+\subsection{The MOUS dataset}
+
+Next, we apply our method to brain imaging data, on the ``Mother Of Unification
+Studies'' (MOUS) dataset \cite{schoffelen2019204}. The dataset consists of
+anonymized multimodal neuroimaging data that has been acquired from 204 healthy
+human subjects, which participated in either a auditory or a visual version of a
+language experiment. In this work, we use the subset corresponding to the visual
+variant recorded using magneto-encephalography (MEG).
+
+Subjects were presented a set of 120 sentences in Dutch, and a scrambled lists
+of the same words for a controlled experiment. Each word was presented on a
+screen for no less than 300 ms and no more than 1400ms, 351 ms on average.
+Successive words were separated by an empty screen for 300ms, and successive
+sentences were separated by an empty screen for a few (3-4) seconds.
+
+The data contains the timestamp for each word presentation, allowing to align
+time series to stimuli onsets for all words.
+
+As a result, we obtain, for each of the 301 sensors and each word presented, a
+time series of 67 real-values spanning $\left[-100ms, 1500ms\right]$ relative to
+the stimulus onset. Each of the 102 subjects (we used data from 93 subjects) was
+presented approximately 2700 words during the experiment.
+
+
+\subsection{Application of the method}
+
+
+
