@@ -20,7 +20,7 @@ plt.rc('font', size=10)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--file', type=str, default='results.txt')
+    parser.add_argument('--file', type=str, default='results_05.txt')
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
@@ -77,13 +77,15 @@ if __name__ == "__main__":
             results[eid][model].pop("power")
             results[eid][model].pop("counter")
 
-    models.discard("jrr")
+    models.discard("JRR")
 
     plot_rows = len(models)
     plot_columns = len(stats)
     plot_counter = 1
 
     plt.figure(figsize=(len(stats) * 2 + 0.85, len(models) * 2))
+
+    print(models)
 
     for m, model in enumerate(models):
         for r, result in enumerate(result_names):
@@ -96,17 +98,17 @@ if __name__ == "__main__":
                 plt.title(stats[result], fontsize=10)
 
             for eid in results:
-                competitor_mean = results[eid][model]["mean"][r]
-                competitor_variance = results[eid][model]["variance"][r]
+                    competitor_mean = results[eid][model]["mean"][r]
+                    competitor_variance = results[eid][model]["variance"][r]
 
-                jrr_mean = results[eid]["jrr"]["mean"][r]
-                jrr_variance = results[eid]["jrr"]["variance"][r]
+                    jrr_mean = results[eid]["JRR"]["mean"][r]
+                    jrr_variance = results[eid]["JRR"]["variance"][r]
 
-                # plt.errorbar(jrr_mean,
-                #              competitor_mean,
-                #              xerr=jrr_variance,
-                #              yerr=competitor_variance)
-                plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
+                    # plt.errorbar(jrr_mean,
+                    #              competitor_mean,
+                    #              xerr=jrr_variance,
+                    #              yerr=competitor_variance)
+                    plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
 
             ax = plt.gca()
             xl = ax.get_xlim()

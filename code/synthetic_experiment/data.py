@@ -1,48 +1,29 @@
-import numpy as np
 from scipy.linalg import sqrtm
-
-
-def rolling_covariance(rho, dim):
-    if rho == 0:
-        return np.eye(dim)
-
-    cov = np.zeros((dim, dim))
-    sign = int(np.sign(rho))
-    rho_abs = np.abs(rho)
-
-    for i in range(cov.shape[0]):
-        for j in range(cov.shape[1]):
-            if i == j:
-                cov[j, j] = 1.0
-            else:
-                cov[i, j] = sign * np.power(rho_abs, np.abs(i - j) / dim)
-    return cov
+import numpy as np
+import math
 
 
 class Synthetic(object):
-    def __init__(self,            # number of samples
+    def __init__(self,             # number of samples
                  dim_x=50,         # number of features
                  dim_y=30,         # number of sensors
-                 rho_x=0.5,        # correlation of features
-                 rho_n=0.5,        # correlation of noise
                  nc=5,             # number of selected features
                  snr=1.0,          # signal-to-noise ratio
                  nonlinear=False):  # number of selected features
         # linear transformation
-        self.F = np.random.randn(dim_x, dim_y) / np.sqrt(dim_x)
+        self.F = np.random.randn(dim_x, dim_y) / math.sqrt(dim_x)
 
         # masking transformation
         self.E = np.array([0] * (dim_x - nc) + [1] * (nc))
-        np.random.shuffle(self.E)
         self.E = np.diag(self.E)
 
         # features covariance
-        self.cov_X = rolling_covariance(rho_x, dim_x)
-        self.cols_X = np.random.permutation(dim_x)
+        self.cov_X1 = np.random.randn(dim_x, dim_x) / math.sqrt(dim_x)
+        self.cov_X2 = np.random.randn(dim_x, dim_x) / math.sqrt(dim_x)
 
         # noise covariance
-        self.cov_N = rolling_covariance(rho_n, dim_x)
-        self.cols_N = np.random.permutation(dim_x)
+        self.cov_N1 = np.random.randn(dim_x, dim_x) / math.sqrt(dim_x)
+        self.cov_N2 = np.random.randn(dim_x, dim_x) / math.sqrt(dim_x)
 
         self.dim_x = dim_x
         self.dim_y = dim_y
@@ -52,15 +33,12 @@ class Synthetic(object):
     def sample(self,
                n_samples=1000,
                in_domain=True):
-        X = np.random.randn(n_samples, self.dim_x)
         if in_domain:
-            X = X @ sqrtm(self.cov_X)
-        X = X[:, self.cols_X]
-
-        N = np.random.randn(n_samples, self.dim_x)
-        if in_domain:
-            N = N @ sqrtm(self.cov_N)
-        N = N[:, self.cols_N]
+            X = np.random.randn(n_samples, self.dim_x) @ self.cov_X1
+            N = np.random.randn(n_samples, self.dim_x) @ self.cov_N1
+        else:
+            X = np.random.randn(n_samples, self.dim_x) @ self.cov_X2
+            N = np.random.randn(n_samples, self.dim_x) @ self.cov_N2
 
         # observed sensor data
         Y = (self.snr * X @ self.E + N) @ self.F
