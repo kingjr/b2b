@@ -97,10 +97,11 @@ if __name__ == "__main__":
                              competitor_mean,
                              xerr=jrr_variance,
                              yerr=competitor_variance)
+                plt.scatter(jrr_mean, competitior_mean, c="black")
 
             ax = plt.gca()
             ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".8")
             plt.margins(0)
             plt.tight_layout(0, 0, 0)
-            plt.savefig(model + "_" + result + ".pdf")
+            plt.savefig("results/" + model + "_" + result + ".pdf")
             plt.show()
