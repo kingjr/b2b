@@ -1,7 +1,7 @@
 # TODO: model Y = (XE + N)F + N' with second noise N'
 # TODO: uniform distributions
 
-from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR
+from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA
 from sklearn.exceptions import ConvergenceWarning
 from data import Synthetic
 
@@ -13,6 +13,7 @@ import random
 models = {
     "OLS": OLS,
     "Ridge": Ridge,
+    "CCA": CCA,
     "Oracle": Oracle,
     "JRR": JRR,
     "PLS": PLS,
