@@ -42,8 +42,6 @@ def run_experiment(args):
 
         synthetic = Synthetic(args.dim_x,
                               args.dim_y,
-                              args.rho_x,
-                              args.rho_n,
                               args.nc,
                               args.snr,
                               args.nonlinear)
