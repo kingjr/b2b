@@ -12,13 +12,13 @@ def rolling_covariance(rho, dim):
 
 class Synthetic(object):
     def __init__(self,            # number of samples
-                dim_x=50,         # number of features
-                dim_y=30,         # number of sensors
-                rho_x=0.5,        # correlation of features
-                rho_n=0.5,        # correlation of noise
-                nc=5,             # number of selected features
-                snr=1.0,          # signal-to-noise ratio
-                nonlinear=False): # number of selected features
+                 dim_x=50,         # number of features
+                 dim_y=30,         # number of sensors
+                 rho_x=0.5,        # correlation of features
+                 rho_n=0.5,        # correlation of noise
+                 nc=5,             # number of selected features
+                 snr=1.0,          # signal-to-noise ratio
+                 nonlinear=False):  # number of selected features
         # linear transformation
         self.F = np.random.randn(dim_x, dim_y) / np.sqrt(dim_x)
 

@@ -5,14 +5,14 @@ from ast import literal_eval
 from matplotlib import pyplot as plt
 
 stats = {
-    "result_error_in_all" : "error in-domain",
-    "result_error_out_all" : "error out-domain",
-    "result_error_in_mask" : "error in-domain (masked)",
-    "result_error_out_mask" : "error out-domain (masked)",
-    "result_false_positives" : "false positives",
-    "result_false_negatives" : "false negatives"
+    "result_error_in_all": "error in-domain",
+    "result_error_out_all": "error out-domain",
+    "result_error_in_mask": "error in-domain (masked)",
+    "result_error_out_mask": "error out-domain (masked)",
+    "result_false_positives": "false positives",
+    "result_false_negatives": "false negatives"
 }
-        
+
 plt.rc('text', usetex=True)
 plt.rc('text.latex', preamble=r'\usepackage{times}')
 plt.rc('font', family='serif')
@@ -65,8 +65,8 @@ if __name__ == "__main__":
         for r, result in enumerate(result_names):
             results[line_str][this_model]["mean"][r] += result_dict[result]
             results[line_str][this_model]["power"][r] += result_dict[result] ** 2
-        
-        results[line_str][this_model]["counter"] += 1 
+
+        results[line_str][this_model]["counter"] += 1
 
     for eid in results:
         for model in results[eid]:
@@ -94,11 +94,11 @@ if __name__ == "__main__":
                 plt.ylabel(model.upper())
             if m == 0:
                 plt.title(stats[result], fontsize=10)
-            
+
             for eid in results:
                 competitor_mean = results[eid][model]["mean"][r]
                 competitor_variance = results[eid][model]["variance"][r]
-                
+
                 jrr_mean = results[eid]["jrr"]["mean"][r]
                 jrr_variance = results[eid]["jrr"]["variance"][r]
 
