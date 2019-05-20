@@ -3,6 +3,9 @@ from scipy.linalg import sqrtm
 
 
 def rolling_covariance(rho, dim):
+    if rho == 0:
+        return np.eye(dim)
+
     cov = np.zeros((dim, dim))
     for i in range(cov.shape[0]):
         for j in range(cov.shape[1]):
