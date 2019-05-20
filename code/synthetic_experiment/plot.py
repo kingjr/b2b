@@ -10,13 +10,13 @@ stats = {
     "result_error_in_mask" : "error in-domain (masked)",
     "result_error_out_mask" : "error out-domain (masked)",
     "result_false_positives" : "false positives",
-    "result_false_negatives" : "false_negatives"
+    "result_false_negatives" : "false negatives"
 }
         
-#plt.rc('text', usetex=True)
-#plt.rc('text.latex', preamble=r'\usepackage{times}')
-#plt.rc('font', family='serif')
-#plt.rc('font', size=16)
+plt.rc('text', usetex=True)
+plt.rc('text.latex', preamble=r'\usepackage{times}')
+plt.rc('font', family='serif')
+plt.rc('font', size=10)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
@@ -79,13 +79,22 @@ if __name__ == "__main__":
 
     models.discard("jrr")
 
-    for r, result in enumerate(result_names):
-        for model in models:
-            ax = plt.figure(figsize=(4, 4))
-            plt.title(stats[result])
-            plt.xlabel(model.upper())
-            plt.ylabel("jrr".upper())
+    plot_rows = len(models)
+    plot_columns = len(stats)
+    plot_counter = 1
 
+    plt.figure(figsize=(len(stats) * 2 + 0.85, len(models) * 2))
+
+    for m, model in enumerate(models):
+        for r, result in enumerate(result_names):
+            plt.subplot(plot_rows, plot_columns, plot_counter)
+            plot_counter += 1
+
+            if r == 0:
+                plt.ylabel(model.upper())
+            if m == 0:
+                plt.title(stats[result], fontsize=10)
+            
             for eid in results:
                 competitor_mean = results[eid][model]["mean"][r]
                 competitor_variance = results[eid][model]["variance"][r]
@@ -93,15 +102,20 @@ if __name__ == "__main__":
                 jrr_mean = results[eid]["jrr"]["mean"][r]
                 jrr_variance = results[eid]["jrr"]["variance"][r]
 
-                plt.errorbar(jrr_mean,
-                             competitor_mean,
-                             xerr=jrr_variance,
-                             yerr=competitor_variance)
-                plt.scatter(jrr_mean, competitior_mean, c="black")
+                # plt.errorbar(jrr_mean,
+                #              competitor_mean,
+                #              xerr=jrr_variance,
+                #              yerr=competitor_variance)
+                plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
 
             ax = plt.gca()
-            ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".8")
-            plt.margins(0)
-            plt.tight_layout(0, 0, 0)
-            plt.savefig("results/" + model + "_" + result + ".pdf")
-            plt.show()
+            xl = ax.get_xlim()
+            yl = ax.get_ylim()
+
+            min_ = min(min(xl), min(yl))
+            max_ = max(max(xl), max(yl))
+
+            ax.plot([min_, max_], [min_, max_], ls="--", c=".8")
+            ax.margins(0)
+    plt.tight_layout(0, 0, 0)
+    plt.savefig(args.file + ".pdf")
