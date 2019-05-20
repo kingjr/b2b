@@ -20,6 +20,27 @@ models = {
 }
 
 
+def sonquist_morgan(x):
+    z = np.sort(x)
+    n = z.size
+    m1 = 0
+    m2 = np.sum(z)
+    mx = 0
+    best = -1
+    for i in range(n - 1):
+        m1 += z[i]
+        m2 -= z[i]
+        ind = (i + 1) * (n - i - 1) * (m1 / (i + 1) - m2 / (n - i - 1))**2
+        if ind > mx:
+            mx = ind
+            best = z[i]
+    res = [0 for i in range(n)]
+    for i in range(n):
+        if x[i] > best:
+            res[i] = 1
+    return np.array(res)
+
+
 def nmse(y_pred, y_true):
     num = np.power(np.linalg.norm(y_pred - y_true), 2)
     den = np.power(np.linalg.norm(y_true), 2)
@@ -78,7 +99,7 @@ def run_experiment(args):
             false_negatives = compute_false_negatives(mask, mask_true)
 
             # fit a basic model on the selected causes
-            sel = np.nonzero(mask)[0]
+            sel = np.nonzero(sonquist_morgan(mask))[0]
 
             model = Ridge()
             model.fit(x_tr[:, sel], y_tr)
@@ -95,7 +116,7 @@ def run_experiment(args):
             result["result_error_out_mask"] = error_out_mask
             result["result_false_positives"] = false_positives
             result["result_false_negatives"] = false_negatives
-            result["result_auc"] = roc_auc_score(mask, mask_true) 
+            result["result_auc"] = roc_auc_score(mask_true, mask) 
             results.append(result)
 
             print(results[-1])
