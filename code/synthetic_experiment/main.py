@@ -1,4 +1,4 @@
-from models import JRR, OLS, Oracle
+from models import JRR, OLS, Ridge, Oracle, PLS, Lasso
 from data import Synthetic
 
 import numpy as np
@@ -22,8 +22,8 @@ def compute_false_negatives(e_pred, e_true):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--model', type=str, default='jrr')
-    parser.add_argument('--n_samples', type=int, default=1000)
+    parser.add_argument('--model', type=str, default='lasso')
+    parser.add_argument('--n_samples', type=int, default=100)
     parser.add_argument('--dim_x', type=int, default=50)
     parser.add_argument('--dim_y', type=int, default=30)
     parser.add_argument('--rho_x', type=float, default=0.5)
@@ -56,10 +56,16 @@ if __name__ == "__main__":
 
     if args.model == "ols":
         model = OLS()
+    elif args.model == "ridge":
+        model = Ridge()
     elif args.model == "oracle":
         model = Oracle(synthetic.solution())
     elif args.model == "jrr":
         model = JRR() 
+    elif args.model == "pls":
+        model = PLS() 
+    elif args.model == "lasso":
+        model = Lasso() 
     else:
         raise NotImplementedError
 

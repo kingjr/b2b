@@ -1,4 +1,7 @@
 from sklearn.linear_model import RidgeCV, LinearRegression
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.linear_model import MultiTaskLassoCV
+from sklearn.model_selection import GridSearchCV
 import numpy as np
 
 def sonquist_morgan(x):
@@ -52,21 +55,6 @@ class JRR(object):
         return self.E
 
 
-class OLS(object):
-    def __init__(self):
-        pass
-
-    def fit(self, X, Y):
-        self.coef = basic_regression(X, Y)
-        return self
-
-    def predict(self, X):
-        return X @ self.coef
-
-    def solution(self):
-        return sonquist_morgan(np.power(self.coef, 2).sum(1))
-
-
 class Oracle(object):
     def __init__(self, true_mask):
         self.true_mask = np.diag(true_mask)
@@ -79,3 +67,42 @@ class Oracle(object):
 
     def solution(self):
         return np.diag(self.true_mask)
+
+
+class SKModel(object):
+    def __init__(self):
+        pass
+
+    def predict(self, X):
+        return X @ self.coef
+    
+    def solution(self):
+        return sonquist_morgan(np.power(self.coef, 2).sum(1))
+
+
+class OLS(SKModel):
+    def fit(self, X, Y):
+        self.coef = LinearRegression(fit_intercept=False).fit(X, Y).coef_.T
+        return self
+
+
+class Ridge(SKModel):
+    def fit(self, X, Y):
+        self.coef = RidgeCV(fit_intercept=False).fit(X, Y).coef_.T
+        return self
+
+
+class PLS(SKModel):
+    def fit(self, X, Y):
+        grid = { "n_components": list(range(1, X.shape[1] + 1)) }
+        pls = GridSearchCV(PLSRegression(), grid, n_jobs=-1, cv=5)
+        self.coef = pls.fit(X, Y).best_estimator_.coef_
+        return self
+
+class Lasso(SKModel):
+    def fit(self, X, Y):
+        self.coef = MultiTaskLassoCV(fit_intercept=False,
+                                     selection="random",
+                                     n_jobs=-1,
+                                     cv=5).fit(X, Y).coef_.T
+        return self
