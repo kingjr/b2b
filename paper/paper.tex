@@ -30,7 +30,7 @@
 
 \author{%
   Jean-Remi King\\
-  Facebook AI\\
+  CNRS\\
   \texttt{email} \\
   \And
   Fran\c{c}ois Charton\\
@@ -55,51 +55,44 @@ Identifying causes from observations is at the core of science. This endeavor
 is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
 To address this issue, we introduce ``back-and-forth regression'' (BFR), a
-method that optimally identifies the most plausible causal factors from a set
-of covarying candidates. BFR consists in i) predicting the potential causes $X$
-from the observable $Y$, and subsequently ii) identifying the only factors that
-contributed to those predictions. After detailing the proof of convergence, we
-show that BFR outperforms least-squares and related regression techniques, as
-well as cross-decomposition methods (e.g. canonical correlation analysis, and
-partial least squares) on two tasks: causal identification and out-of-distribution
-prediction. We apply BFR to neuroimaging recordings of 102 subjects reading word
-sequences. The results show, as expected, that the early brain responses to
-words appear to be specifically caused by low-level visual factors whereas late
-brain responses appear to be caused by lexical factors, despite the fact that
-these factors covary in the study. We finish by extending BFR to nonlinear cause-effect relationships.
+method designed to identify, from a set of co-varying factors, the factors
+that most plausibley account for multidimensional observations. After detailing
+the proof of convergence, we show that BFR outperforms least-squares and related
+regression techniques, as well as cross-decomposition methods (e.g. canonical
+correlation analysis, and partial least squares) on two tasks: causal
+identification and out-of-distribution prediction. Finally, we apply BFR to
+neuroimaging recordings of 102 subjects reading word sequences. The results
+show, as expected, that the early brain responses to words appear to be
+specifically caused by low-level visual factors whereas late brain responses
+appear to be caused by lexical factors, despite the fact that these factors
+covary in the study. XXX conlude / open
 \end{abstract}
 
 \section{Introduction}
 
-Natural sciences are tasked to find, from a set of potentially-covarying factors, the minimal subset that suffices to predict a set of potentially multidimensional observations.
+Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict observations, especially in novel environments.
 %
-This problem can be formalized as follow: we measure, via an apparatus F, a multidimensional signal Y, that is a function of possible causes X, and other unknown factors that can be understood as noise N: $Y=f(X,N)$.
+This problem can be formalized as follow: we measure, via an apparatus F, a signal Y, that is a function of possible causes X, and other unknown causes that can be understood as noise N: $Y=F(X,N)$. Of all considered causes (features of X), only a subset account for Y, let them be represented as EX, with E a binary diagonal matrix: a diagonal of zeros and ones, which correspond to causal features of X.
 %
-Of all possible causes (features of X), only a subset may account for Y, let them be represented as EX, with E a binary diagonal matrix: a diagonal of zeroes and ones, which correspond to active causal features of X.
-%
-Under the assumption of centered and additive noise N, causal discovery thus consists in finding E in $Y=f(EX+N)$, with f and N being unknown.
+Under the assumption of centered and additive noise N, causal discovery thus consists in finding E in $Y=F(EX+N)$, with F and N being unknown.
 
 %
-Causal discovery is impeded by two challenges.
+Under this formalism, causal discovery is impeded by two challenges.
 %
-First, causal and non-causal factors may naturally co-vary. [For example, XXX.] (e.g. X'X is not an orthogonal matrix). When the number of co-varying factors is low, this issue is generally solved with factorial designs [cite the design of experiments, fisher 1935]. [XXX medical example]. As factorial design become hard to implement with numerous factors, the orthogonalization of co-varying factors is performed analytically, by estimating how each factor contributes to the variance of the observations (e.g analysis of variance, ANOVA). In this paper, we refer to this approach as 'forward modeling' as it models how factors X predict the observations Y. As illustrated in Fig X., forward model can be sub-optimal when observations are multidimensional and noisy, because it typically does not make use of the structure of observations (e.g. the model does not consider Y'Y).
+To illustrate these two challenges, let us consider the case of a neuroscientist who study the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car').
 %
-Second, causal discovery can be challenged by the multiplicity and complexity of the observations. [For example XXX]. This issue has led many to reverse the problem and to focus on optimally predicting factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, mathematical models are trained to maximally predict such factors from complex brain signals. We refer to this approach as 'backward modeling' as it models how the observations Y can be used to predict the factors X. However, backward can predict a non-causal factor as long as it correlates with a causal one.
-
+The first challenge to causal discovery is that causal and non-causal factors can co-vary. For example, the frequency of words in language correlates with their number of letters. When the number of co-varying factors is low, this issue can be solved with factorial designs \cite{fisher_1935}. Our neuroscientist may thus carefully select words matched for their numbers of letters, while letting their frequency vary. However, factorial design becomes increasingly hard to implement as the number of potential factor grows. As a fallback option, factors may be orthogonalized analytically, by estimating how each of them contributes to explaining the observations (e.g analysis of variance, ANOVA). In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y.
 %
-In sum, forward modeling approaches are well suited in disentangling the independent contribution of covarying factors, but can be suboptimal at combining multidimensional observations. By contrast, backward modeling approaches are well suited at combining multiple observations, but do not disentangle covarying factors [Figure X].
+The second challenge to causal discovery is the multiplicity of the observations. For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons; it can thus be suboptimal to consider each neuron independently. More generally, with the rise of large and complex datasets, the complexity of observations has led many to invert the problem and to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict such factors from complex brain signals. We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X.
+%
+As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling efficiently disentangles the independent contribution of covarying factors, but does not combine multidimensional observations. By contrast, backward modeling approaches combine multiple observations, but do not disentangle covarying factors.
 %
 In this paper, we introduce the 'back-and-forth regression', which combines the benefit of forward and backward approaches. Back-and-forth regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving a robust least square estimate $\hat X$ and finally computing a least square estimator of $\hat X$ from X (as in forward modeling).
 %
-If the active features of X are represented as EX, with E a binary diagonal, this provides a good approximation of E, robust to noise and environment change.
+If the active features of X are represented as EX, with E a binary diagonal, back-and-forth regression provides a good approximation of E, robust to noise and environment change.
 %
-The main purpose of back-and-forth regression is feature extraction, but it can be turned into a regression method by filtering X on the selected features.
-
-In the next sections, we (i) describe back-and-forth regression, (ii) prove that it asymptotically extracts E, (iii) both in the linear and non linear case, and that it can be understood as a special case of canonical component analysis (cca).
+In the next sections, we describe back-and-forth regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-and-forth regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-and-forth regression to a 102 recordings of brain responses to words, and show that the first brain responses appear to be mainly caused by low-level visual features, such as the number of letters, while late brain responses appear to be mainly caused by high-level lexical features, such as word frequency.
 %
-By experimenting with simulated data, we demonstrate the robustness and typical use cases of back-and-forth regression, and show that it compares favourably with state of the art techniques for regression and feature extraction, both in terms of causal discovery and out-of-
-%
-Finally, we illustrate its use on an example from neuroimaging.
 
 \section{Back an forth regression}
 
