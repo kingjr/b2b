@@ -72,7 +72,7 @@ covary in the study. XXX conlude / open
 
 Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict observations, especially in novel environments.
 %
-This problem can be formalized as follow: we measure, via an apparatus F, a signal Y, that is a function of possible causes X, and other unknown causes that can be understood as noise N: $Y=F(X,N)$. Of all considered causes (features of X), only a subset account for Y, let them be represented as EX, with E a binary diagonal matrix: a diagonal of zeros and ones, which correspond to causal features of X.
+This problem can be formalized as follow: we measure, via an apparatus F, a signal Y, that is a function of possible causes X, and other unknown causes that can be understood as noise N: $Y=F(X,N)$. Of all considered causes (features of X), only a subset accounts for Y, let it be represented as EX, with E a binary diagonal matrix: a diagonal of zeros and ones, which selects causal features of X.
 %
 Under the assumption of centered and additive noise N, causal discovery thus consists in finding E in $Y=F(EX+N)$, with F and N being unknown.
 
@@ -81,11 +81,15 @@ Under this formalism, causal discovery is impeded by two challenges.
 %
 To illustrate these two challenges, let us consider the case of a neuroscientist who study the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car').
 %
-The first challenge to causal discovery is that causal and non-causal factors can co-vary. For example, the frequency of words in language correlates with their number of letters. When the number of co-varying factors is low, this issue can be solved with factorial designs \cite{fisher_1935}. Our neuroscientist may thus carefully select words matched for their numbers of letters, while letting their frequency vary. However, factorial design becomes increasingly hard to implement as the number of potential factor grows. As a fallback option, factors may be orthogonalized analytically, by estimating how each of them contributes to explaining the observations (e.g analysis of variance, ANOVA). In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y.
+%
+The first challenge to causal discovery is that causal and non-causal factors can co-vary. For example, the frequency of words in language correlates with their length. Factor covariation can typically be addressed with factorial designs \cite{fisher_1935}. Our neuroscientist may thus carefully select words matched in terms of lengths, while letting their frequency vary. However, factorial design becomes increasingly hard to implement as the number of potential factor grows. As a fallback option, factors may be orthogonalized analytically, by estimating how each of them contributes to explaining the observations (e.g analysis of variance, ANOVA). In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y.
+%
 %
 The second challenge to causal discovery is the multiplicity of the observations. For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons; it can thus be suboptimal to consider each neuron independently. More generally, with the rise of large and complex datasets, the complexity of observations has led many to invert the problem and to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict such factors from complex brain signals. We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X.
 %
+%
 As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling efficiently disentangles the independent contribution of covarying factors, but does not combine multidimensional observations. By contrast, backward modeling approaches combine multiple observations, but do not disentangle covarying factors.
+%
 %
 In this paper, we introduce the 'back-and-forth regression', which combines the benefit of forward and backward approaches. Back-and-forth regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving a robust least square estimate $\hat X$ and finally computing a least square estimator of $\hat X$ from X (as in forward modeling).
 %
@@ -156,7 +160,7 @@ In the next sections, we describe back-and-forth regression, prove that it asymp
 
 \subsection{Algorithm}
 
-We are given two set of measurements over a sample of n individuals.
+We are given two sets of measurements over a sample of n individuals.
 %
 % Francois can you use the Y in Real^{n, ny} format
 %
