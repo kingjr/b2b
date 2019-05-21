@@ -56,6 +56,14 @@ def compute_false_negatives(e_pred, e_true):
     return np.mean(((e_pred == 0) * (e_true == 1) * 1.0))
 
 
+def response_at_active(e_pred, e_true):
+    return np.mean(e_pred[np.where(e_true == 1)[0]])
+
+
+def response_at_inactive(e_pred, e_true):
+    return np.mean(e_pred[np.where(e_true == 0)[0]])
+
+
 def run_experiment(args):
     for seed in range(args.n_seeds):
         random.seed(seed)
@@ -95,12 +103,13 @@ def run_experiment(args):
 
             # this is the binary mask E estimated by the model
             mask = model.solution()
+            binary_mask = sonquist_morgan(mask)
 
-            false_positives = compute_false_positives(mask, mask_true)
-            false_negatives = compute_false_negatives(mask, mask_true)
+            false_positives = compute_false_positives(binary_mask, mask_true)
+            false_negatives = compute_false_negatives(binary_mask, mask_true)
 
             # fit a basic model on the selected causes
-            sel = np.nonzero(sonquist_morgan(mask))[0]
+            sel = np.nonzero(binary_mask)[0]
 
             model = Ridge()
             model.fit(x_tr[:, sel], y_tr)
@@ -117,6 +126,8 @@ def run_experiment(args):
             result["result_error_out_mask"] = error_out_mask
             result["result_false_positives"] = false_positives
             result["result_false_negatives"] = false_negatives
+            result["result_response_active"] = response_at_active(mask, mask_true) 
+            result["result_response_inactive"] = response_at_inactive(mask, mask_true) 
             result["result_auc"] = roc_auc_score(mask_true, mask) 
             results.append(result)
 
