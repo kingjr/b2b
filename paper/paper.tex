@@ -294,15 +294,15 @@ In CCA, we are given two matrices X and Y (or size N,p and N,q) that describe di
 
 This is done by finding vectors $a$ and $b$ such that $Xa$ and $Yb$ display maximal correlation, or by maximizing $a'X'Yb$ over unit-normed $a$ and $b$.
 %
-To find a, one calculates the eigenvectors of (1).
+To find a, one calculates the eigenvectors of Eq. (1).
 %
 The largest one is the direction with maximal correlation, the second one the maximal correlation direction orthogonal to the first, and so on.
 %
 For each canonical dimension, the corresponding eigenvalue is the square of the cosine between the corresponding direction along X and the subspace spanned by Y.
 
-If (1) is diagonal, for instance in the model presented above, the features of X are eigenvectors.
+If the result of Eq. (1) is diagonal, as in the model presented above, the features of X are eigenvectors.
 %
-If all eigenvalues are either 0 or 1, since they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues).
+If all eigenvalues are either 0 or 1, then all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues) because they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, .
 %
 Thus, back-and-forth regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X.
 %
