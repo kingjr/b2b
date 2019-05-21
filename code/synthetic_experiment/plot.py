@@ -16,14 +16,14 @@ stats = {
     "result_auc": "AUC"
 }
 
-plt.rc('text', usetex=True)
-plt.rc('text.latex', preamble=r'\usepackage{times}')
-plt.rc('font', family='serif')
+# plt.rc('text', usetex=True)
+# plt.rc('text.latex', preamble=r'\usepackage{times}')
+# plt.rc('font', family='serif')
 plt.rc('font', size=10)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--file', type=str, default='results_05.txt')
+    parser.add_argument('--file', type=str, default='results_all_jrr.txt')
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
@@ -92,27 +92,36 @@ if __name__ == "__main__":
 
     for m, model in enumerate(models):
         for r, result in enumerate(result_names):
+            result_mean = 0
+            result_variance = 0
+            result_counter = 0
             plt.subplot(plot_rows, plot_columns, plot_counter)
             plot_counter += 1
 
             if r == 0:
-                plt.ylabel(model.upper())
+                plt.ylabel(model.upper()[8:], fontsize=8)
             if m == 0:
                 plt.title(stats[result], fontsize=10)
 
             for eid in results:
-                if ("JRR" in results[eid]) and (model in results[eid]):
-                    competitor_mean = results[eid][model]["mean"][r]
-                    competitor_variance = results[eid][model]["variance"][r]
+                if model in results[eid]:
+                    result_mean += results[eid][model]["mean"][r]
+                    result_variance += results[eid][model]["variance"][r]
+                    result_counter += 1
+                    if "JRR" in results[eid]:
+                        competitor_mean = results[eid][model]["mean"][r]
+                        competitor_variance = results[eid][model]["variance"][r]
 
-                    jrr_mean = results[eid]["JRR"]["mean"][r]
-                    jrr_variance = results[eid]["JRR"]["variance"][r]
+                        jrr_mean = results[eid]["JRR"]["mean"][r]
+                        jrr_variance = results[eid]["JRR"]["variance"][r]
 
-                    # plt.errorbar(jrr_mean,
-                    #              competitor_mean,
-                    #              xerr=jrr_variance,
-                    #              yerr=competitor_variance)
-                    plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
+                        # plt.errorbar(jrr_mean,
+                        #              competitor_mean,
+                        #              xerr=jrr_variance,
+                        #              yerr=competitor_variance)
+                        plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
+            if result_counter:
+                print(model, result, result_mean / result_counter, result_variance / result_counter)
 
             ax = plt.gca()
             xl = ax.get_xlim()
