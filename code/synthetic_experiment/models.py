@@ -342,14 +342,10 @@ def all_jrrs():
     alphas = np.logspace(-5, 5, 20)
 
     G_solvers = (
-        ('ols', MyRidgeCV(1e-6, False)),
         ('ridgecv', MyRidgeCV(alphas, independent=True)),
-        ('rankcv', TrunkOLSCV(ranks=False, independent=True)),
-        ('rankmle', trunkated_ols)
     )
 
     H_solvers = (
-        ('ols', MyRidgeCV(1e-6, False)),
         ('ridgecv', MyRidgeCV(alphas, independent=False)),
         ('rankcv', TrunkOLSCV(ranks=False, independent=False)),
         ('rankmle', trunkated_ols)
@@ -359,7 +355,7 @@ def all_jrrs():
     params = (
         G_solvers,  # G
         H_solvers,  # H
-        (('loo', 0), ('bag', 10)),  # bagging or leave one out
+        (('bag', 10)),  # bagging or leave one out
     )
 
     functions = dict()
