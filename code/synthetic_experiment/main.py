@@ -1,7 +1,7 @@
 # TODO: model Y = (XE + N)F + N' with second noise N'
 # TODO: uniform distributions
 
-from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA
+from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA, all_jrrs
 from sklearn.metrics import roc_auc_score
 from data import Synthetic
 
@@ -20,6 +20,9 @@ models = {
     "Lasso": Lasso
 }
 
+# TODO: deactivate after testing
+if True:
+    models = all_jrrs()
 
 def sonquist_morgan(x):
     z = np.sort(x)
@@ -90,7 +93,9 @@ def run_experiment(args):
         results = []
 
         for m, Model in models.items():
-            if m == "Oracle":
+            if "JRRTEST" in m:
+                model = Model 
+            elif m == "Oracle":
                 model = Model(mask_true)
             else:
                 model = Model()

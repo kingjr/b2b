@@ -2,52 +2,14 @@ from sklearn.linear_model import RidgeCV, LinearRegression
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.linear_model import MultiTaskLassoCV
 from sklearn.model_selection import GridSearchCV
+from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator
 from sklearn.metrics import r2_score
+from itertools import product
 import scipy as sc
 import numpy as np
 
 N_JOBS = 1
-
-'''
-parameters for JRR_testing
-
-
-G_solvers = (
-    ('ols', RidgeCV(1e-6, False)),
-    ('ridgecv', RidgeCV(alphas, independent=True)),
-    ('rankcv', TrunkOLSCV(ranks=False, independent=True)),
-    ('rankmle', trunkated_ols)
-)
-
-H_solvers = (
-    ('ols', RidgeCV(1e-6, False)),
-    ('ridgecv', RidgeCV(alphas, independent=False)),
-    ('rankcv', TrunkOLSCV(ranks=False, independent=False)),
-    ('rankmle', trunkated_ols)
-)
-
-
-params = (
-    G_solvers,  # G
-    H_solvers,  # H
-    (('loo', 0), ('bag', 10)),  # bagging or leave one out
-)
-
-functions = dict()
-for (label_g, G), (label_h, H), (label_bag, bagging) in product(*params):
-    label = '_'.join((label_g, label_h, label_bag))
-    functions[label] = JRR(G=G, H=H, bagging=bagging)
-
-
-
-results = dict()
-for label, func in functions.items():
-    print(label)
-    E_hat = func(X, Y)
-    results[label] = E_hat
-'''
-
 
 
 def ridge_cv(X, Y, alphas, independent=False):
@@ -62,7 +24,7 @@ def ridge_cv(X, Y, alphas, independent=False):
     n, n_x = X.shape
     n, n_y = Y.shape
     # Decompose X
-    U, s, _ = svd(X, full_matrices=0)
+    U, s, _ = np.linalg.svd(X, full_matrices=0)
     v = s**2
     UY = U.T @ Y
 
@@ -98,8 +60,8 @@ def ridge_cv(X, Y, alphas, independent=False):
     return coefs.T, Y_hat
 
 
-class RidgeCV():
-    def __init__(self, alphas=np.logspace(-5, 5, 30), independent):
+class MyRidgeCV(object):
+    def __init__(self, alphas=np.logspace(-5, 5, 30), independent=True):
         self.alphas = alphas
         self.independent = independent
 
@@ -117,7 +79,7 @@ def trunkated_ols_cv(X, Y, ranks=True, independent=False):
     n, n_x = X.shape
     n, n_y = Y.shape
     # Decompose X
-    U, s, _ = svd(X, full_matrices=0)  # U = shape(n, n_x)
+    U, s, _ = np.linalg.svd(X, full_matrices=0)  # U = shape(n, n_x)
     v = s**2
 
     cv_duals = np.zeros((n_x, n, n_y))
@@ -158,7 +120,7 @@ def trunkated_ols_cv(X, Y, ranks=True, independent=False):
 
 
 class TrunkOLSCV():
-    def __init__(self, ranks, independent):
+    def __init__(self, ranks, independent=True):
         self.ranks = ranks
         self.independent = independent
 
@@ -169,7 +131,7 @@ class TrunkOLSCV():
 def trunkated_ols(X, Y):
     pca = PCA('mle').fit(X)
     Xt = pca.inverse_transform(pca.transform(X))
-    coef = pinv(Xt.T @ Xt) @ Xt.T @ Y
+    coef = np.linalg.pinv(Xt.T @ Xt) @ Xt.T @ Y
     return coef, np.zeros_like(Y)
 
 
@@ -196,7 +158,6 @@ class JRR_testing(object):
             _, X_hat = self.G(Y, X)
             R, _  = self.H(X, X_hat)
             self.E = np.diag(R)
-            
         else:
             E = 0
             for _ in range(self.n_splits):
@@ -205,9 +166,9 @@ class JRR_testing(object):
                 H, _ = self.H(X[perm[1::2]], Y[perm[1::2]] @ G)
                 E += np.diag(H)
 
-            self.E = E / n_splits
+            self.E = E / self.n_splits
 
-        self.coef = self.basic_regression(X @ np.diag(self.E), Y)
+        self.coef = basic_regression(X @ np.diag(self.E), Y)
     
     def predict(self,X):
         return X @ np.diag(self.E) @ self.coef
@@ -376,3 +337,38 @@ class CCA(SKModel):
         cca = GridSearchCV(CanonicalCorrelation(), grid, n_jobs=N_JOBS, cv=5)
         self.coef = cca.fit(X, Y).best_estimator_.coef
         return self
+
+def all_jrrs():
+    alphas = np.logspace(-5, 5, 20)
+
+    G_solvers = (
+        ('ols', MyRidgeCV(1e-6, False)),
+        ('ridgecv', MyRidgeCV(alphas, independent=True)),
+        ('rankcv', TrunkOLSCV(ranks=False, independent=True)),
+        ('rankmle', trunkated_ols)
+    )
+
+    H_solvers = (
+        ('ols', MyRidgeCV(1e-6, False)),
+        ('ridgecv', MyRidgeCV(alphas, independent=False)),
+        ('rankcv', TrunkOLSCV(ranks=False, independent=False)),
+        ('rankmle', trunkated_ols)
+    )
+
+
+    params = (
+        G_solvers,  # G
+        H_solvers,  # H
+        (('loo', 0), ('bag', 10)),  # bagging or leave one out
+    )
+
+    functions = dict()
+
+    functions["JRR"] = JRR
+
+    for (label_g, G), (label_h, H), (label_bag, bagging) in product(*params):
+        label = "JRRTEST_" + '_'.join((label_g, label_h, label_bag))
+        functions[label] = JRR_testing(G=G, H=H, n_splits=bagging)
+
+    return functions
+
