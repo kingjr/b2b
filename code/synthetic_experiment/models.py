@@ -176,7 +176,7 @@ def trunkated_ols(X, Y):
 
 def basic_regression(X, Y, regularize=True):
     if regularize:
-        alphas = np.logspace(-5, 5, 20)
+        alphas = np.logspace(-5, 5, 10)
         w = RidgeCV(fit_intercept=False, alphas=alphas).fit(X, Y).coef_
     else:
         w = LinearRegression(fit_intercept=False).fit(X, Y).coef_
@@ -271,7 +271,7 @@ class OLS(SKModel):
 class Ridge(SKModel):
     def fit(self, X, Y):
         self.coef = RidgeCV(fit_intercept=False,
-                            alphas=np.logspace(-5, 5, 20)).fit(X, Y).coef_.T
+                            alphas=np.logspace(-5, 5, 10)).fit(X, Y).coef_.T
         return self
 
 
@@ -325,7 +325,7 @@ class RRR(SKModel):
     def fit(self, X, Y):
         grid = {
             "n_components": np.linspace(1, X.shape[1], 10).astype(int),
-            "reg": np.logspace(-5, 5, 20)
+            "reg": np.logspace(-5, 5, 10)
         }
 
         rrr = GridSearchCV(ReducedRankRegression(), grid, n_jobs=N_JOBS, cv=5)
@@ -370,7 +370,7 @@ class CCA(SKModel):
         m = min(X.shape[1], Y.shape[1])
         grid = {
             "n_components": np.linspace(1, m, 10).astype(int),
-            "reg": np.logspace(-5, 5, 20)
+            "reg": np.logspace(-5, 5, 10)
         }
 
         cca = GridSearchCV(CanonicalCorrelation(), grid, n_jobs=N_JOBS, cv=5)

@@ -11,6 +11,8 @@ stats = {
     "result_error_out_mask": "error out-domain (masked)",
     "result_false_positives": "false positives",
     "result_false_negatives": "false negatives",
+    "result_response_active": "response at active",
+    "result_response_inactive": "response at inactive",
     "result_auc": "AUC"
 }
 
