@@ -1,28 +1,25 @@
 # TODO: model Y = (XE + N)F + N' with second noise N'
 # TODO: uniform distributions
 
-from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA, all_jrrs
+from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA, JRR2
 from sklearn.metrics import roc_auc_score
 from data import Synthetic
-
 import numpy as np
 import argparse
 import random
 
 models = {
+    "JRR": JRR,
+    "JRR2": JRR2,
     "OLS": OLS,
     "Ridge": Ridge,
     "CCA": CCA,
     "Oracle": Oracle,
-    "JRR": JRR,
     "PLS": PLS,
     "RRR": RRR,
     "Lasso": Lasso
 }
 
-# TODO: deactivate after testing
-if True:
-    models = all_jrrs()
 
 def sonquist_morgan(x):
     z = np.sort(x)
@@ -94,7 +91,7 @@ def run_experiment(args):
 
         for m, Model in models.items():
             if "JRRTEST" in m:
-                model = Model 
+                model = Model
             elif m == "Oracle":
                 model = Model(mask_true)
             else:
@@ -131,9 +128,11 @@ def run_experiment(args):
             result["result_error_out_mask"] = error_out_mask
             result["result_false_positives"] = false_positives
             result["result_false_negatives"] = false_negatives
-            result["result_response_active"] = response_at_active(mask, mask_true) 
-            result["result_response_inactive"] = response_at_inactive(mask, mask_true) 
-            result["result_auc"] = roc_auc_score(mask_true, mask) 
+            result["result_response_active"] = response_at_active(
+                mask, mask_true)
+            result["result_response_inactive"] = response_at_inactive(
+                mask, mask_true)
+            result["result_auc"] = roc_auc_score(mask_true, mask)
             results.append(result)
 
             print(results[-1])

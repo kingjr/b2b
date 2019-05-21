@@ -69,76 +69,9 @@ class MyRidgeCV(object):
         return ridge_cv(X, Y, self.alphas, self.independent)
 
 
-def trunkated_ols_cv(X, Y, ranks=True, independent=False):
-    """
-    solves (X'X)^-1 X'Y with rank optimal constrain on X
-    (1) can optimize a different alpha for each column of Y (independent=True)
-    (2) return leave-one-out Y_hat
-    """
-    independent = False
-    n, n_x = X.shape
-    n, n_y = Y.shape
-    # Decompose X
-    U, s, _ = np.linalg.svd(X, full_matrices=0)  # U = shape(n, n_x)
-    v = s**2
-
-    cv_duals = np.zeros((n_x, n, n_y))
-    cv_errors = np.inf * np.ones((n_x, n, n_y))
-
-    ranks = np.arange(n_x) if ranks is True else np.linspace(1, n_x-1, 30).astype(int)
-
-    for rank in ranks:
-        # Solve
-        # ridge cv: w = ((v + alpha) ** -1) - alpha ** -1
-        D = np.eye(n) - U[:, :rank] @ U[:, :rank].T  # n_samples x n_samples
-        c = D @ Y  # n_samples x dim_y
-        # ridge cv: c = U @ np.diag(w) @ UY + alpha ** -1 * Y
-
-        # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
-        # G_diag = (w * U ** 2).sum(axis=-1) + alpha ** -1
-        G_diag = np.diag(D)
-        error = c / G_diag[:, np.newaxis]
-        cv_errors[rank] = error
-        cv_duals[rank] = U[:, :rank] @ np.diag(v[:rank]**-1) @ U[:, :rank].T @ Y # noqa
-
-    # identify best alpha for each column of Y independently
-    if independent:
-        best_ranks = (cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = np.transpose([cv_duals[b, :, i]
-                              for i, b in enumerate(best_ranks)])
-        cv_errors = np.transpose([cv_errors[b, :, i]
-                                  for i, b in enumerate(best_ranks)])
-    else:
-        _cv_errors = cv_errors.reshape(n_x, -1)
-        best_ranks = (_cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = cv_duals[best_ranks]
-        cv_errors = cv_errors[best_ranks]
-
-    coefs = duals.T @ X
-    Y_hat = Y - cv_errors
-    return coefs.T, Y_hat
-
-
-class TrunkOLSCV():
-    def __init__(self, ranks, independent=True):
-        self.ranks = ranks
-        self.independent = independent
-
-    def __call__(self, X, Y):
-        return trunkated_ols_cv(X, Y, self.ranks, self.independent)
-
-
-def trunkated_ols(X, Y):
-    pca = PCA('mle').fit(X)
-    Xt = pca.inverse_transform(pca.transform(X))
-    coef = np.linalg.pinv(Xt.T @ Xt) @ Xt.T @ Y
-    return coef, np.zeros_like(Y)
-
-
-
 def basic_regression(X, Y, regularize=True):
     if regularize:
-        alphas = np.logspace(-5, 5, 10)
+        alphas = np.logspace(-5, 5, 20)
         w = RidgeCV(fit_intercept=False, alphas=alphas).fit(X, Y).coef_
     else:
         w = LinearRegression(fit_intercept=False).fit(X, Y).coef_
@@ -146,56 +79,25 @@ def basic_regression(X, Y, regularize=True):
     return w.T
 
 
-class JRR_testing(object):
-    def __init__(self, G, H, n_splits):
-        self.G = G
-        self.H = H
-        assert isinstance(n_splits, int)
-        self.n_splits = n_splits
-        
-    def fit(self, X, Y):
-        if self.n_splits == 0:
-            _, X_hat = self.G(Y, X)
-            R, _  = self.H(X, X_hat)
-            self.E = np.diag(R)
-        else:
-            E = 0
-            for _ in range(self.n_splits):
-                perm = np.random.permutation(range(len(X)))
-                G, _ = self.G(Y[perm[0::2]], X[perm[0::2]])
-                H, _ = self.H(X[perm[1::2]], Y[perm[1::2]] @ G)
-                E += np.diag(H)
-
-            self.E = E / self.n_splits
-
-        self.coef = basic_regression(X @ np.diag(self.E), Y)
-    
-    def predict(self,X):
-        return X @ np.diag(self.E) @ self.coef
-    
-    def solution(self):
-        return self.E
-
-
-class JRR(object):
-    def __init__(self, n_splits=10):
-        self.n_splits = n_splits
-
-    def fit(self, X, Y):
-        E = 0
-        for _ in range(self.n_splits):
-            perm = np.random.permutation(range(len(X)))
-            G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
-            E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
-
-        self.E = E / self.n_splits
-        self.coef = basic_regression(X @ np.diag(self.E), Y)
-
-    def predict(self, X):
-        return X @ np.diag(self.E) @ self.coef
-
-    def solution(self):
-        return self.E
+# class JRR(object):
+#     def __init__(self, n_splits=10):
+#         self.n_splits = n_splits
+#
+#     def fit(self, X, Y):
+#         E = 0
+#         for _ in range(self.n_splits):
+#             perm = np.random.permutation(range(len(X)))
+#             G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
+#             E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
+#
+#         self.E = E / self.n_splits
+#         self.coef = basic_regression(X @ np.diag(self.E), Y)
+#
+#     def predict(self, X):
+#         return X @ np.diag(self.E) @ self.coef
+#
+#     def solution(self):
+#         return self.E
 
 
 class Oracle(object):
@@ -309,19 +211,19 @@ class CanonicalCorrelation(SKModel):
 
         sqrtCX = sc.linalg.sqrtm(CXX + np.eye(CXX.shape[0]) * self.reg)
         sqrtCY = sc.linalg.sqrtm(CYY + np.eye(CYY.shape[0]) * self.reg)
-    
+
         isqrtCX = sc.linalg.inv(sqrtCX)
         isqrtCY = sc.linalg.inv(sqrtCY)
-    
+
         U, S, V = np.linalg.svd(isqrtCX @ CXY @ isqrtCY)
-    
+
         A = isqrtCX @ U[:, :self.n_components]
         B = isqrtCY @ V.T[:, :self.n_components]
         self.coef = A @ A.T @ X.T @ Y / X.shape[0]
 
     def predict(self, X):
         return X @ self.coef
-    
+
     def score(self, X, y):
         return r2_score(y, self.predict(X), multioutput='variance_weighted')
 
@@ -338,33 +240,53 @@ class CCA(SKModel):
         self.coef = cca.fit(X, Y).best_estimator_.coef
         return self
 
-def all_jrrs():
-    alphas = np.logspace(-5, 5, 20)
 
-    G_solvers = (
-        ('ridgecv', MyRidgeCV(alphas, independent=True)),
-    )
+class JRR(object):
+    def __init__(self):
+        alphas = np.logspace(-5, 5, 20)
+        self.G = MyRidgeCV(alphas, independent=True)
+        self.H = MyRidgeCV(alphas, independent=False)
+        self.n_splits = 100
 
-    H_solvers = (
-        ('ridgecv', MyRidgeCV(alphas, independent=False)),
-        ('rankcv', TrunkOLSCV(ranks=False, independent=False)),
-        ('rankmle', trunkated_ols)
-    )
+    def fit(self, X, Y):
+        E = 0
+        for _ in range(self.n_splits):
+            perm = np.random.permutation(range(len(X)))
+            G, _ = self.G(Y[perm[0::2]], X[perm[0::2]])
+            H, _ = self.H(X[perm[1::2]], Y[perm[1::2]] @ G)
+            E += np.diag(H)
 
+        self.E = E / self.n_splits
 
-    params = (
-        G_solvers,  # G
-        H_solvers,  # H
-        (('bag', 100)),  # bagging or leave one out
-    )
+        self.coef = basic_regression(X @ np.diag(self.E), Y)
 
-    functions = dict()
+    def predict(self, X):
+        return X @ np.diag(self.E) @ self.coef
 
-    functions["JRR"] = JRR
+    def solution(self):
+        return self.E
 
-    for (label_g, G), (label_h, H), (label_bag, bagging) in product(*params):
-        label = "JRRTEST_" + '_'.join((label_g, label_h, label_bag))
-        functions[label] = JRR_testing(G=G, H=H, n_splits=bagging)
+class JRR2(object):
+    def __init__(self):
+        alphas = np.logspace(-5, 5, 20)
+        self.G = MyRidgeCV(alphas, independent=True)
+        self.H = MyRidgeCV(alphas, independent=True)
+        self.n_splits = 100
 
-    return functions
+    def fit(self, X, Y):
+        E = 0
+        for _ in range(self.n_splits):
+            perm = np.random.permutation(range(len(X)))
+            G, _ = self.G(Y[perm[0::2]], X[perm[0::2]])
+            H, _ = self.H(X[perm[1::2]], Y[perm[1::2]] @ G)
+            E += np.diag(H)
 
+        self.E = E / self.n_splits
+
+        self.coef = basic_regression(X @ np.diag(self.E), Y)
+
+    def predict(self, X):
+        return X @ np.diag(self.E) @ self.coef
+
+    def solution(self):
+        return self.E
