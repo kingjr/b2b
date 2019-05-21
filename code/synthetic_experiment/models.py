@@ -355,7 +355,7 @@ def all_jrrs():
     params = (
         G_solvers,  # G
         H_solvers,  # H
-        (('bag', 10)),  # bagging or leave one out
+        (('bag', 100)),  # bagging or leave one out
     )
 
     functions = dict()
