@@ -65,37 +65,53 @@ neuroimaging recordings of 102 subjects reading word sequences. The results
 show, as expected, that the early brain responses to words appear to be
 specifically caused by low-level visual factors whereas late brain responses
 appear to be caused by lexical factors, despite the fact that these factors
-covary in the study. XXX conlude / open
+covary in the study.
+% conclude  open
 \end{abstract}
 
 \section{Introduction}
 
-Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict observations, especially in novel environments.
+Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations potentially in novel environments.
 %
-This problem can be formalized as follow: we measure, via an apparatus F, a signal Y, that is a function of possible causes X, and other unknown causes that can be understood as noise N: $Y=F(X,N)$. Of all considered causes (features of X), only a subset accounts for Y, let it be represented as EX, with E a binary diagonal matrix: a diagonal of zeros and ones, which selects causal features of X.
+This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{i, l}$, that is a function of possible causes $X \in \mathbb{R}^{i, j}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{i, k}$: $Y=F(X,N)$. Of all considered causes (features of X), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{R}^{j, j}$ a binary diagonal matrix, which selects causal features of $X$.
 %
-Under the assumption of centered and additive noise N, causal discovery thus consists in finding E in $Y=F(EX+N)$, with F and N being unknown.
+Under the restricted assumptions of centered and additive noise N and linear systems, causal discovery thus consists in finding $E$ in
+
+\begin{equation}
+    Y=(XEM+N)F
+\end{equation}
+with $M \in \mathbb{R}^{j, k}$ and $F \in \mathbb{R}^{j, k}$ being unknown.  $M$ is a unknown projection matrix that ensures that the noise and the causal factors share a common space, and can thus be absorbed by $F$:
+\begin{equation}
+    Y=(XE+N^{*})F^{*}
+\end{equation}
+\par
 
 %
 Under this formalism, causal discovery is impeded by two challenges.
 %
-To illustrate these two challenges, let us consider the case of a neuroscientist who study the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car').
+To illustrate these two challenges, let us consider the case of a neuroscientist who studies the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car'). One issue is that word frequency tends to correlate with word length.\par
 %
 %
-The first challenge to causal discovery is that causal and non-causal factors can co-vary. For example, the frequency of words in language correlates with their length. Factor covariation can typically be addressed with factorial designs \cite{fisher_1935}. Our neuroscientist may thus carefully select words matched in terms of lengths, while letting their frequency vary. However, factorial design becomes increasingly hard to implement as the number of potential factor grows. As a fallback option, factors may be orthogonalized analytically, by estimating how each of them contributes to explaining the observations (e.g analysis of variance, ANOVA). In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y.
+This is the first challenge to causal discovery: a set of putative factors, some causal, other non-causal, can be collinear. Collinearity in the putative factors $X$ is typically addressed with factorial designs \cite{fisher_1935}. For example, our neuroscientist may carefully select words matched in terms of length, while letting their frequency vary. However, factorial design becomes increasingly difficult to implement as the number of considered factor grows. As a fallback option, factors may be orthogonalized \textit{a posteriori}, by analytically estimating how each of them contributes to explaining the observations. Our neuroscientist will thus typically use ordinary least square (OLS) to model how brain activity can be specifically accounted for by word length and word frequency:
+\begin{equation}
+H = (X'X)^{-1} X'Y
+\end{equation}
+In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y. \par
 %
 %
-The second challenge to causal discovery is the multiplicity of the observations. For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons; it can thus be suboptimal to consider each neuron independently. More generally, with the rise of large and complex datasets, the complexity of observations has led many to invert the problem and to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict such factors from complex brain signals. We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X.
+The second challenge to causal discovery is the multiplicity of the observations. For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons. It can thus be suboptimal to consider each neuron independently, because they may be influenced by some unknown factors $N$. More generally, with the rise of large and complex datasets, the complexity of observations has led many to invert the problem and to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict factors from complex brain signals:
+\begin{equation}
+G = (Y'Y)^{-1} Y'X
+\end{equation}
+We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X. \par
 %
 %
-As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling efficiently disentangles the independent contribution of covarying factors, but does not combine multidimensional observations. By contrast, backward modeling approaches combine multiple observations, but do not disentangle covarying factors.
+As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling efficiently disentangles the independent contribution of collinear factors, but does not combine multidimensional observations. By contrast, backward modeling combines multiple observations, but does not disentangle collinear factors. \par
 %
 %
-In this paper, we introduce the 'back-and-forth regression', which combines the benefit of forward and backward approaches. Back-and-forth regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving a robust least square estimate $\hat X$ and finally computing a least square estimator of $\hat X$ from X (as in forward modeling).
+In this paper, we introduce the 'back-and-forth regression', which combines the benefits of forward and backward modeling. Back-and-forth regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving an estimate $\hat X$ and finally disentangling which of the considered factors X accounts for the variance in $\hat X$ (i.e. analogously to forward modeling). \par
 %
-If the active features of X are represented as EX, with E a binary diagonal, back-and-forth regression provides a good approximation of E, robust to noise and environment change.
-%
-In the next sections, we describe back-and-forth regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-and-forth regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-and-forth regression to a 102 recordings of brain responses to words, and show that the first brain responses appear to be mainly caused by low-level visual features, such as the number of letters, while late brain responses appear to be mainly caused by high-level lexical features, such as word frequency.
+In the next sections, we detail back-and-forth regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-and-forth regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-and-forth regression to the brain activity of 102 subjects reading $\approx$ 2,000 words, and show that the first brain responses to these words appear to be mainly modulated by low-level visual features, such as the number of letters, while late brain responses appear to be mainly modulated by high-level lexical features, such as word frequency. \par
 %
 
 \section{Back an forth regression}
@@ -159,16 +175,6 @@ In the next sections, we describe back-and-forth regression, prove that it asymp
 
 
 \subsection{Algorithm}
-
-We are given two sets of measurements over a sample of n individuals.
-%
-% Francois can you use the Y in Real^{n, ny} format
-%
-Y are ny multidimensional effects, and X are nx multidimensional possible causes.
-%
-We assume that only some features of X influence Y, so that $Y=f(EX,N)$, E being a binary diagonal, N some unknown noise, and f an unknown function.
-%
-We try to recover E, the active causal features.
 
 Back and forth regression consists in two steps.
 %
