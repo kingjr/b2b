@@ -57,9 +57,8 @@ have a mean and a standard deviation of 0 and 1 respectively.
 
 We attempt to identify which factors of $X$ explain the MEG
 recordings $Y$ at each time sample and for each subject separately. To this aim,
-we compare three methods (forward, backward and back-to-back
-regressions). Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
-
+we compare three methods: forward regression, backward regression, and back-to-back regression.
+Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 
 \begin{figure}[t!]
   \centering
@@ -76,7 +75,11 @@ Forward regression performs a regularized least-squares regression $A \in \mathb
 %
 Backward regression performs a regularized least-squares regression $B \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YB$, using a validation sample.
 %
-
+For back-to-back regression, we observed that two modifications improved its performance on MEG data.
+%
+First, we replace the Tikhonov regularization in the first regression by truncated SVD (performed as a maximum likelihood estimation of principal components).
+%
+Second, we invert the data covariances using all the data, and use these common inverses across B2BR repetitions.
 
 % \paragraph{Forward regression} also known as 'encoding' in neuroimaging, here consists of
 % fitting a ridge-regularized ordinary least squares (OLS) regression \footnote{We use scikit-learn \citep{sklearn}.} from $X$ to $Y$:
@@ -105,20 +108,20 @@ Backward regression performs a regularized least-squares regression $B \in \math
 % coefficient $r$ between $X_{test}$ and $\hat X_{test}$. We repeat the procedure
 % for 20 random splits and average the result.
 
-\paragraph{Back-to-back regression} We adapted back-to-back regression with two
-changes. First, to avoid getting a slightly positively-biased estimate of the
-factors contributing to the MEG signal, we swap the Tikhonov regularization of
-the first regression $G$ with a truncated regularization. Truncation was fitted
- by maximum likelihood estimate, as implemented in scikit-learn principal
- component analysis. Second, to minimize the variance increase induced by
- bagging, we computed the inverse regularized covariance matrices outside
- bagging:
-\begin{equation}
-  G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
-\end{equation}
-\begin{equation}
-\hat X_{test} = Y_{test} \cdot G^T
-\end{equation} where $\left(train,test\right)$ are partitions of the data.
+% \paragraph{Back-to-back regression} We adapted back-to-back regression with two
+% changes. First, to avoid getting a slightly positively-biased estimate of the
+% factors contributing to the MEG signal, we swap the Tikhonov regularization of
+% the first regression $G$ with a truncated regularization. Truncation was fitted
+%  by maximum likelihood estimate, as implemented in scikit-learn principal
+%  component analysis. Second, to minimize the variance increase induced by
+%  bagging, we computed the inverse regularized covariance matrices outside
+%  bagging:
+% \begin{equation}
+%   G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
+% \end{equation}
+% \begin{equation}
+% \hat X_{test} = Y_{test} \cdot G^T
+% \end{equation} where $\left(train,test\right)$ are partitions of the data.
 
 \subsubsection{Second-level statistics}
 
