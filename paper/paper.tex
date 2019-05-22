@@ -26,7 +26,7 @@
 \newcommand{\jrk}[1]{{\color{blue} (JRK: #1)}}
 \newcommand{\fc}[1]{{\color{orange} (FC: #1)}}
 
-\title{Discovering causal factors with back-and-forth regression}
+\title{Discovering causal factors with back-to-back regression}
 
 \author{%
   Jean-Remi King\\
@@ -54,7 +54,7 @@
 Identifying causes from observations is at the core of science. This endeavor
 is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
-To address this issue, we introduce ``back-and-forth regression'' (BFR), a
+To address this issue, we introduce ``back-to-back regression'' (BFR), a
 method designed to identify, from a set of co-varying factors, the factors
 that most plausibley account for multidimensional observations. After detailing
 the proof of convergence, we show that BFR outperforms least-squares and related
@@ -73,45 +73,46 @@ covary in the study.
 
 Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations potentially in novel environments.
 %
-This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{i, l}$, that is a function of possible causes $X \in \mathbb{R}^{i, j}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{i, k}$: $Y=F(X,N)$. Of all considered causes (features of X), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{R}^{j, j}$ a binary diagonal matrix, which selects causal features of $X$.
+This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{i, l}$, that is a function of possible causes $X \in \mathbb{R}^{i, j}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{i, k}$: $Y=F(X,N)$. Of all considered causes (features of $X$), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{R}^{j, j}$ a binary diagonal matrix, which selects causal features of $X$.
 %
-Under the restricted assumptions of centered and additive noise N and linear systems, causal discovery thus consists in finding $E$ in
+Under the assumptions of centered and additive noise N, causal discovery thus consists in finding $E$ in
 
 \begin{equation}
-    Y=(XEM+N)F
+    Y=F(XE, N)
 \end{equation}
-with $M \in \mathbb{R}^{j, k}$ and $F \in \mathbb{R}^{j, k}$ being unknown.  $M$ is a unknown projection matrix that ensures that the noise and the causal factors share a common space, and can thus be absorbed by $F$:
-\begin{equation}
-    Y=(XE+N^{*})F^{*}
-\end{equation}
-\par
 
 %
 Under this formalism, causal discovery is impeded by two challenges.
 %
-To illustrate these two challenges, let us consider the case of a neuroscientist who studies the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car'). One issue is that word frequency tends to correlate with word length.\par
+% To illustrate these two challenges, let us consider the case of a neuroscientist who studies the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car'). One issue is that word frequency tends to correlate with word length.\par
 %
-%
-This is the first challenge to causal discovery: a set of putative factors, some causal, other non-causal, can be collinear. Collinearity in the putative factors $X$ is typically addressed with factorial designs \cite{fisher_1935}. For example, our neuroscientist may carefully select words matched in terms of length, while letting their frequency vary. However, factorial design becomes increasingly difficult to implement as the number of considered factor grows. As a fallback option, factors may be orthogonalized \textit{a posteriori}, by analytically estimating how each of them contributes to explaining the observations. Our neuroscientist will thus typically use ordinary least square (OLS) to model how brain activity can be specifically accounted for by word length and word frequency:
+% This is the first challenge to causal discovery
+The first challenge is factor collinearity: causal and non-causal factors may tend to covary with one another: i.e. $X'X$ is not diagonal. Collinearity in $X$ is typically addressed with factorial designs \cite{fisher_1935}.
+% For example, our neuroscientist may carefully select words matched in terms of length, while letting their frequency vary.
+However, factorial design becomes increasingly difficult to implement as the number of considered factors grows. As a fallback option, factors may be orthogonalized \textit{a posteriori}, by analytically estimating how each of them contributes to explaining the observations with ordinary least square (OLS):
+
+% Our neuroscientist will thus
 \begin{equation}
 H = (X'X)^{-1} X'Y
 \end{equation}
 In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y. \par
 %
 %
-The second challenge to causal discovery is the multiplicity of the observations. For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons. It can thus be suboptimal to consider each neuron independently, because they may be influenced by some unknown factors $N$. More generally, with the rise of large and complex datasets, the complexity of observations has led many to invert the problem and to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict factors from complex brain signals:
+The second challenge to causal discovery is the multiplicity of the observations.
+% For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons. It can thus be suboptimal to consider each neuron independently, because they may be influenced by some unknown factors $N$.
+With the rise of large datasets, the complexity of observations has led many to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict factors from complex brain signals:
 \begin{equation}
 G = (Y'Y)^{-1} Y'X
 \end{equation}
 We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X. \par
 %
 %
-As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling efficiently disentangles the independent contribution of collinear factors, but does not combine multidimensional observations. By contrast, backward modeling combines multiple observations, but does not disentangle collinear factors. \par
+As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling disentangles the independent contribution of collinear factors, but does not combine multidimensional observations. By contrast, backward modeling combines multiple observations, but does not disentangle collinear factors. \par
 %
 %
-In this paper, we introduce the 'back-and-forth regression', which combines the benefits of forward and backward modeling. Back-and-forth regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving an estimate $\hat X$ and finally disentangling which of the considered factors X accounts for the variance in $\hat X$ (i.e. analogously to forward modeling). \par
+In this paper, we introduce the 'back-to-back regression', which combines the benefits of forward and backward modeling. Back-to-back regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving an estimate $\hat X$ and finally disentangling which of the considered factors X accounts for the variance in $\hat X$ (i.e. analogously to forward modeling). \par
 %
-In the next sections, we detail back-and-forth regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-and-forth regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-and-forth regression to the brain activity of 102 subjects reading $\approx$ 2,000 words, and show that the first brain responses to these words appear to be mainly modulated by low-level visual features, such as the number of letters, while late brain responses appear to be mainly modulated by high-level lexical features, such as word frequency. \par
+In the next sections, we detail back-to-back regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-to-back regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-to-back regression to the multidimensional recordings of brain activity of 102 subjects reading $\approx$ 2,000 words, whose underlying features covary. Our results  show that the first brain responses to word presentation is mainly modulated by low-level visual features, such as the number and category of letters, while late brain responses appear to be mainly modulated by high-level lexical features, such as word frequency and part-of-speech. \par
 %
 
 \section{Back an forth regression}
@@ -176,7 +177,7 @@ In the next sections, we detail back-and-forth regression, prove that it asympto
 
 \subsection{Algorithm}
 
-Back and forth regression consists in two steps.
+Back-to-back regression consists of two steps.
 %
 First, we perform a least squares estimation of X from Y, that is we find $\hat G$ such that $\hat X=\hat G Y$ is the least square predictor of X.
 %
@@ -208,7 +209,7 @@ The diagonal matrix $\hat E$, having large elements of H as its unit diagonal co
 
 To select large elements of $\hat H$, the traditional approach in regression analysis consists in testing whether its coefficients differ from zero. This is usually done via variants of Student t-test.
 %
-This will not work here, as back-and-forth regression introduces, through two regularisations, a significant amount of positive bias on the diagonal, which depends in a complex manner on noise, dimensionality and conditioning of X and Y.
+This will not work here, as back-to-back regression introduces, through two regularisations, a significant amount of positive bias on the diagonal, which depends in a complex manner on noise, dimensionality and conditioning of X and Y.
 %
 Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large).
 
@@ -224,9 +225,9 @@ At 95\% confidence level, a value of K superior to 3.84 makes our selection sign
 
 This extract from $\hat H$ a binary diagonal $\hat E$.
 %
-To use back-and-forth regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
+To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
 
-Summarizing, back-and-forth regression is performed as follows:
+Summarizing, back-to-back regression is performed as follows:
 \begin{enumerate}
 \item Randomly split the data sample.
 \item From the first half sample, using crossalidated ridge regression, find $\hat G$, the regularised least square regression of X from Y: $\hat G=(Y'Y)^{-1} Y'X$.
@@ -246,7 +247,7 @@ If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (n, dx) matrix of
 %
 N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (n,dy) matrix of measured effects.
 
-The two steps of back-and-forth regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
+The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
 For the first step, replacing Y, and since N is centred, we have
 \begin{equation}
@@ -274,7 +275,7 @@ The second step is straightforward, replacing Y and since N is centred, we have
 \end{aligned}
 \end{equation}
 
-Thus, in the linear case, back-and-forth regression retrieves $\hat H = \frac{1}{1+nsr}(FE)^{\dagger}(FE)$.
+Thus, in the linear case, back-to-back regression retrieves $\hat H = \frac{1}{1+nsr}(FE)^{\dagger}(FE)$.
 
 For any matrix A, $A^\dagger A$ is the orthogonal projector over $Img(A')$, and $I-A^\dagger A$ the orthogonal projector over $Ker(A)$.
 %
@@ -290,8 +291,8 @@ This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that
 
 
 \section{Related works}
-\subsection{back-and-forth regression as a special case of canonical component analysis?}
-Formula (1) shows that back-and-forth regression may be related to canonical component analysis (CCA).
+\subsection{back-to-back regression as a special case of canonical component analysis?}
+Formula (1) shows that back-to-back regression may be related to canonical component analysis (CCA).
 %
 In CCA, we are given two matrices X and Y (or size N,p and N,q) that describe different features measured on the same data sample, and characterize their proximity (that is, between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y.
 
@@ -307,11 +308,11 @@ If the result of Eq. (1) is diagonal, as in the model presented above, the featu
 %
 If all eigenvalues are either 0 or 1, then all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues) because they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, .
 %
-Thus, back-and-forth regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X.
+Thus, back-to-back regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X.
 %
-The closer we are to this hypothesis, the closer the results of CCA and back-and-forth regression will be.
+The closer we are to this hypothesis, the closer the results of CCA and back-to-back regression will be.
 
-There are differences between CCA and back-and-forth regression.
+There are differences between CCA and back-to-back regression.
 %
 First, since our objective is not to characterise the proximity between X and Y, but just to extract causal features, we can dispense with the last step of CCA (diagonalisation of (1)).
 %
@@ -326,7 +327,7 @@ FC: discuss similar methods of regression, that can be used for feature extracti
 And maybe have something about other causal discovery methods
 
 \section{Experiments - simulated data}
-Experiments on simulated data serve three purposes: compare back-and-forth regression with other known techniques (CCA, OLS, PLS...) both as a regression and a feature extraction method, measure its performance for various values of its parameters and provide evidence for our claims about stability, invariance to environment, and behavior as a causal detector.
+Experiments on simulated data serve three purposes: compare back-to-back regression with other known techniques (CCA, OLS, PLS...) both as a regression and a feature extraction method, measure its performance for various values of its parameters and provide evidence for our claims about stability, invariance to environment, and behavior as a causal detector.
 
 The model used for simulation is $Y=f(snr MEX+N)$, with X a random (dx,N) matrix, E a square binary diagonal of dimension dx with the nc last elements equal to 1 (this means that of the dx features of X, only the nc last have some influence on Y), M and N (dz,dx) and (dz,N) random matrices, and f a function from $\mathbb{R}^{dz}$ to $\mathbb{R}^{dy}$, that can be linear or non linear.
 %
@@ -353,7 +354,7 @@ Since a random square matrix with unit gaussian coefficients of dimension n has 
 In the non linear case, sigmoid functions are...
 FC: insert comment about scaling sigmoids, and maybe something about uniform coeffs
 
-We evaluate the performance of back-and-forth regression in two different roles : as a feature extractor recovering E, and as a regression method, predicting Y from X over a test sample.
+We evaluate the performance of back-to-back regression in two different roles : as a feature extractor recovering E, and as a regression method, predicting Y from X over a test sample.
 %
 For feature extraction, the quality of fit is the number of disagreements between our estimator and the diagonal of E (ie, their Hamming distance, which should be minimised).
 %
@@ -362,7 +363,7 @@ For regression, we use a test set of N additional measurements, and calculate th
 Performance indicators are calculated by averaging the results of several experiments.
 
 \subsection{Feature extraction - linear case}
-All other parameters being equal, the quality of feature extraction, measured as the discrepancy between features extracted by back-and-forth regression ($\hat E$) and the diagonal of E, improves with signal to noise ratio.
+All other parameters being equal, the quality of feature extraction, measured as the discrepancy between features extracted by back-to-back regression ($\hat E$) and the diagonal of E, improves with signal to noise ratio.
 %
 The decrease is usually very steep until a Hamming distance under 2 is achieved.
 %
@@ -386,7 +387,7 @@ Working from a fixed sample of 1000, and 15 active features, and varying values 
 %
 The dimensionality of Y plays a much smaller role, except for very small values of dy (less than 10).
 
-For feature extraction, back-and-forth regression either works very well (Hamming distance less than 2) or very badly, with a sharp change over small variations of the parameters.
+For feature extraction, back-to-back regression either works very well (Hamming distance less than 2) or very badly, with a sharp change over small variations of the parameters.
 %
 The following graphs show the boundary between values of dx and dz that allow for features extractions (dx lower than boundary, or dz larger), for different values of dy (level curves on the graph), and different values of signal to noise ratio and number of active variables.
 
@@ -396,7 +397,7 @@ For values of ...
 %
 in ..., an empirical formula can be provided.
 %
-back-and-forth regression allows for good feature extraction if :
+back-to-back regression allows for good feature extraction if :
 
 \subsection{Feature extraction - nonlinear case}
 
@@ -413,7 +414,7 @@ To this effect, we compare four approaches to regression:
 \end{itemize}
 Over a large set of parameters, we observe that filtered regression is on average better than weighted, which is on average better than standard regression.
 %
-This demonstrates that back-and-forth regression can be used as a regression method, over the areas in parameter space where feature extraction performs well.
+This demonstrates that back-to-back regression can be used as a regression method, over the areas in parameter space where feature extraction performs well.
 
 FC graphs go here
 
@@ -428,7 +429,7 @@ In this section, we perform the same tests as in the previous one, but the test 
 %
 In practice, we test the same trained predictors of Y over test samples generated from a distribution of X with a different covariance.
 
-The rationale behind such tests is that whereas back-and-forth regression, being a feature extraction method, might not be as efficient as dedicated prediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments.
+The rationale behind such tests is that whereas back-to-back regression, being a feature extraction method, might not be as efficient as dedicated prediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments.
 
 FC: ideally, we'd like to assess the multiple env performance of jrr, and compare it with others.
 %
