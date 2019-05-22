@@ -190,7 +190,7 @@ The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \tex
 
 If using regularized least-squares, arguably the most commonly employed linear regression technique, the solution of B2BR has a closed form solution.
 %
-In particular, $\hat G = (Y^\top Y + \Lambda_Y)^{-1} Y^\top X$ and $\hat H=(X^\top X + \Lambda_X)^{-1} X^\top YG$, where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
+In particular, $\hat G = (Y^\top Y + \Lambda_Y)^{-1} Y^\top X$ and $\hat H=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G$, where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
 
 
 % If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
@@ -206,6 +206,8 @@ To avoid this issue, we split our sample $(X, Y)$ at random into two equally-siz
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
 To compensate for the reduction in sample size caused by the split, B2BR is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split.
+%
+After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$ as a final B2BR prediction rule.
 
 We summarize the B2BR procedure in Algorithm~\ref{algorithm:b2br}.
 %
@@ -222,10 +224,12 @@ The rest of this section provides a theoretical guarantee on the correctness of 
         $(X, Y) \leftarrow \text{ShuffleRows}((X, Y))$\;
         $(X_1, Y_1), (X_2, Y_2) \leftarrow \text{SplitRowsInHalf}((X, Y))$\;
         $\hat{G} = \text{LinearRegression}(Y_1, X_1)$ \Comment*[r]{$\hat G = (Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1$}
-        $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$\;
-        $E \leftarrow E + \text{Diag}(H)$\;
+        $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$ \Comment*[r]{$\hat H=(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2 \hat G$}
+        $\hat{E} \leftarrow \hat{E} + \text{Diag}(H)$\;
     }
-    \Return{$\hat{E} / m$}
+    $\hat{E} \leftarrow \hat{E} / m$\;
+    $\hat{W} \leftarrow \text{LinearRegression}(X \hat{E}, Y)$\;
+    \Return{$\hat{E}$, $\hat{W}$}
     \caption{Back-to-back regression.}
     \label{algorithm:b2br}
 \end{algorithm}
@@ -298,7 +302,7 @@ Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1
 As we shall see, the diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
 % \subsection{Asymptotic behaviour - non linear case}
 
-\subsection{Post-processing of B2BR}
+\subsection{Binarizing $\hat{E}$}
 
 On the one hand, we have leveraged B2BR to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
 %
@@ -314,11 +318,16 @@ Instead, we treat the binarization of $\hat{E}$ as a clustering problem: separat
 %
 More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
 %
-Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
+Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{todo} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
 %
 To binarize $\hat{E}$, set to one all the diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the diagonal entries.
 
 \section{Experiments}
+
+We perform two experiments to evaluate the performance of BB2R: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
+%
+We use scikit-learn to implement all of our simulations \citep{sklearn}.
+
 \subsection{Synthetic data}
 
 \input{synthetic.tex}
@@ -358,10 +367,6 @@ Second, since we operate in a noisy environment, we use regularisation, introduc
 Finally, whereas CCA wants to leverage all correlations between X and Y, we filter some of them, through splitting and bagging.
 %
 In other words, whereas we are working from the same formulae as CCA, we use them in different ways, for different purposes
-
-\subsection{Related regression methods}
-FC: discuss similar methods of regression, that can be used for feature extraction
-And maybe have something about other causal discovery methods
 
 \section{Conclusion}
 
