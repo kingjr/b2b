@@ -188,9 +188,13 @@ Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\ha
 %
 The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(E)$, is the desired estimate of the causal influence matrix $E$.
 
-If using regularized least-squares, arguably the most commonly employed linear regression technique, the solution of B2BR has a closed form solution.
+If using regularized least-squares, arguably the most commonly employed linear regression technique, the solution of B2BR has a closed form solution:
+\begin{align}
+    \hat G &= (Y^\top Y + \Lambda_Y)^{-1} Y^\top X,\label{eq:solG}\\
+    \hat H &=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G,\label{eq:solH}
+\end{align}
 %
-In particular, $\hat G = (Y^\top Y + \Lambda_Y)^{-1} Y^\top X$ and $\hat H=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G$, where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
+where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
 
 
 % If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
@@ -337,37 +341,28 @@ We use scikit-learn to implement all of our simulations \citep{sklearn}.
 \input{meg_exps.tex}
 
 \section{Related work}
-Formula (1) shows that back-to-back regression may be related to canonical component analysis (CCA).
-%
-In CCA, we are given two matrices X and Y (or size N,p and N,q) that describe different features measured on the same data sample, and characterize their proximity (that is, between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y.
 
-This is done by finding vectors $a$ and $b$ such that $Xa$ and $Yb$ display maximal correlation, or by maximizing $a'X'Yb$ over unit-normed $a$ and $b$.
+Back-to-back regression is closely related to Canonical Correlation Analysis \citep[CCA]{todo}.
 %
-To find a, one calculates the eigenvectors of Eq. (1).
+While CCA computes the eigenvector decomposition of \eqref{eq:solH}, while we compute its diagonal.
 %
-The largest one is the direction with maximal correlation, the second one the maximal correlation direction orthogonal to the first, and so on.
+If \eqref{eq:solH} is diagonal, as in our model \eqref{eq:model}, the variables in $X$ are the eigenvectors.
 %
-For each canonical dimension, the corresponding eigenvalue is the square of the cosine between the corresponding direction along X and the subspace spanned by Y.
+If all the associated eigenvalues are either $0$ or $1$, then all the variables are either part of the $Y$ subspace, or orthogonal to it, respectively.
+%
+This is because these eigenvalues correspond to the squared cosine of the angle between the corresponding variable in $X$ and the $Y$ subspace.
+%
+Thus, back-to-back regression is equivalent to CCA under the constraint that the subspaces spanned by $X$ and $Y$ are perpendicular, $X$ is spanned by vectors of $Y$ and vectors orthogonal to $Y$, and that the parallel and orthogonal components of $X$ are spanned by disjoint sets of features of $X$.
 
-If the result of Eq. (1) is diagonal, as in the model presented above, the features of X are eigenvectors.
+There are, however, differences between CCA and back-to-back regression.
 %
-If all eigenvalues are either 0 or 1, then all the features are either part of the Y subspace (eigenvalues of one) or orthogonal to it (for zero eigenvalues) because they correspond to the squared cosine of the angle between the corresponding feature and the subspace spanned by Y, .
+First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA. 
 %
-Thus, back-to-back regression amounts to CCA under the constraint that the subspaces spanned by X and Y are perpendicular, X is spanned by vectors of Y and vectors orthogonal to Y, and that the parallel and orthogonal components of X are spanned by disjoint sets of features of X.
-%
-The closer we are to this hypothesis, the closer the results of CCA and back-to-back regression will be.
-
-There are differences between CCA and back-to-back regression.
-%
-First, since our objective is not to characterise the proximity between X and Y, but just to extract causal features, we can dispense with the last step of CCA (diagonalisation of (1)).
-%
-Second, since we operate in a noisy environment, we use regularisation, introducing bias in the correlation calculations.
-%
-Finally, whereas CCA wants to leverage all correlations between X and Y, we filter some of them, through splitting and bagging.
-%
-In other words, whereas we are working from the same formulae as CCA, we use them in different ways, for different purposes
+Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
 
 \section{Conclusion}
+
+\input{conclusion}
 
 % \section{Acknowlegements}
 % Data were provided (in part) by the Donders Institute for Brain, Cognition and Behaviour.

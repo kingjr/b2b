@@ -1,9 +1,11 @@
-In this work, we explored the back-to-back (B2B) regression, a novel method for
-identifying causes from observations building on two successive
-multidimensional regressions; from one domain to the other, and then back.
-We analyzed the asymptotic behavior of this approach, proving its convergence,
-and compared it to several baselines in controlled synthetic experiments. We
-showcased our approach on a recent brain imaging dataset, analyzing the timing
-of brain responses and their connection to features of words, and obtained
-results consistent with prior work in neuroscience literature, confirming the
-viability of our method in the case of real data.
+In this work, we proposed Back-to-Back Regression (B2BR), a method to 
+measure the causal influence of a potential set of variables generating some observations.
+%
+B2BR performs two successive multidimensional regressions: one from the output domain, and another one from the input domain.
+%
+We provided a theoretical guarantee about the consistency of B2BR, and compared it to several baselines in controlled synthetic experiments.
+%
+We also applied B2BR to a recent brain imaging dataset, analyzing the timing
+of brain responses and their connection to word features.
+%
+We obtained results consistent with prior work in neuroscience literature, confirming the efficacy of B2BR for real data analysis.
