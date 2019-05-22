@@ -10,7 +10,7 @@ import random
 
 models = {
     "JRR": JRR,
-    "JRR2": JRR2,
+    # "JRR2": JRR2,
     "JRR3": JRR3,
     "OLS": OLS,
     "Ridge": Ridge,

@@ -244,7 +244,7 @@ class CCA(SKModel):
 class JRR(object):
     def __init__(self):
         alphas = np.logspace(-5, 5, 20)
-        self.G = MyRidgeCV(alphas, independent=True)
+        self.G = MyRidgeCV(alphas, independent=False)
         self.H = MyRidgeCV(alphas, independent=False)
         self.n_splits = 100
 
@@ -368,7 +368,7 @@ class JRR3(object):
             p = np.random.permutation(range(len(X)))
             train, test = p[::2], p[1::2]
             G, _, _ = ridge_cv_Uv(Y[train], X[train], self.alphas,
-                                  independent_alphas=True,
+                                  independent_alphas=False,
                                   Uv=(Y[train] @ Vs_inv_y, v_y))
             X_hat = Y[test] @ G.T
             Cxtxh.append(Xt[test].T @ X_hat)
