@@ -73,7 +73,7 @@ covary in the study.
 
 Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations potentially in novel environments.
 %
-This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{i, l}$, that is a function of possible causes $X \in \mathbb{R}^{i, j}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{i, k}$: $Y=F(X,N)$. Of all considered causes (features of $X$), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{R}^{j, j}$ a binary diagonal matrix, which selects causal features of $X$.
+This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{n, q}$, that is a function of possible causes $X \in \mathbb{R}^{n, d}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{n, d}$: $Y=F(X,N)$. Of all considered causes (features of $X$), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{D}^{d, d}$ a binary diagonal matrix, which selects causal features of $X$.
 %
 Under the assumptions of centered and additive noise N, causal discovery thus consists in finding $E$ in
 
@@ -157,20 +157,19 @@ In the next sections, we detail back-to-back regression, prove that it asymptoti
     \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d}$}};
     \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d \times q}$}};
 
-    \node[] (labY) at (\posY, 2){observed effects};
-    \node[] (labX) at (\posX, 2.3){world};
-    \node[] (labX) at (\posX, 2){features};
-    \node[] (labE) at (\posE, 2.3){cause};
+    \node[] (labY) at (\posY, 2){Observations};
+    \node[] (labX) at (\posX, 2){Factors};
+    \node[] (labE) at (\posE, 2.3){Cause};
     \node[] (labE) at (\posE, 2){selection};
-    \node[] (labN) at (\posN, 2){noise};
-    \node[] (labF) at (\posF, 2.3){cause-effect};
+    \node[] (labN) at (\posN, 2){Noise};
+    \node[] (labF) at (\posF, 2.3){Cause-effect};
     \node[] (labF) at (\posF, 2){mapping};
 
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
-    \node[] (reg1) at (5,-3.25) {$\hat{E} = \overbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\underbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}_{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}^{\text{2) regression from } X \text{ to } \hat{X}} $};
+    \node[] (reg1) at (5,-3.25) {$\hat{E} = \underbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}} $};
     \end{tikzpicture}
-    \caption{Summary of our method blah blah blah}
+    \caption{In its linear form, back-to-back regression identifies the subset of factors that suffices to account for multidimensional observations by piping two successive regressions from $Y$ to $X$ and from $X$ to $\hat X$}
     \label{fig:}
 \end{figure}
 
@@ -217,7 +216,7 @@ This can be done by maximizing the ratio of inter-group variance over total vari
 %
 In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal.
 %
-If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we are maximising the Sonquist and Morgan criterion $$K = {p (n-p) \over n} {(s-r)^2 \over V}$$ and selecting the p features corresponding to the largest values.
+If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we are maximizing the Sonquist and Morgan criterion $$K = {p (n-p) \over n} {(s-r)^2 \over V}$$ and selecting the p features corresponding to the largest values.
 %
 If diagonal elements of $\hat H$ are normally distributed, K follows a chi-square distribution with one degree of freedom.
 %
@@ -259,22 +258,22 @@ For the first step, replacing Y, and since N is centred, we have
 
 As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-GFEX\right\| ^2$, which is $X(FEX)^\dagger$ ($M^\dagger$ denoting the pseudo inverse of M).
 
-Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X are of full rank on the space spanned by the active features of E). Let K be the (nx,k) diagonal matrix built by deleting the rightmost nx-k columns of E. Then, $K=(\frac{I_{k}}{0})$. we may write $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k. 
+Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X are of full rank on the space spanned by the active features of E). Let K be the (nx,k) diagonal matrix built by deleting the rightmost nx-k columns of E. Then, $K=(\frac{I_{k}}{0})$. we may write $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k.
 
 The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$, A (m,n), B(m,k) or rank k C(k,n) of rank k, then $A^\dagger=C^\dagger B^\dagger= C' (CC')^{-1}(B'B)^{-1}B'$.
 
-Replacing in the expression of the minimal norm solution yields 
+Replacing in the expression of the minimal norm solution yields
 \begin{equation}
 \begin{aligned}
 X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
 &=X(K'X)'((K'X)(K'X)')^{-1}((FK)(FK)')^{-1}(FK)' \\
-&=(XX')K(K'XX'K)^{-1}(FKK'F')^{-1} K'F' 
+&=(XX')K(K'XX'K)^{-1}(FKK'F')^{-1} K'F'
 \end{aligned}
 \end{equation}
 
 Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{3} & \Sigma_{4}\end{array}\right)$, the top left block being (k,k), since $K=\left(\begin{array}{c}I \\\hline 0\end{array}\right)$, we have $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{3} \Sigma_{1}^{-1}\end{array}\right)=S$
 
-Thus we have $X(FEX)^\dagger =S (FKK'F')^{-1} K'F'$  
+Thus we have $X(FEX)^\dagger =S (FKK'F')^{-1} K'F'$
 
 FC: this explains the negative diagonal elements, when X is negatively correlated. Need now to prove that this is S(FE)+
 
