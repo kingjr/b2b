@@ -159,6 +159,8 @@ In summary, our model can be formalized as:
 %
 where $N$ and $N'$ are some unobserved noise variables.
 %
+While the triplet of variables $X$, $N$, and $N'$ are independent, we allow each of them to have a general covariance matrix.
+%
 In practice, we observe $n$ samples $(X, Y)$ from the model.
 %
 This process, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
@@ -229,29 +231,35 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 \end{algorithm}
 
 \subsection{Theoretical guarantees}
-As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
+% As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
+% %
+% If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
+% %
+% N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
+% 
+% The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
+
+Assuming centered noise $N$,
+\begin{align*}
+    \arg \min_G \left \| YG - X \right \|^2 &= \arg \min_G \left \| (EX + N)FG \right\|^2 \\
+                                            &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
+\end{align*}
 %
-If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
+As the noise $N$ tends to zero, the solution to the previous problem is $\hat G = (X E F)^\dagger X$, where ``$\dagger$'' denotes the Moore-Penrose pseudo-inverse.
+
+Next, let $k$ be the number of ones in the causal influence matrix $E$.
 %
-N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
+Without loss of generality, assume that these are the first $k$ variables in $X$.
+%
+Assume that $XEF$ is of rank $k$, which means that $F$ and $X$ have full rank on the space spanned by the active elements in $E$.
+%
+Let $K \in \mathbb{R}^{d_x \times k}$ be the diagonal matrix obtained by deleting the right-most $d_x - k$ columns of $E$.
+%
+Then, $E = KK^\top$, and $XEF = (XK)(K^\top F)$, with both $XK$ and $K^\top$ of rank $k$.
 
-The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
-
-For the first step, replacing Y, and since N is centred, we have
-\begin{equation}
-\begin{aligned}
-\arg \min_G \left \| X-GY \right \|^2 &= \arg \min_G \left \| X - GF(EX+N)\right\|^2 \\
-&{}= \arg \min_G \left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2
-\end{aligned}
-\end{equation}
-
-As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-GFEX\right\| ^2$, which is $X(FEX)^\dagger$ ($M^\dagger$ denoting the pseudo inverse of M).
-
-Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X have full rank on the space spanned by the active features of E). Let K be the $\mathbb{R}^{nx\times k}$ diagonal matrix obtained by deleting the rightmost nx-k columns of E. Then, $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k.
-
-The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$ with $A\in\mathbb{R}^{m\times n}$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$ of rank k, then $A^\dagger=C^\dagger B^\dagger$ and since C is full rank, $C^\dagger=C' (CC')^{-1}$.
-
-Replacing in the expression of the minimal norm solution yields
+Recall the rank factorisation property of the pseudo-inverse \citep{todo}: if $A=BC$ with $A\in\mathbb{R}^{m\times n}$ of rank $k$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$, then $A^\dagger=C^\dagger B^\dagger$ and, since $C$ is full rank, $C^\dagger=C' (CC')^{-1}$.
+%
+Using this property on the minimal norm solution $\hat G$ yields
 \begin{equation}
 \begin{aligned}
 X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
