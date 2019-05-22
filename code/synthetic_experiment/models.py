@@ -154,6 +154,7 @@ class Lasso(SKModel):
 
         self.coef = MultiTaskLassoCV(fit_intercept=False,
                                      selection="random",
+                                     max_iter=10000,
                                      n_alphas=10,
                                      n_jobs=N_JOBS,
                                      cv=5).fit(X[p], Y[p]).coef_.T

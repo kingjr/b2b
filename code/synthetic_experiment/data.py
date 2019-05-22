@@ -44,7 +44,7 @@ class Synthetic(object):
         Y = (self.snr * X @ self.E + N) @ self.F
 
         if self.nonlinear:
-            Y = 1. / (1. + math.exp(-Y))
+            Y = 1. / (1. + np.exp(-Y))
 
         # return inputs, outputs, and solution
         return X, Y
