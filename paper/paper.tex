@@ -1,9 +1,13 @@
 \documentclass{article}
 
 \usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx}
+\usepackage[ruled, linesnumbered]{algorithm2e}
+
 \usepackage[hidelinks]{hyperref}
 \usepackage[]{neurips_2019}
 \DeclareMathOperator{\Tr}{Tr}
+
+\SetKwComment{Comment}{$\triangleright$\ }{}
 
 \usetikzlibrary{calc}
 
@@ -75,6 +79,7 @@ covary in the study.
 
 \section{Back to back regression}
 
+
 \begin{figure}[t!]
     \centering
     \begin{tikzpicture}
@@ -137,74 +142,93 @@ covary in the study.
     \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{Diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
     \end{tikzpicture}
     \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and ii) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
-    \label{fig:}
+    \label{fig:b2b}
 \end{figure}
 
-\subsection{Formalism}
-Via an apparatus F, we are measuring a multidimensional signal Y, which is a function of possible causes X and other non causal features N. Not all features of X exert causal influence on Y. Let EX (E a matrix of zero and one) the subset of causal factors. Our model can be formalised as $Y=f(EX,N)$. 
+We consider the measurement of multivariate signal $Y$, generated from a set of variables $X$, via some unknown linear apparatus $F$.
+%
+Not all the variables in $X$ exert a causal influence on $Y$.
+%
+By considering a square binary diagonal matrix of \emph{causal influences} $E$, we denote by $XE$ the causal factors of $Y$.
+%
+In summary, our model can be formalized as:
+%
+\begin{equation}
+    Y = (XE + N)F + N',\label{eq:model}
+\end{equation}
+%
+where $N$ and $N'$ are some unobserved noise variables.
+%
+In practice, we observe $n$ samples $(X, Y)$ from the model.
+%
+This process, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
 
-Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
+Given the model in Equation~\eqref{eq:model}, the goal of Back-to-Back Regression (B2BR) is to estimate the matrix of causal influences $E$.
 
-We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
+%Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
+
+%We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
 
 % In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
 
-Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
+%Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
 
 \subsection{Algorithm}
 
-Back-to-back regression consists of two steps.
-%
-First, we perform a least squares estimation of X from Y, that is we find $\hat G$ such that $\hat X=\hat G Y$ is the least square predictor of X.
-%
-This recovers an approximation of the causes of Y in X.
-%
-Then, we perform a least squares estimation of $\hat X$ from X, and determine $\hat H$ such that $\hat {\hat X}=\hat H X$ is the least square predictor of $\hat X$.
-%
-In matrix form, we have $\hat G=(Y'Y)^{-1} Y'X$, and
-\begin{equation} \hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X\end{equation}
 
-If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
+Back-to-Back Regression (B2BR) consists in two steps.
+%
+First, we estimate the linear regression coefficients $\hat G$ from $Y$ to $X$, and construct the predictions $\hat X = \hat Y \hat G$.
+%
+This backward regression recovers an approximation of the causes of $Y$ in $X$.
+%
+Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\hat X$.
+%
+The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(E)$, is the desired estimate of the causal influence matrix $E$.
+
+If using regularized least-squares, arguably the most commonly employed linear regression technique, the solution of B2BR has a closed form solution.
+%
+In particular, $\hat G = (Y^\top Y + \Lambda_Y)^{-1} Y^\top X$ and $\hat H=(X^\top X + \Lambda_X)^{-1} X^\top YG$, where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
+
+
+% If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
  
-In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref). 
+% In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref). 
 
-In both, we compute the singular value decompositions of the covariance matrix, transform its diagonal part, and invert it. In truncated SVD, the lowest eigenvalues are set to zero, and the corresponding vectors eliminated from future calculations. In ridge regression, a constant factor is added to all eigenvalues. The regularisation factor and truncation threshold are chosen via leave one out cross validation. In practice, ridge regression tends to provide better stability but introduces a bias in the estimates. Truncated SVD is used to provide better results in low noise cases.
+% In both, we compute the singular value decompositions of the covariance matrix, transform its diagonal part, and invert it. In truncated SVD, the lowest eigenvalues are set to zero, and the corresponding vectors eliminated from future calculations. In ridge regression, a constant factor is added to all eigenvalues. The regularisation factor and truncation threshold are chosen via leave one out cross validation. In practice, ridge regression tends to provide better stability but introduces a bias in the estimates. Truncated SVD is used to provide better results in low noise cases.
 
-Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data are detected in the first step and learnt in the second. To avoid this, we split our sample into two halves, and each regression is performed over one, effectively decorrelating the two steps.
+Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data absorbed by the first regression will be leveraged by the second one.
 %
-To compensate for the reduction in sample size caused by the split, this process is repeated over many splits, and their results are averaged.
-This bagging compensates for the reduction in sample size caused by splitting.
-
-As we shall see, the diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
-
-To recover an estimate of E, we need a test to select the largest diagonal elements of $\hat H$.
+To avoid this issue, we split our sample $(X, Y)$ at random into two equally-sized halves $(X_1, Y_1)$ and $(X_2, Y_2)$.
 %
-In regression analysis, a traditional approach to this problem consists in testing whether coefficients differ from zero, via variants of Student t-test.
+Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
-This will not succeed here. First because the conditions for these tests do not apply here (we have two regressions). Second, because regularisation adds bias on the diagonal, which will cause t-tests to succeed unduly.
-%
-Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximizing the ratio of inter-group variance over total variance (ie minimizing intra-group variance), over all splits of the p largest data and the n-p smallest. 
+To compensate for the reduction in sample size caused by the split, B2BR is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split.
 
-If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we select the split that maximises the Sonquist and Morgan criterion $$K = \frac{p (n-p)}{n} \frac{(s-r)^2}{ V}$$.
+We summarize the B2BR procedure in Algorithm~\ref{algorithm:b2br}.
 %
-This recovers from $\hat H$ a binary diagonal $\hat E$.
-%
-To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
+The rest of this section provides a theoretical guarantee on the correctness of B2BR, and an optional post-processing step to binarize the estimated causal influence matrix.
 
-Summarizing, back-to-back regression is performed as follows:
-\begin{enumerate}
-\item Randomly split the data sample.
-\item From the first half sample, using crossalidated ridge regression, find $\hat G$, the regularised least square regression of X from Y: $\hat G=(Y'Y)^{-1} Y'X$.
-\item From the second half sample, calculate $\hat X = \hat G Y$, and find $\hat H$, the regularized least square regression of $\hat X$ from X: $\hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X$.
-\item Repeat steps 1 to 3 and average the results as $\hat H$.
-\item Using the Sonquist and Morgan criterion, select the large diagonal elements of $\hat H$, set them to one and the rest of $\hat  H$ to zero.
-\item Use the resulting matrix $\hat E$ as an estimator of E, the active features in the causal process
-\item Alternatively, use $\hat E$ to predict Y from X, by performing a regularised least square regression of Y from $\hat E X$.
-%
 
-\end{enumerate}
 
-\subsection{Asymptotic behaviour - linear case}
+\begin{algorithm}[H]
+    %\SetAlgoLined
+    \KwIn{input data $X \in \mathbb{R}^{n \times d_x}$, output data $Y \in \mathbb{R}^{n\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
+    \KwOut{estimate of causal influences $\hat{E} \in \mathbb{D}^{d_x \times d_x}$.}
+    $\hat{E} \leftarrow 0$\;
+    \For{$i = 1, \ldots, m$}{
+        $(X, Y) \leftarrow \text{ShuffleRows}((X, Y))$\;
+        $(X_1, Y_1), (X_2, Y_2) \leftarrow \text{SplitRowsInHalf}((X, Y))$\;
+        $\hat{G} = \text{LinearRegression}(Y_1, X_1)$ \Comment*[r]{$\hat G = (Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1$}
+        $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$\;
+        $E \leftarrow E + \text{Diag}(H)$\;
+    }
+    \Return{$\hat{E} / m$}
+    \caption{Back-to-back regression.}
+    \label{algorithm:b2br}
+\end{algorithm}
+
+\subsection{Theoretical guarantees}
 As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
 %
 If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
@@ -262,7 +286,26 @@ The second step is straightforward, replacing Y, we have
 
 Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} S (FK)^{\dagger}(FKK') = \frac{1}{1+nsr} E$.
 
+
+As we shall see, the diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
 % \subsection{Asymptotic behaviour - non linear case}
+
+\subsection{Use cases}
+
+To recover an estimate of E, we need a test to select the largest diagonal elements of $\hat H$.
+%
+In regression analysis, a traditional approach to this problem consists in testing whether coefficients differ from zero, via variants of Student t-test.
+%
+This will not succeed here. First because the conditions for these tests do not apply here (we have two regressions). Second, because regularisation adds bias on the diagonal, which will cause t-tests to succeed unduly.
+%
+Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximizing the ratio of inter-group variance over total variance (ie minimizing intra-group variance), over all splits of the p largest data and the n-p smallest. 
+
+If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we select the split that maximises the Sonquist and Morgan criterion $$K = \frac{p (n-p)}{n} \frac{(s-r)^2}{ V}$$.
+%
+This recovers from $\hat H$ a binary diagonal $\hat E$.
+%
+To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
+
 
 
 \section{Experiments}
