@@ -2,12 +2,13 @@ from sklearn.linear_model import RidgeCV, LinearRegression
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.linear_model import MultiTaskLassoCV
 from sklearn.model_selection import GridSearchCV
-from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator
+from sklearn.decomposition import PCA
 from sklearn.metrics import r2_score
 from itertools import product
 import scipy as sc
 import numpy as np
+
 
 N_JOBS = 1
 
@@ -61,7 +62,7 @@ def ridge_cv(X, Y, alphas, independent=False):
 
 
 class MyRidgeCV(object):
-    def __init__(self, alphas=np.logspace(-5, 5, 30), independent=True):
+    def __init__(self, alphas=np.logspace(-5, 5, 20), independent=True):
         self.alphas = alphas
         self.independent = independent
 
@@ -77,27 +78,6 @@ def basic_regression(X, Y, regularize=True):
         w = LinearRegression(fit_intercept=False).fit(X, Y).coef_
 
     return w.T
-
-
-# class JRR(object):
-#     def __init__(self, n_splits=10):
-#         self.n_splits = n_splits
-#
-#     def fit(self, X, Y):
-#         E = 0
-#         for _ in range(self.n_splits):
-#             perm = np.random.permutation(range(len(X)))
-#             G = basic_regression(Y[perm[0::2]], X[perm[0::2]])
-#             E += np.diag(basic_regression(X[perm[1::2]], Y[perm[1::2]] @ G))
-#
-#         self.E = E / self.n_splits
-#         self.coef = basic_regression(X @ np.diag(self.E), Y)
-#
-#     def predict(self, X):
-#         return X @ np.diag(self.E) @ self.coef
-#
-#     def solution(self):
-#         return self.E
 
 
 class Oracle(object):
@@ -245,7 +225,7 @@ class CCA(SKModel):
 class JRR(object):
     def __init__(self):
         alphas = np.logspace(-5, 5, 20)
-        self.G = MyRidgeCV(alphas, independent=False)
+        self.G = MyRidgeCV(alphas, independent=True)
         self.H = MyRidgeCV(alphas, independent=False)
         self.n_splits = 100
 
@@ -259,124 +239,6 @@ class JRR(object):
 
         self.E = E / self.n_splits
 
-        self.coef = basic_regression(X @ np.diag(self.E), Y)
-
-    def predict(self, X):
-        return X @ np.diag(self.E) @ self.coef
-
-    def solution(self):
-        return self.E
-
-
-class JRR2(object):
-    def __init__(self):
-        alphas = np.logspace(-5, 5, 20)
-        self.G = MyRidgeCV(alphas, independent=True)
-        self.H = MyRidgeCV(alphas, independent=True)
-        self.n_splits = 100
-
-    def fit(self, X, Y):
-        E = 0
-        for _ in range(self.n_splits):
-            perm = np.random.permutation(range(len(X)))
-            G, _ = self.G(Y[perm[0::2]], X[perm[0::2]])
-            H, _ = self.H(X[perm[1::2]], Y[perm[1::2]] @ G)
-            E += np.diag(H)
-
-        self.E = E / self.n_splits
-
-        self.coef = basic_regression(X @ np.diag(self.E), Y)
-
-    def predict(self, X):
-        return X @ np.diag(self.E) @ self.coef
-
-    def solution(self):
-        return self.E
-
-
-def ridge_cv_Uv(X, Y, alphas, independent_alphas=False, Uv=None):
-    """
-    Similar to sklearn RidgeCV but
-    (1) can optimize a different alpha for each column of Y
-    (2) return leave-one-out Y_hat
-    """
-    from scipy.linalg import svd
-
-    if isinstance(alphas, (float, int)):
-        alphas = np.array([alphas, ], np.float64)
-    n, n_x = X.shape
-    n, n_y = Y.shape
-    # Decompose X
-    if Uv is None:
-        U, s, _ = svd(X, full_matrices=0)
-        v = s**2
-    else:
-        U, v = Uv
-    UY = U.T @ Y
-
-    # For each alpha, solve leave-one-out error coefs
-    cv_duals = np.zeros((len(alphas), n, n_y))
-    cv_errors = np.zeros((len(alphas), n, n_y))
-    for alpha_idx, alpha in enumerate(alphas):
-        # Solve
-        w = ((v + alpha) ** -1) - alpha ** -1
-        c = U @ np.diag(w) @ UY + alpha ** -1 * Y
-        cv_duals[alpha_idx] = c
-
-        # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
-        G_diag = (w * U ** 2).sum(axis=-1) + alpha ** -1
-        error = c / G_diag[:, np.newaxis]
-        cv_errors[alpha_idx] = error
-
-    # identify best alpha for each column of Y independently
-    if independent_alphas:
-        best_alphas = (cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = np.transpose([cv_duals[b, :, i]
-                              for i, b in enumerate(best_alphas)])
-        cv_errors = np.transpose([cv_errors[b, :, i]
-                                  for i, b in enumerate(best_alphas)])
-    else:
-        _cv_errors = cv_errors.reshape(len(alphas), -1)
-        best_alphas = (_cv_errors ** 2).mean(axis=1).argmin(axis=0)
-        duals = cv_duals[best_alphas]
-        cv_errors = cv_errors[best_alphas]
-
-    coefs = duals.T @ X
-    Y_hat = Y - cv_errors
-    return coefs, best_alphas, Y_hat
-
-
-class JRR3(object):
-    def __init__(self):
-        self.alphas = np.logspace(-5, 5, 20)
-        self.n_splits = 100
-
-    def fit(self, X, Y):
-        from scipy.linalg import svd, pinv
-        # Prepare G
-        U, s, V = svd(Y, full_matrices=0)
-        Vs_inv_y = V.T @ np.diag(s**-1)
-        v_y = s**2
-
-        # Prepare H
-        pca = PCA('mle').fit(X)
-        Xt = pca.inverse_transform(pca.transform(X))
-
-        # CV loop
-        n_splits = 20
-        Cxtxh = list()
-        for split in range(n_splits):
-            p = np.random.permutation(range(len(X)))
-            train, test = p[::2], p[1::2]
-            G, _, _ = ridge_cv_Uv(Y[train], X[train], self.alphas,
-                                  independent_alphas=False,
-                                  Uv=(Y[train] @ Vs_inv_y, v_y))
-            X_hat = Y[test] @ G.T
-            Cxtxh.append(Xt[test].T @ X_hat)
-
-        H = pinv(X.T @ X) @ np.mean(Cxtxh, 0)
-        E_hat = np.diag(H)
-        self.E = E_hat
         self.coef = basic_regression(X @ np.diag(self.E), Y)
 
     def predict(self, X):

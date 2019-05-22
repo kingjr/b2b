@@ -1,4 +1,3 @@
-from scipy.linalg import sqrtm
 import numpy as np
 import math
 

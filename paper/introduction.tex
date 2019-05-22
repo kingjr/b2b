@@ -1,44 +1,10 @@
 
-Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations potentially in novel environments.
-%
-This problem can be formalized as follow: empirical studies consist in measuring, via an apparatus $F$, a signal $Y \in \mathbb{R}^{n, q}$, that is a function of possible causes $X \in \mathbb{R}^{n, d}$, and other unknown causes that can be understood as noise $N \in \mathbb{R}^{n, d}$: $Y=F(X,N)$. Of all considered causes (features of $X$), only a subset accounts for $Y$, let it be represented as $E \cdot X$, with $E \in \mathbb{D}^{d, d}$ a binary diagonal matrix, which selects causal features of $X$.
-%
-Under the assumptions of centered and additive noise N, causal discovery thus consists in finding $E$ in
+Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations. This endeavor is impeded by two major challenges.
 
-\begin{equation}
-    Y=F(XE, N)
-\end{equation}
+First, causal and non-causal factors may be numerous and collinear. In physics, for example, a student may have difficulty identifying whether fusion is caused by a change in temperature or in pressure, as these two factors can be difficult to manipulate independently. This issue becomes increasingly pronounced as the number of potential factor increases. In neuroscience for example, it can be challenging to identify whether the frequency of a word presented on a subject' retina modulates brain activity. Indeed, word frequency strongly covaries with word length (short words are more frequent than long words) as well as with word category (determinants are more frequent than adverbs), the individual letters from which it is composed etc (e.g. words that contain "z" are rare) and so forth. As it can be particularly difficult to generate a set of words that control for all of these factors simultaneously, it is common to use forward modeling, i.e. to train a model to predict observations (e.g. brain activity) from a minimal combination of competing factors (e.g. word length, word frequency, etc), and investigate the resulting parameters of the best model.
 
-%
-Under this formalism, causal discovery is impeded by two challenges.
-%
-% To illustrate these two challenges, let us consider the case of a neuroscientist who studies the brain bases of reading. Our neuroscientist wants to determine whether the frequency of a word modulates brain activity (e.g. neurons may become more active when our retina is flashed with the word 'triskaidekaphobia' than when the word is 'car'). One issue is that word frequency tends to correlate with word length.\par
-%
-% This is the first challenge to causal discovery
-The first challenge is factor collinearity: causal and non-causal factors may tend to covary with one another: i.e. $X'X$ is not diagonal. Collinearity in $X$ is typically addressed with factorial designs \cite{fisher_1935}.
-% For example, our neuroscientist may carefully select words matched in terms of length, while letting their frequency vary.
-However, factorial design becomes increasingly difficult to implement as the number of considered factors grows. As a fallback option, factors may be orthogonalized \textit{a posteriori}, by analytically estimating how each of them contributes to explaining the observations with ordinary least square (OLS):
+The second challenge to causal discovery is that observations are becoming increasingly large and complex. The relationship between causes and effects is thus often considered in a backward manner, by training models to maximally predict causes from large and complex observations. For example, brain activity is generally recorded with hundreds of sensors simultaneously. It is thus common to use 'decoding' techniques, by, for example, fitting a support vector machine across multiple sensors to predict the category of a stimulus.
 
-% Our neuroscientist will thus
-\begin{equation}
-H = (X'X)^{-1} X'Y
-\end{equation}
-In this paper, we refer to this approach as 'forward modeling' as it models how the factors X contribute to explain the observations Y. \par
-%
-%
-The second challenge to causal discovery is the multiplicity of the observations.
-% For example, our neuroscientist may simultaneously collect noisy recordings of hundreds of thousands of neurons. It can thus be suboptimal to consider each neuron independently, because they may be influenced by some unknown factors $N$.
-With the rise of large datasets, the complexity of observations has led many to focus on optimally predicting putative factors from complex and poorly controlled observations. In neuroimaging, for example, it is increasingly popular to use "decoding" methods: instead of testing whether the brain responds to particular factors, a model is trained to maximally predict factors from complex brain signals:
-\begin{equation}
-G = (Y'Y)^{-1} Y'X
-\end{equation}
-We refer to this approach as 'backward modeling' as it models how the observations Y can be combined to predict the factors X. \par
-%
-%
 As illustrated in Fig. 1., both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling disentangles the independent contribution of collinear factors, but does not combine multidimensional observations. By contrast, backward modeling combines multiple observations, but does not disentangle collinear factors. \par
-%
-%
-In this paper, we introduce the 'back-to-back regression', which combines the benefits of forward and backward modeling. Back-to-back regression consists in first predicting X from Y (as in the backward modeling) subsequently retrieving an estimate $\hat X$ and finally disentangling which of the considered factors X accounts for the variance in $\hat X$ (i.e. analogously to forward modeling). \par
-%
-In the next sections, we detail back-to-back regression, prove that it asymptotically extracts E, and show how it relates to and departs from other cross-decomposition and component analyses. We then show with synthetic experiments that back-to-back regression outperforms state-of-the-art techniques for regression and feature extraction, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-to-back regression to the multidimensional recordings of brain activity of 102 subjects reading $\approx$ 2,000 words, whose underlying features covary. Our results  show that the first brain responses to word presentation is mainly modulated by low-level visual features, such as the number and category of letters, while late brain responses appear to be mainly modulated by high-level lexical features, such as word frequency and part-of-speech. \par
-%
+
+In this paper, we introduce the 'back-to-back regression', which combines the benefits of forward and backward modeling. After detailing the method and proving its convergence, we show with synthetic data that it outperforms state-of-the-art forward, backward and cross-decomposition techniques, both in terms of causal discovery and out-of-environment predictions. Finally, we apply back-to-back regression to a large neuroimaging dataset and reveal that distinct but collinear word features leads to remarkably distinguishable brain responses.
