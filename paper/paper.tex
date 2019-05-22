@@ -241,11 +241,11 @@ Summarizing, back-to-back regression is performed as follows:
 \end{enumerate}
 
 \subsection{Asymptotic behaviour - linear case}
-As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with F an unknown function.
+As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
 %
-If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (n, dx) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
+If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
 %
-N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (n,dy) matrix of measured effects.
+N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
 
 The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
@@ -253,17 +253,34 @@ For the first step, replacing Y, and since N is centred, we have
 \begin{equation}
 \begin{aligned}
 \arg \min_G \left \| X-GY \right \|^2 &= \arg \min_G \left \| X - GF(EX+N)\right\|^2 \\
-&{}= \arg \min_G \left \| (I-GFE)X\right\| ^2  + \left \| GFN\right \| ^2\\
-&{}= \arg \min_G \Tr (X'(I-GFE)'(I-GFE)X) + \Tr (N'F'G'GFN)\\
-&{}= \arg \min_G \Tr ((I-GFE)'(I-GFE)XX') + \Tr (G'G(FN)(FN)')\\
+&{}= \arg \min_G \left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2
 \end{aligned}
 \end{equation}
 
-As noise N gets close to zero, and if F and X have full rank, then the solution tends to $(FE)^\dagger$, the pseudo inverse of FE.
+As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-GFEX\right\| ^2$, which is $X(FEX)^\dagger$ ($M^\dagger$ denoting the pseudo inverse of M).
+
+Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X are of full rank on the space spanned by the active features of E). Let K be the (nx,k) diagonal matrix built by deleting the rightmost nx-k columns of E. Then, $K=(\frac{I_{k}}{0})$. we may write $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k. 
+
+The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$, A (m,n), B(m,k) or rank k C(k,n) of rank k, then $A^\dagger=C^\dagger B^\dagger= C' (CC')^{-1}(B'B)^{-1}B'$.
+
+Replacing in the expression of the minimal norm solution yields 
+\begin{equation}
+\begin{aligned}
+X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
+&=X(K'X)'((K'X)(K'X)')^{-1}((FK)(FK)')^{-1}(FK)' \\
+&=(XX')K(K'XX'K)^{-1}(FKK'F')^{-1} K'F' 
+\end{aligned}
+\end{equation}
+
+Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{3} & \Sigma_{4}\end{array}\right)$, the top left block being (k,k), since $K=\left(\begin{array}{c}I \\\hline 0\end{array}\right)$, we have $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{3} \Sigma_{1}^{-1}\end{array}\right)=S$
+
+Thus we have $X(FEX)^\dagger =S (FKK'F')^{-1} K'F'$  
+
+FC: this explains the negative diagonal elements, when X is negatively correlated. Need now to prove that this is S(FE)+
+
+FC: onward to the reduction, I assume that we get a scaled value of S(FE)+, this needs a better proof
 
 If matrices X'X and (FN)'(FN) have low condition numbers, and denoting by VarX and VarN the variance of X and FN, we have $$\min_G \Tr ((I-GFE)'(I-GFE)XX') + \Tr (G'GFNN'F') \approx \left \| (I-GFE)\right\| ^2 VarX  + \left \| G\right \| ^2 VarN$$and the solution has the form $k(FE)^\dagger$, k a positive constant below one. To determine an approximate value of k, note that if r is the rank of FE (the number of ones in E) $$\left \| (I-GFE)\right\| ^2 = r (1-k)^2 + dx - r$$ and that under the hypothesis of F having a low condition number, the squared norm of $k(FE)^\dagger$ should be close to $k^2r$. We are therefore minimising a quantity close to $$ VarX (r (1-k)^2 + dx - r) + VarN k^2 r$$ Zeroing the derivative in k yields an approximate value of k, as $$k= \frac {VarX}{VarX + VarN}=\frac{1}{1+nsr}$$ nsr the noise to signal ratio, VarN divided by VarX.
-
-FC: something needed here about F and X'X not full rank or badly conditioned
 
 The second step is straightforward, replacing Y and since N is centred, we have
 \begin{equation}
