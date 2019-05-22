@@ -56,7 +56,7 @@ is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
 To address this issue, we introduce ``back-to-back regression'' (BFR), a
 method designed to identify, from a set of co-varying factors, the factors
-that most plausibley account for multidimensional observations. After detailing
+that most plausible account for multidimensional observations. After detailing
 the proof of convergence, we show that BFR outperforms least-squares and related
 regression techniques, as well as cross-decomposition methods (e.g. canonical
 correlation analysis, and partial least squares) on two tasks: causal
@@ -73,7 +73,7 @@ covary in the study.
 
 \input{introduction.tex}
 
-\section{Back an forth regression}
+\section{Back to back regression}
 
 \begin{figure}[t!]
     \centering
@@ -216,20 +216,25 @@ For the first step, replacing Y, and since N is centred, we have
 
 As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-GFEX\right\| ^2$, which is $X(FEX)^\dagger$ ($M^\dagger$ denoting the pseudo inverse of M).
 
-Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X are of full rank on the space spanned by the active features of E). Let K be the (nx,k) diagonal matrix built by deleting the rightmost nx-k columns of E. Then, $K=(\frac{I_{k}}{0})$. we may write $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k.
+Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X have full rank on the space spanned by the active features of E). Let K be the $\mathbb{R}^{nx\times k}$ diagonal matrix obtained by deleting the rightmost nx-k columns of E. Then, $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k.
 
-The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$, A (m,n), B(m,k) or rank k C(k,n) of rank k, then $A^\dagger=C^\dagger B^\dagger= C' (CC')^{-1}(B'B)^{-1}B'$.
+The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$ with $A\in\mathbb{R}^{m\times n}$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$ of rank k, then $A^\dagger=C^\dagger B^\dagger$ and since C is full rank, $C^\dagger=C' (CC')^{-1}$.
 
 Replacing in the expression of the minimal norm solution yields
 \begin{equation}
 \begin{aligned}
 X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
+<<<<<<< HEAD
+&=X(K'X)'((K'X)(K'X)')^{-1}(FK)^\dagger \\
+&=(XX')K(K'XX'K)^{-1}(FK)^\dagger 
+=======
 &=X(K'X)'((K'X)(K'X)')^{-1}((FK)'(FK))^{-1}(FK)' \\
 &=(XX')K(K'XX'K)^{-1}(K'F'FK)^{-1} K'F'
+>>>>>>> 7ae2ca9060b027aaf79ee5c3e0c3af709c6bb728
 \end{aligned}
 \end{equation}
 
-Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{3} & \Sigma_{4}\end{array}\right)$, the top left block being (k,k), since $K=\left(\begin{array}{c}I \\\hline 0\end{array}\right)$, we have $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{3} \Sigma_{1}^{-1}\end{array}\right)$, call S the matrix obtained by adding Nx-k empty columns to this one (or, equivalently multiplying it by K').
+Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, the top left block being $k\times k$. Then, $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{2} \Sigma_{1}^{-1}\end{array}\right)$, call S the matrix obtained by adding Nx-k empty columns to this one (or, equivalently multiplying it by K').
 
 Let us also note that $FE=FKK'$, and so $(K'F'FK)^{-1} K'F'FKK'=I_{k}K'$. Therefore, we have $(K'F'FK)^{-1} K'F'=(FE)^\dagger$.
 

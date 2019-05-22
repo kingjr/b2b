@@ -1,19 +1,13 @@
-# TODO: model Y = (XE + N)F + N' with second noise N'
-# TODO: uniform distributions
-
-from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA, JRR2, JRR3
+from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA
 from sklearn.metrics import roc_auc_score
-from sklearn.exceptions import ConvergenceWarning
 from data import Synthetic
 import numpy as np
 import argparse
-import warnings
 import random
+
 
 models = {
     "JRR": JRR,
-    # "JRR2": JRR2,
-    "JRR3": JRR3,
     "OLS": OLS,
     "Ridge": Ridge,
     "CCA": CCA,
@@ -34,7 +28,7 @@ def sonquist_morgan(x):
     for i in range(n - 1):
         m1 += z[i]
         m2 -= z[i]
-        ind = (i + 1) * (n - i - 1) * (m1 / (i + 1) - m2 / (n - i - 1))**2
+        ind = (i + 1) * (n - i - 1) * (m1 / (i + 1) - m2 / (n - i - 1)) ** 2
         if ind > mx:
             mx = ind
             best = z[i]
@@ -78,6 +72,7 @@ def run_experiment(args):
                               args.snr,
                               args.nonlinear)
 
+        # true binary E
         mask_true = synthetic.solution()
 
         # training data
@@ -93,9 +88,7 @@ def run_experiment(args):
         results = []
 
         for m, Model in models.items():
-            if "JRRTEST" in m:
-                model = Model
-            elif m == "Oracle":
+            if m == "Oracle":
                 model = Model(mask_true)
             else:
                 model = Model()
@@ -116,6 +109,7 @@ def run_experiment(args):
             # fit a basic model on the selected causes
             sel = np.nonzero(binary_mask)[0]
 
+            # end by fitting a model on the selected features
             model = Ridge()
             model.fit(x_tr[:, sel], y_tr)
 
@@ -144,7 +138,7 @@ def run_experiment(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='JRR synthetic experiment')
+    parser = argparse.ArgumentParser(description='B2BR synthetic experiment')
     parser.add_argument('--n_samples', type=int, default=1000)
     parser.add_argument('--dim_x', type=int, default=100)
     parser.add_argument('--dim_y', type=int, default=100)
@@ -153,8 +147,5 @@ if __name__ == "__main__":
     parser.add_argument('--nonlinear', type=int, default=0)
     parser.add_argument('--n_seeds', type=int, default=10)
     args = parser.parse_args()
-
-    warnings.simplefilter(action='ignore', category=FutureWarning)
-    warnings.simplefilter(action='ignore', category=ConvergenceWarning)
 
     run_experiment(args)
