@@ -88,7 +88,7 @@ Second, we invert the data covariances using all the data, and use these common 
 % \end{equation}
 % where $\lambda$ is the
 % regularization parameter, cross-validated between $10^{-5}$ and $10^5$.
-% 
+%
 % We then estimate the contribution
 % $diag(\hat E) \in\mathbb{D}^{d} $ of each factor. However, $H\in\mathbb{R}^{d,
 % q}$ is a matrix of $d$ word features by $q$ MEG channels. We approximate
@@ -108,6 +108,7 @@ Second, we invert the data covariances using all the data, and use these common 
 % coefficient $r$ between $X_{test}$ and $\hat X_{test}$. We repeat the procedure
 % for 20 random splits and average the result.
 
+%<<<<<<< HEAD
 % \paragraph{Back-to-back regression} We adapted back-to-back regression with two
 % changes. First, to avoid getting a slightly positively-biased estimate of the
 % factors contributing to the MEG signal, we swap the Tikhonov regularization of
@@ -131,18 +132,57 @@ population, we tested, using one-sample $t$-test whether the distribution of
 the estimated contribution of each factor different from baseline ($t=-100$ms),
 as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
 400ms respectively
+% =======
+% \paragraph{Back-to-back regression} We adapted back-to-back regression with two
+% changes. First, to avoid getting a slightly positively-biased estimate of the
+% factors contributing to the MEG signal, we swap the Tikhonov regularization of
+% the first regression $G$ with a truncated regularization. Truncation was fitted
+%  by maximum likelihood estimate, as implemented in scikit-learn principal
+%  component analysis. Second, to minimize the variance increase induced by
+%  bagging, we computed the inverse regularized covariance matrices outside
+%  bagging:
+% \begin{equation}
+%   G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
+% \end{equation}
+% \begin{equation}
+% \hat X_{test} = Y_{test} \cdot G^T
+% \end{equation} where $\left(train,test\right)$ are partitions of the data.
+% %
+% % \subsubsection{Second-level statistics}
+% %
+% % The three types of analyses were implemented for each subject and each time
+% % sample independently.  To estimate the reliability of these estimates in the
+% % population, we tested, using one-sample $t$-test whether the distribution of
+% % the estimated contribution of each factor different from baseline ($t=-100$ms),
+% % as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
+% % 400ms respectively
+% >>>>>>> 1775190a9737244f84b8ace529198a443029ad8d
 
 
 \subsubsection{Results}
 
-We aimed to estimate
-
-We show these coefficients as a function of time in the stacked plots, in Figure
-\ref{fig:megresult}.
+We show all the feature coefficients as a function of time in the stacked plots,
+Figure \ref{fig:megresult}. Our method confirms previous findings in
+neuroscience literature. In particular, \cite{kutas2011thirty} find that word
+frequency correlates with a brain wave around 400ms. Similarly,
+\cite{pegado2014timing} show that letter strings correlate with early brain
+responses. Both these phenomena can be observed in Figures
+\ref{fig:meg_twocurves} and \ref{fig:megresult}, where we show that our
+method is able to separate them more clearly than the forward regression
+approach.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_result.pdf}
-  \caption{Average magnetosensor response across words for one subject.}
+  \caption{We plot the coefficients corresponding to each of the features,
+  describing their importance over time after stimuli onsets. We can observe that visual features start peaking around 150ms, while lexical features peak around 400ms. We show a similar plot for the Ridge regression baseline (forward) in Figure \ref{fig:ridgebaselineresult}.}
   \label{fig:megresult}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/ridgecv_baseline_result.pdf}
+  \caption{Ridge regression baseline. All the coefficients appear to be
+  linearly correlated, unlike our method in Figure \ref{fig:megresult}.}
+  \label{fig:ridgebaselineresult}
 \end{figure}
