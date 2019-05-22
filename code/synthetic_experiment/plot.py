@@ -1,136 +1,112 @@
 import argparse
 import numpy as np
-
 from ast import literal_eval
 from matplotlib import pyplot as plt
 
+plt.rcParams["font.family"] = "Times New Roman"
+
 stats = {
-    "result_error_in_all": "error in-domain",
-    "result_error_out_all": "error out-domain",
-    "result_error_in_mask": "error in-domain (masked)",
-    "result_error_out_mask": "error out-domain (masked)",
+    "result_error_in_all": "error in",
+    "result_error_out_all": "error out",
+    "result_error_in_mask": "error in (E)",
+    "result_error_out_mask": "error out (E)",
     "result_false_positives": "false positives",
     "result_false_negatives": "false negatives",
-    "result_response_active": "response at active",
-    "result_response_inactive": "response at inactive",
+    # "result_response_active": "response at active",
+    # "result_response_inactive": "response at inactive",
     "result_auc": "AUC"
 }
 
-# plt.rc('text', usetex=True)
-# plt.rc('text.latex', preamble=r'\usepackage{times}')
-# plt.rc('font', family='serif')
-plt.rc('font', size=10)
+models = {
+    "Ridge" : "C1",
+    "Lasso" : "C2",
+    "PLS" : "C3",
+    "CCA" : "C4",
+    "RRR" : "C5"
+}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
-    parser.add_argument('--file', type=str, default='results_all_jrr.txt')
+    parser.add_argument('--file', type=str, default='synthetic_result.txt')
+    parser.add_argument('--nonlinear', type=int, default=1)
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
         lines = f.readlines()
 
-    result_names = []
-    first_result = literal_eval(lines[0])
-
-    for k in first_result.keys():
-        if "result" in k:
-            result_names.append(k)
-
     results = {}
-    models = set()
 
     for line in lines:
-        result_dict = {}
         line_dict = literal_eval(line)
-        line_str = ""
-        for k, v in line_dict.items():
-            if ("result" not in k) and ("model" not in k) and ("seed" not in k):
-                line_str += f"{k}={v}_"
-            elif k == "model":
-                this_model = v
-                models.add(v)
-            elif k == "seed":
-                this_seed = int(v)
-            else:
-                result_dict[k] = float(v)
 
-        line_str = line_str[:-1]
+        # if int(line_dict["nonlinear"]) != args.nonlinear:
+        #     continue
 
-        if line_str not in results:
-            results[line_str] = {}
-        if this_model not in results[line_str]:
-            results[line_str][this_model] = {
-                "mean": np.zeros(len(result_names)),
-                "power": np.zeros(len(result_names)),
-                "counter": 0
-            }
+        eid = "{}_{}_{}_{}_{}_{}_{}".format(line_dict["n_samples"],
+                                            line_dict["dim_x"],
+                                            line_dict["dim_y"],
+                                            line_dict["snr"],
+                                            line_dict["nc"],
+                                            line_dict["nonlinear"],
+                                            line_dict["n_seeds"])
+        model = line_dict["model"]
 
-        for r, result in enumerate(result_names):
-            results[line_str][this_model]["mean"][r] += result_dict[result]
-            results[line_str][this_model]["power"][r] += result_dict[result] ** 2
+        if eid not in results:
+            results[eid] = {}
 
-        results[line_str][this_model]["counter"] += 1
+        if model not in results[eid]: 
+            results[eid][model] = {}
 
-    for eid in results:
-        for model in results[eid]:
-            results[eid][model]["mean"] /= results[eid][model]["counter"]
-            results[eid][model]["power"] /= results[eid][model]["counter"]
-            results[eid][model]["power"] -= results[eid][model]["mean"] ** 2
-            results[eid][model]["variance"] = results[eid][model]["power"]
-            results[eid][model].pop("power")
-            results[eid][model].pop("counter")
+        for stat in stats:
+            if stat not in results[eid][model]:
+                results[eid][model][stat] = []
+            results[eid][model][stat].append(line_dict[stat])
 
-    models.discard("JRR")
-
-    plot_rows = len(models)
-    plot_columns = len(stats)
-    plot_counter = 1
-
-    plt.figure(figsize=(len(stats) * 2 + 0.85, len(models) * 2))
-
-    print(models)
-
+    
+    plt.figure(figsize=(8, 5))
+    counter = 0
     for m, model in enumerate(models):
-        for r, result in enumerate(result_names):
-            result_mean = 0
-            result_variance = 0
-            result_counter = 0
-            plt.subplot(plot_rows, plot_columns, plot_counter)
-            plot_counter += 1
-
-            if r == 0:
-                plt.ylabel(model.upper()[8:], fontsize=8)
+        for s, stat in enumerate(stats):
+            counter += 1
+            ax = plt.subplot(len(models), len(stats), counter)
             if m == 0:
-                plt.title(stats[result], fontsize=10)
+                plt.title(stats[stat], fontsize=10)
+            if s == 0:
+                plt.ylabel(model)
+            data_x = []
+            data_y = []
+            data_c = []
+            if model != "JRR":
+                for eid in results:
+                    if model in results[eid] and "JRR" in results[eid]:
+                        data_x.append(np.mean(results[eid]["JRR"][stat]))
+                        data_y.append(np.mean(results[eid][model][stat]))
 
-            for eid in results:
-                if model in results[eid]:
-                    result_mean += results[eid][model]["mean"][r]
-                    result_variance += results[eid][model]["variance"][r]
-                    result_counter += 1
-                    if "JRR" in results[eid]:
-                        competitor_mean = results[eid][model]["mean"][r]
-                        competitor_variance = results[eid][model]["variance"][r]
+                        is_nonlinear = int(eid.split("_")[5])
 
-                        jrr_mean = results[eid]["JRR"]["mean"][r]
-                        jrr_variance = results[eid]["JRR"]["variance"][r]
+                        if is_nonlinear == 0:
+                            data_c.append("C0")
+                        elif is_nonlinear == 1:
+                            data_c.append("C1")
 
-                        # plt.errorbar(jrr_mean,
-                        #              competitor_mean,
-                        #              xerr=jrr_variance,
-                        #              yerr=competitor_variance)
-                        plt.scatter(jrr_mean, competitor_mean, c="black", alpha=0.5)
-            if result_counter:
-                print(model, result, result_mean / result_counter, result_variance / result_counter)
-
-            ax = plt.gca()
+            plt.scatter(data_x, data_y, c=data_c, alpha=0.25, s=7)#, rasterized=True)
             xl = ax.get_xlim()
             yl = ax.get_ylim()
 
             min_ = min(min(xl), min(yl))
             max_ = max(max(xl), max(yl))
 
-            ax.plot([min_, max_], [min_, max_], ls="--", c=".8")
+            ax.plot([min_, max_], [min_, max_], ls="--", c=".8", zorder=0)
+
+            ax.set_xlim(min_, max_)
+            ax.set_ylim(min_, max_)
+            
+            if m != (len(models) - 1):
+                plt.xticks([])
+                plt.yticks([])
+            else:
+                plt.yticks([])
             ax.margins(0)
     plt.tight_layout(0, 0, 0)
     plt.savefig(args.file + ".pdf")
+    # plt.show()
