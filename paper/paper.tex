@@ -298,23 +298,25 @@ Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1
 As we shall see, the diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
 % \subsection{Asymptotic behaviour - non linear case}
 
-\subsection{Use cases}
+\subsection{Post-processing of B2BR}
 
-To recover an estimate of E, we need a test to select the largest diagonal elements of $\hat H$.
+On the one hand, we have leveraged B2BR to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
 %
-In regression analysis, a traditional approach to this problem consists in testing whether coefficients differ from zero, via variants of Student t-test.
+On the other hand, the true causal influence matrix $E$ is a binary matrix, which hard-selects the causal factors of $Y$ from $X$.
 %
-This will not succeed here. First because the conditions for these tests do not apply here (we have two regressions). Second, because regularisation adds bias on the diagonal, which will cause t-tests to succeed unduly.
-%
-Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximizing the ratio of inter-group variance over total variance (ie minimizing intra-group variance), over all splits of the p largest data and the n-p smallest. 
+In this section, we provide a recipe to binarize $\hat{E}$ to estimate the collection of causal factors. 
 
-If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we select the split that maximises the Sonquist and Morgan criterion $$K = \frac{p (n-p)}{n} \frac{(s-r)^2}{ V}$$.
+In regression analysis, the traditional approach to this problem consists in testing whether the regression coefficients differ from zero.
 %
-This recovers from $\hat H$ a binary diagonal $\hat E$.
+However, this test will not succeed here, since the estimate $\hat{E}$ is obtained from a double regression, and any employed regularization will add a bias to the diagonal of $\hat{E}$.
 %
-To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
-
-
+Instead, we treat the binarization of $\hat{E}$ as a clustering problem: separate the elements in the diagonal into a group of ``small values'', and a group of ``large values''.
+%
+More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
+%
+Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
+%
+To binarize $\hat{E}$, set to one all the diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the diagonal entries.
 
 \section{Experiments}
 \subsection{Synthetic data}
