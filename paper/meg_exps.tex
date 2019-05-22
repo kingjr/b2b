@@ -87,15 +87,6 @@ the relative contribution of each feature with the sum-of-squares of the corresp
 \begin{equation}
   \hat e_j = \sum_{i=0}^{q} {h_{i,j}}^2
 \end{equation}
-<<<<<<< HEAD
-
-and assessing, for each factor of X independently, the Pearson correlation coefficient $r$ between $X_{test}$ and $\hat X_{test}$ for each cross-validation split.
-
-Finally, we adapted back-to-back regression with two changes. First, to avoid getting a slightly positively-biased estimate of the factors contributing to the MEG signal, we swap the Tikhonov regularization of the first regression $G$ with a trunkated regularization. Trunkation was fitted by maximum likelihood estimate, as implemented in scikit-learn principal component analysis. Second, to minimize the variance increase induced by bagging, we computed the inverse regularized covariance matrices outside bagging:
-\begin{equation}
-G = (Y_^T Y+\lambda_Y I)^{-1} Y_i^T X_i
-\end{equation}
-=======
 \paragraph{Backward regression} or 'decoding', is similar but predicts $X$ from $Y$:
 \begin{equation} G = (Y^{T}Y+\lambda I)^{-1} Y^{T}X \end{equation}
 where $\lambda$ is cross-validated as for encoding. We estimate the
@@ -108,18 +99,17 @@ and assess, for each factor of X independently, the Pearson correlation
 coefficient $r$ between $X_{test}$ and $\hat X_{test}$. We repeat the procedure
 for 20 random splits and average the result.
 
-% Finally,
-\paragraph{Back-to-back regression} was fit as described earlier using two
-additional stability tricks designed to minimize the impact of bagging.  First
-the $G$ ridge regression was broken-down with SVD blablabla Second, $X$ was
-regularized using a maximal likelihood blablabla Third, no regularization
->>>>>>> 68106dde2678430b11dd352bd2a441842f0a6e40
-
+\paragraph{Back-to-back regression} We adapted back-to-back regression with two
+changes. First, to avoid getting a slightly positively-biased estimate of the
+factors contributing to the MEG signal, we swap the Tikhonov regularization of
+the first regression $G$ with a trunkated regularization. Trunkation was fitted
+ by maximum likelihood estimate, as implemented in scikit-learn principal
+ component analysis. Second, to minimize the variance increase induced by
+ bagging, we computed the inverse regularized covariance matrices outside
+ bagging:
 \begin{equation}
-\hat X_j = Y_j \cdot G^T
+G = (Y_^T Y+\lambda_Y I)^{-1} Y_i^T X_i
 \end{equation}
-where i and j are partition of the data.
-
 
 
 \subsection{Second-level statistics}
