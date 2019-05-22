@@ -266,20 +266,26 @@ Replacing in the expression of the minimal norm solution yields
 \begin{equation}
 \begin{aligned}
 X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
-&=X(K'X)'((K'X)(K'X)')^{-1}((FK)(FK)')^{-1}(FK)' \\
-&=(XX')K(K'XX'K)^{-1}(FKK'F')^{-1} K'F'
+&=X(K'X)'((K'X)(K'X)')^{-1}((FK)'(FK))^{-1}(FK)' \\
+&=(XX')K(K'XX'K)^{-1}(K'F'FK)^{-1} K'F' 
 \end{aligned}
 \end{equation}
 
-Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{3} & \Sigma_{4}\end{array}\right)$, the top left block being (k,k), since $K=\left(\begin{array}{c}I \\\hline 0\end{array}\right)$, we have $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{3} \Sigma_{1}^{-1}\end{array}\right)=S$
+Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{3} & \Sigma_{4}\end{array}\right)$, the top left block being (k,k), since $K=\left(\begin{array}{c}I \\\hline 0\end{array}\right)$, we have $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{3} \Sigma_{1}^{-1}\end{array}\right)$, call S the matrix obtained by adding Nx-k empty columns to this one (or, equivalently multiplying it by K').
 
-Thus we have $X(FEX)^\dagger =S (FKK'F')^{-1} K'F'$
+Let us also note that $FE=FKK'$, and so $(K'F'FK)^{-1} K'F'FKK'=I_{k}K'$. Therefore, we have $(K'F'FK)^{-1} K'F'=(FE)^\dagger$.
 
-FC: this explains the negative diagonal elements, when X is negatively correlated. Need now to prove that this is S(FE)+
+Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=X(FEX)^\dagger =S (FE)^\dagger$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (that is, if causal features do not act as confounders for inactive features), then S=E, and we are retrieving $E (FE)^\dagger$.
 
-FC: onward to the reduction, I assume that we get a scaled value of S(FE)+, this needs a better proof
+Under centred noise, and if (FN)'(FN) have low condition number (a weak assumption given that N is noise), we have $\left \| GFN\right \| ^2 \approx Var(FN) \left \| G\right \| ^2$, and minimisation of $\left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2$ will recover of the minimum of the left norm, $\lambda S (FE)^\dagger$, $\lambda$ a positive number below 1. 
 
-If matrices X'X and (FN)'(FN) have low condition numbers, and denoting by VarX and VarN the variance of X and FN, we have $$\min_G \Tr ((I-GFE)'(I-GFE)XX') + \Tr (G'GFNN'F') \approx \left \| (I-GFE)\right\| ^2 VarX  + \left \| G\right \| ^2 VarN$$and the solution has the form $k(FE)^\dagger$, k a positive constant below one. To determine an approximate value of k, note that if r is the rank of FE (the number of ones in E) $$\left \| (I-GFE)\right\| ^2 = r (1-k)^2 + dx - r$$ and that under the hypothesis of F having a low condition number, the squared norm of $k(FE)^\dagger$ should be close to $k^2r$. We are therefore minimising a quantity close to $$ VarX (r (1-k)^2 + dx - r) + VarN k^2 r$$ Zeroing the derivative in k yields an approximate value of k, as $$k= \frac {VarX}{VarX + VarN}=\frac{1}{1+nsr}$$ nsr the noise to signal ratio, VarN divided by VarX.
+Replacing, we have $\left \| X-GFEX\right\| ^2 = \left \| X-\lambda S (FE)^\dagger FEX\right\| = \left \| X(I-\lambda S)\right\|$. If the covariance of X is block diagonal (no confounding between active and inactive features of X), this is equal to $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ (denoting the variance of X over active and inactive features). 
+
+For the right part of the sum, we have $GFN=\lambda S (FE)^\dagger FN= \lambda S (FE)^\dagger (FE+F(I-E))N= \lambda S (E +(FE)^\dagger F(I-E))N=\lambda E N $ (FC last part of proof to be done, need some lemma on (FE)+). The square norm is therefore $\lambda^2 Var(N) (k/nx)$.
+
+The total quantity to be minimised, under noise, but with non confounding features in X, F full rank over E, and FN decently conditioned, is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N) (k/nx)$, setting the partial derivative in $\lambda$ to zero, we obtain $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N) (k/nx)}$, and if we suppose that X has comparable variance over all features, this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
+
+The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} E (FE)^\dagger$ if active and inactive features of X are not correlated
 
 The second step is straightforward, replacing Y and since N is centred, we have
 \begin{equation}
@@ -291,20 +297,9 @@ The second step is straightforward, replacing Y and since N is centred, we have
 \end{aligned}
 \end{equation}
 
-Thus, in the linear case, back-to-back regression retrieves $\hat H = \frac{1}{1+nsr}(FE)^{\dagger}(FE)$.
-
-For any matrix A, $A^\dagger A$ is the orthogonal projector over $Img(A')$, and $I-A^\dagger A$ the orthogonal projector over $Ker(A)$.
-%
-In our case, $Ker(FE)\supseteq Ker(E)$.
-%
-If F has full rank over $Img(E)$, the subspace spanned by E, then $Ker(FE) = Ker(E)$,.
-%
-This means $I - \hat H$ is the projector over $Ker(E)$, the diagonal matrix that spans the unselected features, and $\hat H$ is k times the diagonal matrix corresponding to the selected features, that is kE. Since it is diagonal with eigenvalues 0 and k, if k is large enough, it should allow us to retrieve causal features in a fairly robust way.
+Thus, in the linear case, back-and-forth regression retrieves $\hat H = \frac{1}{1+nsr} E (FE)^{\dagger}(FE) = \frac{1}{1+nsr} E$.
 
 \subsection{Asymptotic behaviour - non linear case}
-
-\subsection{Stability analysis}
-
 
 \section{Related works}
 \subsection{back-to-back regression as a special case of canonical component analysis?}
