@@ -26,7 +26,7 @@
 \newcommand{\jrk}[1]{{\color{blue} (JRK: #1)}}
 \newcommand{\fc}[1]{{\color{orange} (FC: #1)}}
 
-\title{Discovering causal factors with back-to-back regression}
+\title{Measuring causal influence with\\ back-to-back regression}
 
 \author{%
   Jean-Remi King\\
@@ -115,19 +115,28 @@ covary in the study.
     \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d}$}};
     \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d \times q}$}};
 
-    \node[] (labY) at (\posY, 2){Observations};
-    \node[] (labX) at (\posX, 2){Factors};
-    \node[] (labE) at (\posE, 2.3){Cause};
-    \node[] (labE) at (\posE, 2){selection};
-    \node[] (labN) at (\posN, 2){Noise};
-    \node[] (labF) at (\posF, 2.3){Cause-effect};
-    \node[] (labF) at (\posF, 2){mapping};
+    \node[] (labY) at (\posY, 3){Observations};
+    \node[] (labX) at (\posX, 3){Factors};
+    \node[] (labE) at (\posE, 3.3){Cause};
+    \node[] (labE) at (\posE, 3){selection};
+    \node[] (labN) at (\posN, 3){Noise};
+    \node[] (labF) at (\posF, 3.3){Cause-effect};
+    \node[] (labF) at (\posF, 3){mapping};
+
+    \node[] (labY) at (\posY, 2)   {\color{gray} MEG recordings};
+    \node[] (labX) at (\posX, 2)   {\color{gray} stimulus};
+    \node[] (labX) at (\posX, 2.3) {\color{gray} features};
+    \node[] (labE) at (\posE, 2.3) {\color{gray} causal};
+    \node[] (labE) at (\posE, 2)   {\color{gray} features};
+    \node[] (labN) at (\posN, 2)   {\color{gray} breathing\ldots};
+    \node[] (labF) at (\posN, 2.3) {\color{gray} bloodflow,};
+    \node[] (labF) at (\posF, 2)   {\color{gray} MEG helmet};
 
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
-    \node[] (reg1) at (5,-3.25) {$\hat{E} = \underbrace{(X_2^\top X_2 + \lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}} $};
+    \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{Diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
     \end{tikzpicture}
-    \caption{In its linear form, back-to-back regression identifies the subset of factors that suffices to account for multidimensional observations by piping two successive regressions from $Y$ to $X$ and from $X$ to $\hat X$. }
+    \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and ii) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
     \label{fig:}
 \end{figure}
 
@@ -138,7 +147,7 @@ Without loss of generality, we may assume N to be centred(adding, when necessary
 
 We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
 
-In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
+% In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
 
 Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
 
@@ -253,7 +262,17 @@ The second step is straightforward, replacing Y, we have
 
 Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} S (FK)^{\dagger}(FKK') = \frac{1}{1+nsr} E$.
 
-\subsection{Asymptotic behaviour - non linear case}
+% \subsection{Asymptotic behaviour - non linear case}
+
+
+\section{Experiments}
+\subsection{Synthetic data}
+
+\input{synthetic.tex}
+
+\subsection{Magnetoencephalography data}
+
+\input{meg_exps.tex}
 
 \section{Related works}
 \subsection{back-to-back regression as a special case of canonical component analysis?}
@@ -291,18 +310,10 @@ In other words, whereas we are working from the same formulae as CCA, we use the
 FC: discuss similar methods of regression, that can be used for feature extraction
 And maybe have something about other causal discovery methods
 
-\section{Experiments - simulated data}
-\input{synthetic.tex}
-
-\section{Experiments - real case}
-Jean Remi and Maxime territory
-
-\input{meg_exps.tex}
-
 \section{Conclusion}
 
-\section{Acknowlegements}
-Data were provided (in part) by the Donders Institute for Brain, Cognition and Behaviour.
+% \section{Acknowlegements}
+% Data were provided (in part) by the Donders Institute for Brain, Cognition and Behaviour.
 
 \clearpage
 \newpage
@@ -310,8 +321,8 @@ Data were provided (in part) by the Donders Institute for Brain, Cognition and B
 \bibliographystyle{abbrvnat}
 \bibliography{paper}
 
-\section{Appendices}
-
-This should hold part of the tests, explanations on simulation, detailed results and stuff on meg data
+%\section{Appendices}
+%
+%This should hold part of the tests, explanations on simulation, detailed results and stuff on meg data
 
 \end{document}
