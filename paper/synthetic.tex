@@ -1,109 +1,62 @@
-Experiments on simulated data serve three purposes: compare back-to-back regression with other known techniques (CCA, OLS, PLS...) both as a regression and a feature extraction method, measure its performance for various values of its parameters and provide evidence for our claims about stability, invariance to environment, and behavior as a causal detector.
-
-The model used for simulation is $Y=f(snr MEX+N)$, with X a random (dx,N) matrix, E a square binary diagonal of dimension dx with the nc last elements equal to 1 (this means that of the dx features of X, only the nc last have some influence on Y), M and N (dz,dx) and (dz,N) random matrices, and f a function from $\mathbb{R}^{dz}$ to $\mathbb{R}^{dy}$, that can be linear or non linear.
+We evaluate the performance of B2BR throughout a series of experiments on controlled synthetic data.
 %
-In the linear case, the model becomes $Y=F(MEX+N)$, with F a (dy,dz) matrix.
+The purpose of these experiments is to evaluate the ability of B2BR in terms of prediction (inside and outside the training distribution), as well as a method to recover causal factors.
+
+The data generating process for each experiment constructs $n$ training examples according to the model $Y = \sigma((\text{snr} \cdot XE + N)F)$.
 %
-In the non linear case, F becomes $FSH$ where F and H are matrices of dimensions (dz,dz) and (dy,dz), and S a vector of dz sigmoid transformations.
+Here, 
+%\begin{itemize}
+%    \item $F \in \mathbb{R}^{d_x \times d_y}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+%    \item $X \in \mathbb{R}^{n \times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_X)$,
+%    \item $N \in \mathbb{R}^{n \times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$,
+%    \item $E \in \mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
+%    \item $\Sigma_X = AA^\top$, where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+%    \item $\Sigma_N = BB^\top$, where $B \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+%\end{itemize}
+    $F \in \mathbb{R}^{d_x \times d_y}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+    $X \in \mathbb{R}^{n \times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_X)$,
+    $N \in \mathbb{R}^{n \times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$,
+    $E \in \mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
+    $\Sigma_X = AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+    $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
+the factor $\text{snr} \in (0, \infty)$, and $\sigma$ is an elementwise function.
+
+To simulate a wide range of experimental conditions, we vary $n \in \{500, 1000, 2000\}$, $d_x, d_y \in \{ 25, 50, 100, 150 \}$, $n_c \in \{ 5, 10 \}$, $\text{snr} \in \{ 0.2, 0.5, 0.75, 1 \}$, and $\sigma \in \{ \text{identity}, \text{sigmoid} \}$.
 %
-Finally, $snr$ is a real number measuring the amount of noise.
+Each condition is simulated under $20$ different random seeds. 
 
-Our simulation therefore depends upon 6 free parameters :
-\begin{itemize}
-\item dx : number of features of X
-\item nc: number of active features (in EX)
-\item dz: number of noise features
-\item snr: signal to noise ratio
-\item dy: number of features in Y
-\item N: size of sample
-\end{itemize}
-
-Random matrices X, M, N, H and F are populated with centred gaussian random coefficients with unit variance, divided by $ \surd n$ where n is the smallest dimension of the matrix.
+We compare the performance of B2BR against five competing methods:
 %
-Since a random square matrix with unit gaussian coefficients of dimension n has eigenvalues between $ \surd n $ and $\surd n $, such  scaling allows for meaningful comparisons when dimensions dx, dy and dz vary.
-
-In the non linear case, sigmoid functions are...
-FC: insert comment about scaling sigmoids, and maybe something about uniform coeffs
-
-We evaluate the performance of back-to-back regression in two different roles : as a feature extractor recovering E, and as a regression method, predicting Y from X over a test sample.
+Ridge regression \citep{}, multitask Lasso \citep{}, Partial Least Squares or PLS \citep[PLS]{}, Canonical Correlation Analysis \citep[CCA]{}, and Reduced Rank Regression \citep[RRR]{}.
 %
-For feature extraction, the quality of fit is the number of disagreements between our estimator and the diagonal of E (ie, their Hamming distance, which should be minimised).
+Each of these methods estimates a matrix of coefficients $\hat{W} \in \mathbb{R}^{d_x \times d_y}$, from which we estimate the diagonal mask $\hat{E}$ using the feature importances $\hat{E}_{i,i} = \| W_{i, :} \|$.
 %
-For regression, we use a test set of N additional measurements, and calculate the R-squared ratio of variances (which should be maximised).
+For B2BR, we obtain $\hat{E}$ as described in Algorithm~\ref{algorithm:b2br}.
 %
-Performance indicators are calculated by averaging the results of several experiments.
+We employ $5$-fold cross-validation to select the optimal hyper-parameters of each method. 
 
-\subsection{Feature extraction - linear case}
-All other parameters being equal, the quality of feature extraction, measured as the discrepancy between features extracted by back-to-back regression ($\hat E$) and the diagonal of E, improves with signal to noise ratio.
+We evaluate seven metrics: 
 %
-The decrease is usually very steep until a Hamming distance under 2 is achieved.
+test error in-distribution, test error out-distribution, test error-in distribution after weighting with $\hat{E}$, test error out-distribution after weighting with $\hat{E}$, Sonquist-Morgan false positives on $\hat{E}$, Sonquist-Morgan false negatives on $\hat{E}$, and the area under the ROC curve (AUC) between $\hat{E}$ and $E$.
 %
-Figure 1 presents a number of such curves for varying values of dx=dy=dz, nc=30 and N=1000.
-
-Figure 1
-
-The distance between $\hat E$ and E incorporates two different errors: false positives, where features not in E are extracted, and false negatives where features in E are not extracted.
+The ``in-distribution'' metrics measure the test error of each predictor before and after weighting their features by the estimated mask $\hat{E}$.
 %
-For low values of the snr, and typical values of nc (much smaller than dx), false positives are high, but they fall faster as snr increases.
+The ``out-distribution'' metrics are similar, measuring the test error at samples drawn using two different random covariance matrices for both $X$ and $N$.
 %
-False negatives begin lower, but decrease more slowly (figure 2).
-%
-In other words, for each values of the parameters, one may determine a value of the signal to noise ratio, such that snr higher than this threshold allow for good feature extraction.
-%
-At this level, all the errors are false negatives.
+The false positives, false negatives, and AUC statistics measure the quality of identification of causal factors between $\hat{E}$ and the true, binary $E$. 
 
-Figure 2
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\textwidth]{synthetic.pdf}
+    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration, averaged over $20$ random seeds.
+    %
+    Blue points indicate linear experimental conditions, while orange points indicate nonlinear conditions.}
+    \label{table:synthetic}
+\end{figure}
 
-Working from a fixed sample of 1000, and 15 active features, and varying values of dx, dy, dz (from 50 to 200) and snr (from 0.2 to 1), we observe that, all other factors being equal, the quality of feature extraction and regression decrease when dx increases (X has more inactive features), dz increase (more noise dimensions) and snr decreases (less signal, more noise).
-%
-The dimensionality of Y plays a much smaller role, except for very small values of dy (less than 10).
-
-For feature extraction, back-to-back regression either works very well (Hamming distance less than 2) or very badly, with a sharp change over small variations of the parameters.
-%
-The following graphs show the boundary between values of dx and dz that allow for features extractions (dx lower than boundary, or dz larger), for different values of dy (level curves on the graph), and different values of signal to noise ratio and number of active variables.
-
-FC: add graphs here, see whether it is better to have nc fixed, or a proportion of dx, note : part of this can be moved to appendix if lack of space
-
-For values of ...
-%
-in ..., an empirical formula can be provided.
-%
-back-to-back regression allows for good feature extraction if :
-
-\subsection{Feature extraction - nonlinear case}
+Table~\ref{table:synthetic} summarizes the results for all experimental conditions, metrics, and methods... 
 
 
-\subsection{Regression }
-For regression, we want to understand how feature extraction helps predict Y from X.
-%
-To this effect, we compare four approaches to regression:
-\begin{itemize}
-\item standard ridge regression of Y from X, where no features are extracted this is our baseline
-\item weighted ridge regression, of Y from $\hat H X$, where features of X are weighted according to the diagonal of $\hat H$
-\item filtered ridge regression, of Y from $\hat E X$, where active features are first extracted (as above), and Y is predicted from the extracted features only
-\item perfect filtered (oracle) ridge regression of Y from EX, where E is supposed known
-\end{itemize}
-Over a large set of parameters, we observe that filtered regression is on average better than weighted, which is on average better than standard regression.
-%
-This demonstrates that back-to-back regression can be used as a regression method, over the areas in parameter space where feature extraction performs well.
-
-FC graphs go here
-
-The quality of regression is independent from dy (except for very small values), increase with snr, decreases with dx, and increases with dz if it is larger than dx
-FC graphs go here
-
-\subsection{Comparison with other methods}
-Maxime territory
-
-\subsection{Multiple environments}
-In this section, we perform the same tests as in the previous one, but the test set is taken from a different distribution of X than the training set.
-%
-In practice, we test the same trained predictors of Y over test samples generated from a distribution of X with a different covariance.
-
-The rationale behind such tests is that whereas back-to-back regression, being a feature extraction method, might not be as efficient as dedicated prediction tools, its focus on causal elements (and the removal of non causal features before carrying out regression) might cause it to be more resistant to changes in environments.
-
-FC: ideally, we'd like to assess the multiple env performance of jrr, and compare it with others.
-%
-Are multiple environments limited to regression analyses? How should environments be generated (not just variance of X, I expect)?
-
+\clearpage
+\newpage
 

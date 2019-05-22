@@ -131,6 +131,16 @@ covary in the study.
     \label{fig:}
 \end{figure}
 
+\subsection{Formalism}
+Via an apparatus F, we are measuring a multidimensional signal Y, which is a function of possible causes X and other non causal features N. Not all features of X exert causal influence on Y. Let EX (E a matrix of zero and one) the subset of causal factors. Our model can be formalised as $Y=f(EX,N)$. 
+
+Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
+
+We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
+
+In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
+
+Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
 
 \subsection{Algorithm}
 
@@ -144,43 +154,31 @@ Then, we perform a least squares estimation of $\hat X$ from X, and determine $\
 %
 In matrix form, we have $\hat G=(Y'Y)^{-1} Y'X$, and
 \begin{equation} \hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X\end{equation}
-Under good conditions (close to linear dependence between X and Y, and covariance matrices of X and Y well conditioned), this recovers a scaled approximation to E.
 
-In practice, the covariance matrices of Y and X might exhibit multicollinearity and be badly conditioned, which make their inversion unstable. To guard against this, we compute their singular value decompositions, and truncate their lowest eigenvalues so as to reach a specific condition number in the Frobenius norm. We prefer the truncated SVD approach over the more common regularisation (ridge regression) because it introduces less bias in the estimation. A small amount of regularisation is still used, for numerical stability purposes.
+If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
+ 
+In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref). 
 
-If $X'X=U'DU$, U orthogonal and D diagonal, and D* is D with the lowest diagonal elements set to zero, this amounts to replacing $(X'X)^{-1}$ by $U(D*^{-1}+\epsilon I)U'$, with $\epsilon$ a positive number close to machine floating point accuracy. D is truncated so as to have a certain condition number that is determined by leave one out cross validation.
+In both, we compute the singular value decompositions of the covariance matrix, transform its diagonal part, and invert it. In truncated SVD, the lowest eigenvalues are set to zero, and the corresponding vectors eliminated from future calculations. In ridge regression, a constant factor is added to all eigenvalues. The regularisation factor and truncation threshold are chosen via leave one out cross validation. In practice, ridge regression tends to provide better stability but introduces a bias in the estimates. Truncated SVD is used to provide better results in low noise cases.
+
+Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data are detected in the first step and learnt in the second. To avoid this, we split our sample into two halves, and each regression is performed over one, effectively decorrelating the two steps.
 %
-Also, to prevent spurious correlations between the two steps (should they be performed on the same sample), our original sample is randomly split into two halves, and each step is performed over one of them, effectively decorrelating the two steps.
-%
-This is repeated over several (100) splits, and the resulting $\hat H$ are averaged.
-%
+To compensate for the reduction in sample size caused by the split, this process is repeated over many splits, and their results are averaged.
 This bagging compensates for the reduction in sample size caused by splitting.
 
-Under our hypotheses (centered noise, E a binary diagonal) and even under heavy noise, $\hat H$ is close to diagonal.
-%
-Yet, because of regularisation which adds positive bias to small eigenvalues, and noise which attenuates large eigenvalues, $\hat H$ is in fact a scaled and noisy approximation to E.
-%
-To recover a binary diagonal, as our estimate of E, we extract the diagonal of $\hat H$ and select its large elements.
-%
-The diagonal matrix $\hat E$, having large elements of H as its unit diagonal coefficients (the rest being zero) is our estimate of E, the active features of X.
+As we shall see, the diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
 
-To select large elements of $\hat H$, the traditional approach in regression analysis consists in testing whether its coefficients differ from zero. This is usually done via variants of Student t-test.
+To recover an estimate of E, we need a test to select the largest diagonal elements of $\hat H$.
 %
-This will not work here, as back-to-back regression introduces, through two regularisations, a significant amount of positive bias on the diagonal, which depends in a complex manner on noise, dimensionality and conditioning of X and Y.
+In regression analysis, a traditional approach to this problem consists in testing whether coefficients differ from zero, via variants of Student t-test.
 %
-Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large).
+This will not succeed here. First because the conditions for these tests do not apply here (we have two regressions). Second, because regularisation adds bias on the diagonal, which will cause t-tests to succeed unduly.
+%
+Instead, we treat feature extraction as a one dimensional binary clustering problem: classify n positive real values as "large" and "small" (under the hypothesis that they are not all small or all large). This can be done by maximizing the ratio of inter-group variance over total variance (ie minimizing intra-group variance), over all splits of the p largest data and the n-p smallest. 
 
-This can be done by maximizing the ratio of inter-group variance over total variance (ie minimizing intra-group variance).
+If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we select the split that maximises the Sonquist and Morgan criterion $$K = \frac{p (n-p)}{n} \frac{(s-r)^2}{ V}$$.
 %
-In a one dimensional two clusters setting, this amounts to sorting the data, and separating the p smallest from the n-p largest values so that inter group inertia is maximal.
-%
-If s and r are the average values of the two clusters, p and n-p their size and V the total variance of the sample, we are maximizing the Sonquist and Morgan criterion $$K = {p (n-p) \over n} {(s-r)^2 \over V}$$ and selecting the p features corresponding to the largest values.
-%
-If diagonal elements of $\hat H$ are normally distributed, K follows a chi-square distribution with one degree of freedom.
-%
-At 95\% confidence level, a value of K superior to 3.84 makes our selection significant (for 99\% confidence, the corresponding value of K is 6.63) \citep{Kass_75}
-
-This extract from $\hat H$ a binary diagonal $\hat E$.
+This recovers from $\hat H$ a binary diagonal $\hat E$.
 %
 To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
 
@@ -224,33 +222,26 @@ Replacing in the expression of the minimal norm solution yields
 \begin{equation}
 \begin{aligned}
 X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
-<<<<<<< HEAD
 &=X(K'X)'((K'X)(K'X)')^{-1}(FK)^\dagger \\
 &=(XX')K(K'XX'K)^{-1}(FK)^\dagger 
-=======
-&=X(K'X)'((K'X)(K'X)')^{-1}((FK)'(FK))^{-1}(FK)' \\
-&=(XX')K(K'XX'K)^{-1}(K'F'FK)^{-1} K'F'
->>>>>>> 7ae2ca9060b027aaf79ee5c3e0c3af709c6bb728
 \end{aligned}
 \end{equation}
 
-Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, the top left block being $k\times k$. Then, $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{2} \Sigma_{1}^{-1}\end{array}\right)$, call S the matrix obtained by adding Nx-k empty columns to this one (or, equivalently multiplying it by K').
+Let $XX' = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, the top left block being $k\times k$. Then, $(K'XX'K)=\Sigma_{1}$ and $(XX')K(K'XX'K)^{-1}=\left(\begin{array}{c}I_{k} \\\hline \Sigma_{2} \Sigma_{1}^{-1}\end{array}\right)$, call it S.
 
-Let us also note that $FE=FKK'$, and so $(K'F'FK)^{-1} K'F'FKK'=I_{k}K'$. Therefore, we have $(K'F'FK)^{-1} K'F'=(FE)^\dagger$.
+Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=X(FEX)^\dagger =S (FK)^\dagger$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (if the causal features do not serve as confounders for non causal ones), then S=K, and we are retrieving $K (FK)^\dagger$.
 
-Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=X(FEX)^\dagger =S (FE)^\dagger$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (that is, if causal features do not act as confounders for inactive features), then S=E, and we are retrieving $E (FE)^\dagger$.
+Under centred noise, and if the covariance of FN has low condition number (a weak assumption given that N is noise), we have $\left \| GFN\right \| ^2 \approx Var(FN) \left \| G\right \| ^2$, and minimisation of $\left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2$ will recover a scaled version of the noiseless solution, $\lambda S (FE)^\dagger$, $\lambda$ a positive number below one.
 
-Under centred noise, and if (FN)'(FN) have low condition number (a weak assumption given that N is noise), we have $\left \| GFN\right \| ^2 \approx Var(FN) \left \| G\right \| ^2$, and minimisation of $\left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2$ will recover of the minimum of the left norm, $\lambda S (FE)^\dagger$, $\lambda$ a positive number below 1.
+Replacing in the left part of (ref), we have $X-GFEX=X- \lambda S (FK)^\dagger FKK'X= X - \lambda EX=X(I-\lambda E)$. Its square norm is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ ($Var(X_{.})$ denoting the variance of X over active and inactive features).
 
-Replacing, we have $\left \| X-GFEX\right\| ^2 = \left \| X-\lambda S (FE)^\dagger FEX\right\| = \left \| X(I-\lambda S)\right\|$. If the covariance of X is block diagonal (no confounding between active and inactive features of X), this is equal to $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ (denoting the variance of X over active and inactive features).
+For the right part, we have $GFN=\lambda S (FK)^\dagger FN= \lambda S (FK)^\dagger (FK+F(I-K))K'N= \lambda S EN=  \lambda EN$. (Since F is full rank over E, we have $(FK)^\dagger F(I-K)= 0$). The square norm is therefore $\lambda^2 Var(N_{active})$.
 
-For the right part of the sum, we have $GFN=\lambda S (FE)^\dagger FN= \lambda S (FE)^\dagger (FE+F(I-E))N= \lambda S (E +(FE)^\dagger F(I-E))N=\lambda E N $ (FC last part of proof to be done, need some lemma on (FE)+). The square norm is therefore $\lambda^2 Var(N) (k/nx)$.
+Thus, with centred and random noise, and with F full rank over E, we are minimising $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N_{active})$. Its least value is attained for $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N_{active})}$. Assuming X and N have the same variance over all features (this can always be guaranteed), active subscript can be dropped, and this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
 
-The total quantity to be minimised, under noise, but with non confounding features in X, F full rank over E, and FN decently conditioned, is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N) (k/nx)$, setting the partial derivative in $\lambda$ to zero, we obtain $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N) (k/nx)}$, and if we suppose that X has comparable variance over all features, this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
+The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} S (FK)^\dagger$.
 
-The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} E (FE)^\dagger$ if active and inactive features of X are not correlated
-
-The second step is straightforward, replacing Y and since N is centred, we have
+The second step is straightforward, replacing Y, we have
 \begin{equation}
 \begin{aligned}
 \arg \min_H \left \| \hat GY - HX \right \|^2 &=\arg  \min_H \left \| \hat GF(EX+N) - HX \right \|^2 \\
@@ -260,7 +251,7 @@ The second step is straightforward, replacing Y and since N is centred, we have
 \end{aligned}
 \end{equation}
 
-Thus, in the linear case, back-and-forth regression retrieves $\hat H = \frac{1}{1+nsr} E (FE)^{\dagger}(FE) = \frac{1}{1+nsr} E$.
+Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} S (FK)^{\dagger}(FKK') = \frac{1}{1+nsr} E$.
 
 \subsection{Asymptotic behaviour - non linear case}
 
