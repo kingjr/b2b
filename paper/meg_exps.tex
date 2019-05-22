@@ -91,7 +91,7 @@ the relative contribution of each feature with the sum-of-squares of the corresp
 \begin{equation} G = (Y^{T}Y+\lambda I)^{-1} Y^{T}X \end{equation}
 where $\lambda$ is cross-validated as for encoding. We estimate the
 contribution $diag(\hat E) \in\mathbb{D}^{d} $ of each factor in the following
-way. We predict $X$ on a held-out split \textit{(train, test)}:
+way. We predict $X$ on a held-out split \textit{test}:
 % Using 10-fold cross-validation, we thus assessed the ability of this ridge
 % regression to predict independent and identically distributed data:
 \begin{equation} \hat X_{test} = Y_{test}\cdot G_{train} \end{equation}
@@ -102,15 +102,17 @@ for 20 random splits and average the result.
 \paragraph{Back-to-back regression} We adapted back-to-back regression with two
 changes. First, to avoid getting a slightly positively-biased estimate of the
 factors contributing to the MEG signal, we swap the Tikhonov regularization of
-the first regression $G$ with a trunkated regularization. Trunkation was fitted
+the first regression $G$ with a truncated regularization. Truncation was fitted
  by maximum likelihood estimate, as implemented in scikit-learn principal
  component analysis. Second, to minimize the variance increase induced by
  bagging, we computed the inverse regularized covariance matrices outside
  bagging:
 \begin{equation}
-G = (Y^T Y+\lambda_Y I)^{-1} Y_i^T X_i
+  G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
 \end{equation}
-
+\begin{equation}
+\hat X_{test} = Y_{test} \cdot G^T
+\end{equation} where $\left(train,test\right)$ are partitions of the data.
 
 \subsection{Second-level statistics}
 
