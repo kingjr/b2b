@@ -28,6 +28,7 @@ models = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='JRR synthetic experiment')
     parser.add_argument('--file', type=str, default='synthetic_result.txt')
+    parser.add_argument('--nonlinear', type=int, default=1)
     args = parser.parse_args()
 
     with open(args.file, "r") as f:
@@ -37,6 +38,9 @@ if __name__ == "__main__":
 
     for line in lines:
         line_dict = literal_eval(line)
+
+        # if int(line_dict["nonlinear"]) != args.nonlinear:
+        #     continue
 
         eid = "{}_{}_{}_{}_{}_{}_{}".format(line_dict["n_samples"],
                                             line_dict["dim_x"],
@@ -71,12 +75,21 @@ if __name__ == "__main__":
                 plt.ylabel(model)
             data_x = []
             data_y = []
+            data_c = []
             if model != "JRR":
                 for eid in results:
-                    if model in results[eid]:
+                    if model in results[eid] and "JRR" in results[eid]:
                         data_x.append(np.mean(results[eid]["JRR"][stat]))
                         data_y.append(np.mean(results[eid][model][stat]))
-            plt.scatter(data_x, data_y, c="black", alpha=0.25, s=7)#, rasterized=True)
+
+                        is_nonlinear = int(eid.split("_")[5])
+
+                        if is_nonlinear == 0:
+                            data_c.append("C0")
+                        elif is_nonlinear == 1:
+                            data_c.append("C1")
+
+            plt.scatter(data_x, data_y, c=data_c, alpha=0.25, s=7)#, rasterized=True)
             xl = ax.get_xlim()
             yl = ax.get_ylim()
 
