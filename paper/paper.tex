@@ -132,13 +132,13 @@ covary in the study.
 \end{figure}
 
 \subsection{Formalism}
-Via an apparatus F, we are measuring a multidimensional signal Y, which is a function of possible causes X and other non causal features N. Not all features of X exert causal influence on Y. Let EX (E a matrix of zero and one) the subset of causal factors. Our model can be formalised as $Y=f(EX,N)$. 
+Via an apparatus F, we are measuring a multidimensional signal Y, which is a function of possible causes X and other non causal features N. Not all features of X exert causal influence on Y. Let $XE$ (E a matrix of zero and one) the subset of causal factors. Our model can be formalised as $Y=f(XE,N)$. 
 
-Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
+Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(XE+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=(XE+N)F+M$ can be viewed as a small change in F and N.
 
-We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
+We consider both the linear and non linear case. In the first one, our model is $$Y = (XE+N)F$$with  $Y\in\mathbb{R}^{n\times n_{y}}$, $F\in\mathbb{R}^{n_{x}\times n_{y}}$, $X\in\mathbb{R}^{n\times n_{x}}$, $N\in\mathbb{R}^{n\times n_{x}}$, and E a binary diagonal square matrix of size $n_{x}$. 
 
-In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
+In the non linear model, $(XE+N)F$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma ((XE+N)F)$$
 
 Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
 
@@ -146,7 +146,7 @@ Under this formalism, we are given samples of Y and X, and are tasked to recover
 
 Back-to-back regression consists of two steps.
 %
-First, we perform a least squares estimation of X from Y, that is we find $\hat G$ such that $\hat X=\hat G Y$ is the least square predictor of X.
+First, we perform a least squares estimation of X from Y, that is we find $\hat G$ such that $\hat X=Y\hat G$ is the least square predictor of X.
 %
 This recovers an approximation of the causes of Y in X.
 %
@@ -180,50 +180,50 @@ If s and r are the average values of the two clusters, p and n-p their size and 
 %
 This recovers from $\hat H$ a binary diagonal $\hat E$.
 %
-To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $\hat E X$.
+To use back-to-back regression as a regression technique (to predict Y from X), we multiply X by $\hat E$ and perform a cross validated ridge regression of each feature of Y from $X \hat E $.
 
 Summarizing, back-to-back regression is performed as follows:
 \begin{enumerate}
 \item Randomly split the data sample.
-\item From the first half sample, using crossalidated ridge regression, find $\hat G$, the regularised least square regression of X from Y: $\hat G=(Y'Y)^{-1} Y'X$.
-\item From the second half sample, calculate $\hat X = \hat G Y$, and find $\hat H$, the regularized least square regression of $\hat X$ from X: $\hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X$.
+\item From the first half sample, using cross-validated ridge regression, find $\hat G$, the regularised least square regression of X from Y: $\hat G=(Y'Y)^{-1} Y'X$.
+\item From the second half sample, calculate $\hat X = Y \hat G$, and find $\hat H$, the regularised least square regression of $\hat X$ from X: $\hat H=(X'X)^{-1} X'Y(Y'Y)^{-1} Y'X$.
 \item Repeat steps 1 to 3 and average the results as $\hat H$.
 \item Using the Sonquist and Morgan criterion, select the large diagonal elements of $\hat H$, set them to one and the rest of $\hat  H$ to zero.
 \item Use the resulting matrix $\hat E$ as an estimator of E, the active features in the causal process
-\item Alternatively, use $\hat E$ to predict Y from X, by performing a regularised least square regression of Y from $\hat E X$.
+\item Alternatively, use $\hat E$ to predict Y from X, by performing a regularised least square regression of Y from $X \hat E$.
 %
 
 \end{enumerate}
 
 \subsection{Asymptotic behaviour - linear case}
-As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
+As discussed above, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(XE+N)$, with f an unknown function.
 %
-If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
+If F is linear we can rewrite it as $Y = (XE + N)F$, with $X\in\mathbb{R}^{n\times n_{x}}$ a matrix of possible causes, E a  binary diagonal $n_{x}$ square matrix. selecting active features of X.
 %
-N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
+$N\in\mathbb{R}^{n\times n_{x}}$, a homoscedastic noise matrix, $F\in\mathbb{R}^{n_{x}\times n_{y}}$ an unknown transformation corresponding to the measuring apparatus, and $Y\in\mathbb{R}^{n\times n_{y}}$ a matrix of measured effects.
 
-The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
+The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-YG \right \|^2$ and $\hat H =\arg \min_H \left \| \hat YG - XH \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
 For the first step, replacing Y, and since N is centred, we have
 \begin{equation}
 \begin{aligned}
-\arg \min_G \left \| X-GY \right \|^2 &= \arg \min_G \left \| X - GF(EX+N)\right\|^2 \\
-&{}= \arg \min_G \left \| X-GFEX\right\| ^2  + \left \| GFN\right \| ^2
+\arg \min_G \left \| X-YG \right \|^2 &= \arg \min_G \left \| X - (XE+N)FG\right\|^2 \\
+&{}= \arg \min_G \left \| X-XEFG\right\| ^2  + \left \| NFG\right \| ^2
 \end{aligned}
 \end{equation}
 
-As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-GFEX\right\| ^2$, which is $X(FEX)^\dagger$ ($M^\dagger$ denoting the pseudo inverse of M).
+As N tends to zero, we are searching for the minimal norm solution of $\min_G \left \| X-XEFG\right\| ^2$, which is $(XEF)^\dagger X$ ($M^\dagger$ denoting the pseudo inverse of M).
 
-Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $FEX$ be of rank k (which means F and X have full rank on the space spanned by the active features of E). Let K be the $\mathbb{R}^{nx\times k}$ diagonal matrix obtained by deleting the rightmost nx-k columns of E. Then, $E=KK'$, and $FEX=(FK)(K'X)$, with $FK$  and $K'X$ of full rank k.
+Let k be the number of active features of E, suppose for notational convenience that they are the first k features of X, and let $XEF$ have rank k (which means F and X have full rank on the space spanned by the active features of E). Let K be the $\mathbb{R}^{k\times N_{x}}$ diagonal matrix obtained by deleting the bottom $n_{x}-k$ lines of E. Then, $E=K'K$, and $XEF=(XK')(KF)$, with $KF$  and $XK'$ of full rank k.
 
 The rank factorisation property of the pseudo inverse (ref) says that, if $A=BC$ with $A\in\mathbb{R}^{m\times n}$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$ of rank k, then $A^\dagger=C^\dagger B^\dagger$ and since C is full rank, $C^\dagger=C' (CC')^{-1}$.
 
 Replacing in the expression of the minimal norm solution yields
 \begin{equation}
 \begin{aligned}
-X(FEX)^\dagger &=X((FK)(K'X))^\dagger \\
-&=X(K'X)'((K'X)(K'X)')^{-1}(FK)^\dagger \\
-&=(XX')K(K'XX'K)^{-1}(FK)^\dagger 
+(XEF)^\dagger X&=((XK')(KF))^\dagger X\\
+&=(FK)^\dagger (XK')'((XK')(XK')')^{-1} X\\
+&=(FK)^\dagger KX' (K'XX'K)^{-1} X
 \end{aligned}
 \end{equation}
 
@@ -256,7 +256,7 @@ Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1
 \subsection{Asymptotic behaviour - non linear case}
 
 \section{Related works}
-\subsection{back-to-back regression as a special case of canonical component analysis?}
+\subsection{Back-to-back regression as a special case of canonical component analysis}
 Formula (1) shows that back-to-back regression may be related to canonical component analysis (CCA).
 %
 In CCA, we are given two matrices X and Y (or size N,p and N,q) that describe different features measured on the same data sample, and characterize their proximity (that is, between the subspaces spanned by their columns) as the correlation between linear combinations of X and Y.
