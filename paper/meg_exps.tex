@@ -64,12 +64,15 @@ of this ridge regression to predict independent and identically distributed data
 
 and assessing, for each factor of X independently, the Pearson correlation coefficient $r$ between $X_{test}$ and $\hat X_{test}$ for each cross-validation split.
 
-Finally, back-to-back regression was fit as decribed earlier using two additional stability tricks designed to minimize the impact of bagging.
-First the $G$ ridge regression was broken-down with SVD blablabla
-Second, $X$ was regularized using a maximal likelihood blablabla
-Third, no regularization
+Finally, we adapted back-to-back regression with two changes. First, to avoid getting a slightly positively-biased estimate of the factors contributing to the MEG signal, we swap the Tikhonov regularization of the first regression $G$ with a trunkated regularization. Trunkation was fitted by maximum likelihood estimate, as implemented in scikit-learn principal component analysis. Second, to minimize the variance increase induced by bagging, we computed the inverse regularized covariance matrices outside bagging:
+\begin{equation}
+G = (Y_^T Y+\lambda_Y I)^{-1} Y_i^T X_i
+\end{equation}
 
-Back-to-back regression directly leads to $\hat E$.
+\begin{equation}
+\hat X_j = Y_j \cdot G^T
+\end{equation}
+where i and j are partition of the data.
 
 
 \subsection{Second-level statistics}
