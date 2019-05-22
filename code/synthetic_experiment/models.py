@@ -267,6 +267,7 @@ class JRR(object):
     def solution(self):
         return self.E
 
+
 class JRR2(object):
     def __init__(self):
         alphas = np.logspace(-5, 5, 20)
@@ -284,6 +285,98 @@ class JRR2(object):
 
         self.E = E / self.n_splits
 
+        self.coef = basic_regression(X @ np.diag(self.E), Y)
+
+    def predict(self, X):
+        return X @ np.diag(self.E) @ self.coef
+
+    def solution(self):
+        return self.E
+
+
+def ridge_cv_Uv(X, Y, alphas, independent_alphas=False, Uv=None):
+    """
+    Similar to sklearn RidgeCV but
+    (1) can optimize a different alpha for each column of Y
+    (2) return leave-one-out Y_hat
+    """
+    from scipy.linalg import svd
+
+    if isinstance(alphas, (float, int)):
+        alphas = np.array([alphas, ], np.float64)
+    n, n_x = X.shape
+    n, n_y = Y.shape
+    # Decompose X
+    if Uv is None:
+        U, s, _ = svd(X, full_matrices=0)
+        v = s**2
+    else:
+        U, v = Uv
+    UY = U.T @ Y
+
+    # For each alpha, solve leave-one-out error coefs
+    cv_duals = np.zeros((len(alphas), n, n_y))
+    cv_errors = np.zeros((len(alphas), n, n_y))
+    for alpha_idx, alpha in enumerate(alphas):
+        # Solve
+        w = ((v + alpha) ** -1) - alpha ** -1
+        c = U @ np.diag(w) @ UY + alpha ** -1 * Y
+        cv_duals[alpha_idx] = c
+
+        # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
+        G_diag = (w * U ** 2).sum(axis=-1) + alpha ** -1
+        error = c / G_diag[:, np.newaxis]
+        cv_errors[alpha_idx] = error
+
+    # identify best alpha for each column of Y independently
+    if independent_alphas:
+        best_alphas = (cv_errors ** 2).mean(axis=1).argmin(axis=0)
+        duals = np.transpose([cv_duals[b, :, i]
+                              for i, b in enumerate(best_alphas)])
+        cv_errors = np.transpose([cv_errors[b, :, i]
+                                  for i, b in enumerate(best_alphas)])
+    else:
+        _cv_errors = cv_errors.reshape(len(alphas), -1)
+        best_alphas = (_cv_errors ** 2).mean(axis=1).argmin(axis=0)
+        duals = cv_duals[best_alphas]
+        cv_errors = cv_errors[best_alphas]
+
+    coefs = duals.T @ X
+    Y_hat = Y - cv_errors
+    return coefs, best_alphas, Y_hat
+
+
+class JRR3(object):
+    def __init__(self):
+        self.alphas = np.logspace(-5, 5, 20)
+        self.n_splits = 100
+
+    def fit(self, X, Y):
+        from scipy.linalg import svd, pinv
+        # Prepare G
+        U, s, V = svd(Y, full_matrices=0)
+        Vs_inv_y = V.T @ np.diag(s**-1)
+        v_y = s**2
+
+        # Prepare H
+        pca = PCA('mle').fit(X)
+        Xt = pca.inverse_transform(pca.transform(X))
+
+        # CV loop
+        n_splits = 20
+        Cxtxh = list()
+        for split in range(n_splits):
+            p = np.random.permutation(range(len(X)))
+            train, test = p[::2], p[1::2]
+            G, _, _ = ridge_cv_Uv(Y[train], X[train], self.alphas,
+                                  independent_alphas=True,
+                                  Uv=(Y[train] @ Vs_inv_y, v_y))
+            X_hat = Y[test] @ G.T
+            Cxtxh.append(Xt[test].T @ X_hat)
+
+        H = pinv(X.T @ X) @ np.mean(Cxtxh, 0)
+        E_hat = np.diag(H)
+        self.E = E_hat
         self.coef = basic_regression(X @ np.diag(self.E), Y)
 
     def predict(self, X):
