@@ -1,3 +1,8 @@
+% TODO: Talk about cause-effect methods, trace method, half-sibling
+% TODO: Cite Roweis component analysis methods paper
+% TODO: review abstract
+% TODO: review conclusion
+
 \documentclass{article}
 
 \usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx}
@@ -24,11 +29,6 @@
 
 \tikzset{round left paren/.style={ncbar=0.5cm,out=110,in=-110}}
 \tikzset{round right paren/.style={ncbar=0.5cm,out=70,in=-70}}
-
-\newcommand{\dlp}[1]{{\color{red} (DLP: #1)}}
-\newcommand{\mo}[1]{{\color{green} (MO: #1)}}
-\newcommand{\jrk}[1]{{\color{blue} (JRK: #1)}}
-\newcommand{\fc}[1]{{\color{orange} (FC: #1)}}
 
 \title{Measuring causal influence with\\ back-to-back regression}
 
@@ -78,6 +78,7 @@ covary in the study.
 \input{introduction.tex}
 
 \section{Back to back regression}
+\label{sec:algorithm}
 
 
 \begin{figure}[t!]
@@ -164,8 +165,8 @@ While the triplet of variables $X$, $N$, and $N'$ are independent, we allow each
 In practice, we observe $n$ samples $(X, Y)$ from the model.
 %
 This process, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
-
-Given the model in Equation~\eqref{eq:model}, the goal of Back-to-Back Regression (B2BR) is to estimate the matrix of causal influences $E$.
+%
+Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2BR) is to estimate the matrix of causal influences $E$.
 
 %Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
 
@@ -188,13 +189,13 @@ Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\ha
 %
 The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(E)$, is the desired estimate of the causal influence matrix $E$.
 
-If using regularized least-squares, arguably the most commonly employed linear regression technique, the solution of B2BR has a closed form solution:
+If using regularized least-squares, arguably the most commonly employed linear regression technique [CITE], the solution of B2BR has a closed form solution:
 \begin{align}
     \hat G &= (Y^\top Y + \Lambda_Y)^{-1} Y^\top X,\label{eq:solG}\\
     \hat H &=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G,\label{eq:solH}
 \end{align}
 %
-where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices containing regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
+where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices of regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
 
 
 % If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
@@ -209,7 +210,7 @@ To avoid this issue, we split our sample $(X, Y)$ at random into two equally-siz
 %
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
-To compensate for the reduction in sample size caused by the split, B2BR is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split.
+To compensate for the reduction in sample size caused by the split, B2BR is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split [CITE BOOTSTRAP].
 %
 After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$ as a final B2BR prediction rule.
 
@@ -239,6 +240,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 \end{algorithm}
 
 \subsection{Theoretical guarantees}
+\label{sec:theorem}
 % As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
 % %
 % If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
@@ -265,7 +267,7 @@ Let $K \in \mathbb{R}^{k \times n_{x}}$ be the diagonal matrix obtained by delet
 %
 Then, $E = K^\top K$, and $XEF = (XK^\top)(KF)$, with both $XK^\top$ and $KF$ of rank $k$.
 
-Recall the rank factorisation property of the pseudo-inverse \citep{todo}: if $A=BC$ with $A\in\mathbb{R}^{m\times n}$ of rank $k$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$, then $A^\dagger=C^\dagger B^\dagger$ and, since $B$ is full rank, $B^\dagger=(B^\top B)^{-1} B^\top$.
+Recall the rank factorisation property of the pseudo-inverse [CITE]: if $A=BC$ with $A\in\mathbb{R}^{m\times n}$ of rank $k$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$, then $A^\dagger=C^\dagger B^\dagger$ and, since $B$ is full rank, $B^\dagger=(B^\top B)^{-1} B^\top$.
 %
 Using this property on the minimal norm solution $\hat G$ yields
 \begin{equation}
@@ -314,7 +316,7 @@ On the other hand, the true causal influence matrix $E$ is a binary matrix, whic
 %
 In this section, we provide a recipe to binarize $\hat{E}$ to estimate the collection of causal factors. 
 
-In regression analysis, the traditional approach to this problem consists in testing whether the regression coefficients differ from zero.
+In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero [CITE].
 %
 However, this test will not succeed here, since the estimate $\hat{E}$ is obtained from a double regression, and any employed regularization will add a bias to the diagonal of $\hat{E}$.
 %
@@ -322,7 +324,7 @@ Instead, we treat the binarization of $\hat{E}$ as a clustering problem: separat
 %
 More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
 %
-Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{todo} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
+Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan [CITE] criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
 %
 To binarize $\hat{E}$, set to one all the diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the diagonal entries.
 
@@ -333,16 +335,18 @@ We perform two experiments to evaluate the performance of BB2R: one on controlle
 We use scikit-learn to implement all of our simulations \citep{sklearn}.
 
 \subsection{Synthetic data}
+\label{sec:experiment_synthetic}
 
 \input{synthetic.tex}
 
 \subsection{Magnetoencephalography data}
+\label{sec:experiment_real}
 
 \input{meg_exps.tex}
 
 \section{Related work}
 
-Back-to-back regression is closely related to Canonical Correlation Analysis \citep[CCA]{todo}.
+Back-to-back regression is closely related to Canonical Correlation Analysis [CITE].
 %
 While CCA computes the eigenvector decomposition of \eqref{eq:solH}, while we compute its diagonal.
 %
