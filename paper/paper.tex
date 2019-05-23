@@ -56,18 +56,16 @@
 Identifying causes from observations is at the core of science. This endeavor
 is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
-To address this issue, we introduce ``Back-to-Back Regression'' (B2BR), a
-method designed to measure, from a set of co-varying factors, the causal influences 
-that most plausible account for multidimensional observations. After proving the consistency of B2BR,
-we show that our method outperforms least-squares and related
-regression techniques, as well as cross-decomposition methods (e.g. canonical
-correlation analysis, and partial least squares) on two tasks: causal
-identification and out-of-distribution prediction. Finally, we apply B2BR to
+To address this issue, we introduce ``Back-to-Back'' regression (B2B), a
+method designed to measure, from a set of co-varying factors, the causal influences
+that most plausibly account for multidimensional observations. After proving the consistency of B2B, we show that our method outperforms least-squares and related
+regression and cross-decomposition  techniques (e.g. canonical
+correlation analysis and partial least squares) on two tasks: causal
+identification and out-of-distribution prediction. Finally, we apply B2B to
 neuroimaging recordings of 102 subjects reading word sequences. The results
-show, as expected, that the early brain responses to words appear to be
-specifically caused by low-level visual factors whereas late brain responses
-appear to be caused by lexical factors, despite the fact that these factors
-covary in the study.
+show that the early and late brain responses caused by low- and high-level
+word features are more easily detected with B2B than with standard forward
+regression whereas techniques.
 % conclude  open
 \end{abstract}
 
@@ -164,11 +162,11 @@ In practice, we observe $n$ samples $(X, Y)$ from the model.
 %
 This process, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
 %
-Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2BR) is to estimate the matrix of causal influences $E$.
+Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
 %Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
 
-%We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx. 
+%We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx.
 
 % In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
 
@@ -177,7 +175,7 @@ Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back 
 \subsection{Algorithm}
 
 
-Back-to-Back Regression (B2BR) consists in two steps.
+Back-to-Back Regression (B2B) consists in two steps.
 %
 First, we estimate the linear regression coefficients $\hat G$ from $Y$ to $X$, and construct the predictions $\hat X = \hat Y \hat G$.
 %
@@ -187,7 +185,7 @@ Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\ha
 %
 The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(E)$, is the desired estimate of the causal influence matrix $E$.
 
-If using regularized least-squares, arguably the most commonly employed linear regression technique \citep{hoerl1959optimum, rifkin2007notes}, the solution of B2BR has a closed form solution:
+If using regularized least-squares, arguably the most commonly employed linear regression technique \citep{hoerl1959optimum, rifkin2007notes}, the solution of B2B has a closed form solution:
 \begin{align}
     \hat G &= (Y^\top Y + \Lambda_Y)^{-1} Y^\top X,\label{eq:solG}\\
     \hat H &=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G,\label{eq:solH}
@@ -197,8 +195,8 @@ where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices of regularization pa
 
 
 % If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
- 
-% In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref). 
+
+% In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref).
 
 % In both, we compute the singular value decompositions of the covariance matrix, transform its diagonal part, and invert it. In truncated SVD, the lowest eigenvalues are set to zero, and the corresponding vectors eliminated from future calculations. In ridge regression, a constant factor is added to all eigenvalues. The regularisation factor and truncation threshold are chosen via leave one out cross validation. In practice, ridge regression tends to provide better stability but introduces a bias in the estimates. Truncated SVD is used to provide better results in low noise cases.
 
@@ -208,13 +206,13 @@ To avoid this issue, we split our sample $(X, Y)$ at random into two equally-siz
 %
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
-To compensate for the reduction in sample size caused by the split, B2BR is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
+To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
 %
-After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$ as a final B2BR prediction rule.
+After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$ as a final B2B prediction rule.
 
-We summarize the B2BR procedure in Algorithm~\ref{algorithm:b2br}.
+We summarize the B2B procedure in Algorithm~\ref{algorithm:b2br}.
 %
-The rest of this section provides a theoretical guarantee on the correctness of B2BR, and an optional post-processing step to binarize the estimated causal influence matrix.
+The rest of this section provides a theoretical guarantee on the correctness of B2B, and an optional post-processing step to binarize the estimated causal influence matrix.
 
 
 
@@ -244,7 +242,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 % If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
 % %
 % N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
-% 
+%
 % The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
 Assuming centered noise $N$,
@@ -296,7 +294,7 @@ The second step is straightforward, replacing Y, we have
 \arg \min_H \left \| \hat YG - XH \right \|^2 &=\arg  \min_H \left \| (XE + N)F \hat G - XH \right \|^2 \\
 &=\arg \min_H \left \| X(EF \hat G - H) \right \| ^2 + \left \| NF\hat G \right \| ^2\\
 &= \arg \min_H \left \| X(EF \hat G - H) \right \| ^2\\
-&= EF \hat G 
+&= EF \hat G
 \end{aligned}
 \end{equation}
 
@@ -308,11 +306,11 @@ Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1
 
 \subsection{Binarizing $\hat{E}$}
 
-On the one hand, we have leveraged B2BR to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
+On the one hand, we have leveraged B2B to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
 %
 On the other hand, the true causal influence matrix $E$ is a binary matrix, which hard-selects the causal factors of $Y$ from $X$.
 %
-In this section, we provide a recipe to binarize $\hat{E}$ to estimate the collection of causal factors. 
+In this section, we provide a recipe to binarize $\hat{E}$ to estimate the collection of causal factors.
 
 In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}.
 %
@@ -344,7 +342,7 @@ We use scikit-learn to implement all of our simulations \citep{sklearn}.
 
 \section{Related work}
 
-Back-to-back regression is closely related to Canonical Correlation Analysis \citep{cca_hotelling}. 
+Back-to-back regression is closely related to Canonical Correlation Analysis \citep{cca_hotelling}.
 %
 While CCA computes the eigenvector decomposition of \eqref{eq:solH}, while we compute its diagonal.
 %
@@ -358,7 +356,7 @@ Thus, back-to-back regression is equivalent to CCA under the constraint that the
 
 There are, however, differences between CCA and back-to-back regression.
 %
-First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA. 
+First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA.
 %
 Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
 
