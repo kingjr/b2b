@@ -2,7 +2,7 @@ We evaluate the performance of B2BR throughout a series of experiments on contro
 %
 The purpose of these experiments is to evaluate the ability of B2BR in terms of prediction (inside and outside the training distribution), as well as a method to recover causal factors.
 
-The data generating process for each experiment constructs $n$ training examples according to the model $Y = \sigma((\text{snr} \cdot XE + N)F)$.
+The data generating process for each experiment constructs $n$ training examples according to the model $Y = (\text{snr} \cdot XE + N)F$.
 %
 Here, 
 %\begin{itemize}
@@ -19,9 +19,9 @@ Here,
     $E \in \mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
     $\Sigma_X = AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
     $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$,
-the factor $\text{snr} \in (0, \infty)$, and $\sigma$ is an elementwise function.
+and the factor $\text{snr} \in (0, \infty)$.
 
-To simulate a wide range of experimental conditions, we vary $n \in \{500, 1000, 2000\}$, $d_x, d_y \in \{ 25, 50, 100, 150 \}$, $n_c \in \{ 5, 10 \}$, $\text{snr} \in \{ 0.2, 0.5, 0.75, 1 \}$, and $\sigma \in \{ \text{identity}, \text{sigmoid} \}$.
+To simulate a wide range of experimental conditions, we vary $n \in \{500, 1000, 2000\}$, $d_x, d_y \in \{ 25, 50, 100, 150 \}$, $n_c \in \{ 5, 10 \}$, $\text{snr} \in \{ 0.2, 0.5, 0.75, 1 \}$. 
 %
 Each condition is simulated under $20$ different random seeds. 
 
@@ -48,9 +48,7 @@ The false positives, false negatives, and AUC statistics measure the quality of 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\textwidth]{synthetic.pdf}
-    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration, averaged over $20$ random seeds.
-    %
-    Blue points indicate linear experimental conditions, while orange points indicate nonlinear conditions.}
+    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration, averaged over $20$ random seeds.}
     \label{table:synthetic}
 \end{figure}
 
