@@ -55,12 +55,9 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 \begin{figure}[t!]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_twocurves.pdf}
-  \caption{We applied the forward regression (a.k.a encoding coefficients), the backward regression (a.k.a decoding scores) and B2B on real MEG data. Top row: the first subject. Bottom row: average across subjects.
-  We plot the contributions of the \textit{word frequency} and the \textit{word
-  length} over time. B2B can disambiguate these two factors consistently with
-  previous neuroscientific work \cite{kutas2011thirty}\citep{pegado2014timing}
-  showing an early response ($\approx$ 150ms) to length and a later response
-  ($\approx$ 400ms) to frequency.}
+  \caption{We applied forward regression (a.k.a encoding coefficients), backward regression (a.k.a decoding scores) and B2B regression on 301-sensor MEG recordings of brain activity, while subjects were flashed with individual words every $\approx$650ms. Top row: the first subject. Bottom row: average across subjects. Each line represent the association between the MEG signals and two word features as a function of time relative to word onset. Forward regression makes prediction for each MEG channel independently; detecting an effect thus requires an additional sum-square operation, which can dimish sensitivity. Backward regression operates across all channels, but does not learn to disambiguate the two word features. B2B efficiently disambiguates these two factors consistently with previous neuroscientific work \cite{kutas2011thirty}\citep{pegado2014timing}
+  showing early responses ($\approx$ 150ms) to word length and later responses
+  ($\approx$ 400ms) to word frequency.}
   \label{fig:meg_twocurves}
 \end{figure}
 
@@ -84,41 +81,26 @@ quantify the performance of each model. These results are depicted in Figure
 between 150ms and 1s after word onset.
 
 \subsubsection{Results}
-The number of letters in a string flashed onto the retina is known to modulate
-brain activity from 150ms after stimulus onset \cite{pegado2014timing}.
+When human subjects read individual words, the number of letters is known to modulate
+brain activity from 150ms after word onset \citep{pegado2014timing}.
 Similarly, word frequency is known to modulate brain activity around 400ms
-\cite{kutas2011thirty}. Consequently, we aimed to compare how sensitive each
-model is in detecting these two types of brain responses in a large
-neuroimaging dataset, where word length and word frequency were collinear.
+\citep{kutas2011thirty}. Consequently, we compared the ability of forward, backward and B2B regressions to specifically detect these two types of brain responses in a large neuroimaging dataset, where word length and word frequency are collinear.
 
-In Figure \ref{fig:meg_twocurves} we show, for each model, the effects obtained
+Figure \ref{fig:meg_twocurves} shows, for each model, the effects obtained
 in a representative subject, as well as the average effects across subjects.
 The results show that all models significantly detect that both word length and
-word frequency modulate brain responses after the stimulus onset. However
+word frequency modulate brain responses after word onset. However,
 forward regression detected word length ($t$-value$=10.6$, $p=10^{-16}$) and
 word frequency ($t$-value$=11.1$, $p=10^-17$) less reliably than B2B (length:
-$t$-value$=18.7$, $p=10^{-31}$, frequency:$t$-value$=15.9$, $p=10^{-26}$). B2B
+$t$-value$=18.7$, $p=10^{-31}$, frequency: $t$-value$=15.9$, $p=10^{-26}$). B2B
 was less sensitive than the backward regression (length: $t$-value$=33.6$,
-$p=10^{-50}$, $t$-value$=31.7$, frequency:$p=10^{-48}$). However, as detailed in
-the introduction, backward models confound collinear factors. Consequently,
-the high sensitivity of our backward regression is likely to come from a loss of specificity. This possibility is corroborated by the fact that the dynamics
-associated with word length and word frequency are remarkably similar in the
-backward model.
+$p=10^{-50}$, frequency: $t$-value$=31.7$, $p=10^{-48}$). However, as backward models confound collinear factors, such high sensitivity likely comes from a loss of specificity. This possibility is corroborated by the fact that the effects of word length and word frequency identified with backward regression present similar dynamics.
 
-Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. All of these features appeared to be reliably detected \cite{fig:megbar}. B2B thus promises to improve the detectability of subtle effects.
+Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority the visual and lexical features appeared to be reliably detected \ref{fig:megbar}. B2B thus promises to improve the detectability of subtle effects.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_result.pdf}
-  \caption{We plot the coefficients corresponding to each of the features,
-  describing their importance over time after stimuli onsets. We can observe that visual features start peaking around 150ms, while lexical features peak around 400ms. We show a similar plot for the Ridge regression baseline (forward) in Figure \ref{fig:ridgebaselineresult}.}
+  \caption{Cumulative estimates of word features as a function of time relative to word onset (chance level = 0). The dark blue area (word length) and dark red area (word frequency) correspond to the same data as those of the B2B average across subjects presented in \label{fig:meg_twocurves}. A variety of visual features peak around 150ms, while a variety of lexical features tend to peak around 400ms.}
   \label{fig:megresult}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/ridgecv_baseline_result.pdf}
-  \caption{Regression baseline. Coefficients appear to be
-  linearly correlated, unlike our method Fig. \ref{fig:megresult}.}
-  \label{fig:ridgebaselineresult}
 \end{figure}
