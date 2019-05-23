@@ -48,7 +48,7 @@ have a mean and a standard deviation of 0 and 1 respectively.
 
 \subsubsection{Methods}
 
-We attempt to identify which word features ($X$) is reliably associated with the MEG recordings $Y$ at each time sample and for each subject separately. To this aim,
+We attempt to identify which word features ($X$) are reliably associated with the MEG recordings $Y$ at each time sample and for each subject separately. To this aim,
 we compare three methods: forward regression, backward regression, and back-to-back regression.
 Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 
@@ -66,18 +66,18 @@ Forward regression was performed with an $\ell_2$-regularized least-squares regr
 Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample.
 %
 Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
-least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
+least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging factor of 10, and alpha cross-validated between $10^{-5}$ and $10^{5}$.
 
 \subsubsection{Second-level statistics}
 
 The three types of analyses were implemented for each subject and each time
 sample independently. To estimate the reliability of these estimates in the
-population, we tested, using one-sample $t$-test whether the distribution of
-the estimated contribution of each factor different from baseline ($t=0$ms),
-as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ ranging from
+population, we tested, using a one-sample $t$-test whether the distribution of
+the estimated contribution of each factor differed from baseline ($t=0$ms),
+as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau$ ranging from
 150ms to 1s after word onset. We use the resulting t and p-values as proxy to
 quantify the performance of each model. These results are depicted in Figure
-4 of the Supplementary Material. For concision purposes, we only report this metric averaged
+3 of the Supplementary Material. For concision purposes, we only report this metric averaged
 between 150ms and 1s after word onset.
 
 \subsubsection{Results}
@@ -96,7 +96,7 @@ $t$-value$=18.7$, $p=10^{-31}$, frequency: $t$-value$=15.9$, $p=10^{-26}$). B2B
 was less sensitive than the backward regression (length: $t$-value$=33.6$,
 $p=10^{-50}$, frequency: $t$-value$=31.7$, $p=10^{-48}$). However, as backward models confound collinear factors, such high sensitivity likely comes from a loss of specificity. This possibility is corroborated by the fact that the effects of word length and word frequency identified with backward regression present similar dynamics.
 
-Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority the visual and lexical features appeared to be reliably detected (see Figure 3 in Supplementary Material). B2B thus promises to improve the detectability of subtle effects.
+Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority of the visual and lexical features appeared to be reliably detected (see Figure 4 in Supplementary Material). B2B thus promises to improve the detectability of subtle effects.
 
 \begin{figure}
   \centering
