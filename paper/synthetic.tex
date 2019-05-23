@@ -27,7 +27,7 @@ Each condition is simulated under $20$ different random seeds.
 
 We compare the performance of B2BR against five competing methods:
 %
-Ridge regression [CITE], multitask Lasso [CITE], Partial Least Squares or PLS [CITE], Canonical Correlation Analysis or CCA [CITE], and Reduced Rank Regression or RRR [CITE].
+Ridge regression \citep{hoerl1959optimum}, multitask Lasso \citep{argyriou2008convex}, Partial Least Squares or PLS \citep{wold_pls, tenenhaus_pls}, Canonical Correlation Analysis or CCA \citep{cca_hotelling}, and Reduced Rank Regression or RRR \citep{Izenman_rrr}.
 %
 Each of these methods estimates a matrix of coefficients $\hat{W} \in \mathbb{R}^{d_x \times d_y}$, from which we estimate the diagonal mask $\hat{E}$ using the feature importances $\hat{E}_{i,i} = \| W_{i, :} \|$.
 %
