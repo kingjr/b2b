@@ -77,7 +77,7 @@ the estimated contribution of each factor different from baseline ($t=0$ms),
 as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ ranging from
 150ms to 1s after word onset. We use the resulting t and p-values as proxy to
 quantify the performance of each model. These results are depicted in Figure
-\ref{fig:meg_pval}. For concision purposes, we only report this metric averaged
+4 of the Supplementary Material. For concision purposes, we only report this metric averaged
 between 150ms and 1s after word onset.
 
 \subsubsection{Results}
@@ -96,11 +96,11 @@ $t$-value$=18.7$, $p=10^{-31}$, frequency: $t$-value$=15.9$, $p=10^{-26}$). B2B
 was less sensitive than the backward regression (length: $t$-value$=33.6$,
 $p=10^{-50}$, frequency: $t$-value$=31.7$, $p=10^{-48}$). However, as backward models confound collinear factors, such high sensitivity likely comes from a loss of specificity. This possibility is corroborated by the fact that the effects of word length and word frequency identified with backward regression present similar dynamics.
 
-Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority the visual and lexical features appeared to be reliably detected \ref{fig:megbar}. B2B thus promises to improve the detectability of subtle effects.
+Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority the visual and lexical features appeared to be reliably detected (see Figure 3 in Supplementary Material). B2B thus promises to improve the detectability of subtle effects.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_result.pdf}
-  \caption{Cumulative estimates of word features as a function of time relative to word onset (chance level = 0). The dark blue area (word length) and dark red area (word frequency) correspond to the same data as those of the B2B average across subjects presented in \label{fig:meg_twocurves}. A variety of visual features peak around 150ms, while a variety of lexical features tend to peak around 400ms.}
+  \caption{Cumulative estimates of word features as a function of time relative to word onset (chance level = 0). The dark blue area (word length) and dark red area (word frequency) correspond to the same data as those of the B2B average across subjects presented in \ref{fig:meg_twocurves}. A variety of visual features peak around 150ms, while a variety of lexical features tend to peak around 400ms.}
   \label{fig:megresult}
 \end{figure}

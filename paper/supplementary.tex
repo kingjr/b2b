@@ -30,9 +30,17 @@
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues_vertical.pdf}
-  \caption{We show the average value and the standard deviation of the coefficients obtained with out method during the trials. the $\star$  symbol corresponds to statistically significant (t-test) nonzero values. We notice in particular that the letters q, x, y are under-represented, as expected. Similarly there were only few proper nouns (PROPN) in text corpora. }
+  \caption{We show the average value and the standard deviation of the coefficients obtained with out method during the trials. the $\star$  symbol corresponds to statistically significant (t-test) nonzero values. We notice in particular that the letters q, x, y are under-represented, as expected. Similarly there were only few proper nouns (PROPN) in the word lists shown to subjects. }
   \label{fig:ridgebaselineresult}
 \end{figure}
 
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues.pdf}
+  \caption{We apply a statistical t-test to measure if coefficients were significantly different from the baseline value (at word onset, $t=0$ms).
+  We compute the negative logarithm of the p-value (\textit{higher is better}: nonzero effects are more easily detected). We plot the average across features, over time.
+  Full line: B2BR, dashed line: Forward regression. We see that our method more easily detects the influence of causes of MEG response.}
+\end{figure}
 
 \end{document}
