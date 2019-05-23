@@ -28,8 +28,8 @@ shows the average response of the magnetometers evoked by the words presented
 to the first subject.
 
 For each subject and each time sample relative to word onset, we
-build an observation matrix $Y \in \mathbb{R}^{n, q}$ of $n\approx$ 2700 words
-by $q=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
+build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 2700 words
+by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
 \subsubsection{Word features} We annotated each word with 38 features: 26
@@ -42,8 +42,8 @@ noun), VERB, PRON (pronoun), CONJ (conjunction), DET (determinant), ADJ
 WordFreq \citep{speerwordfreq}. For clarity purposes, we refer to these
 features using two broad categories: visual (i.e. each letter and the total
 number of letters) and lexical (part-of-speech and word frequency). This
-procedure yields an $X \in \mathbb{R}^{n, d}$ matrix of $n\approx$ 2700 words by
-$d=38$ features for each subject. Each of the columns of $X$ is normalized to
+procedure yields an $X \in \mathbb{R}^{n \times d_x}$ matrix of $n\approx$ 2700 words by
+$d_x=38$ features for each subject. Each of the columns of $X$ is normalized to
 have a mean and a standard deviation of 0 and 1 respectively.
 
 \subsubsection{Methods}
@@ -61,11 +61,11 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
   \label{fig:meg_twocurves}
 \end{figure}
 
-Forward regression was performed with an l2-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
+Forward regression was performed with an $\ell_2$-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
 %
-Backward regression was performed with an l2-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample.
+Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample.
 %
-Finally, we used the back-to-back regression was performed using two l2-regularized
+Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
 least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
 
 \subsubsection{Second-level statistics}

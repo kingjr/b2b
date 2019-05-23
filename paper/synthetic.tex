@@ -2,7 +2,7 @@ We evaluate the performance of B2B throughout a series of experiments on control
 %
 The purpose of these experiments is to evaluate the ability of B2B in terms of prediction (inside and outside the training distribution), as well as a method to recover causal factors.
 
-The data generating process for each experiment constructs $n$ training examples according to the model $Y = (\text{snr} \cdot XE + N)F$, where $snr$ is a scalar that modulates the signal-to-noise ratio.
+The data generating process for each experiment constructs $n$ training examples according to the model $Y = (\text{snr} \cdot XE + N)F$, where $\text{snr}$ is a scalar that modulates the signal-to-noise ratio.
 %
 Here,
 %\begin{itemize}
@@ -39,7 +39,7 @@ We evaluate seven metrics:
 %
 test error in-distribution, test error out-distribution, test error-in distribution after weighting with $\hat{E}$, test error out-distribution after weighting with $\hat{E}$, Sonquist-Morgan false positives on $\hat{E}$, Sonquist-Morgan false negatives on $\hat{E}$, and the area under the ROC curve (AUC) between $\hat{E}$ and $E$.
 %
-The ``in-distribution'' metrics measure the test error of each predictor before and after weighting their features by the estimated mask $\hat{E}$.
+The ``in-distribution'' metrics measure the test error of each predictor before and after weighting their features by the estimated (continous!) mask $\hat{E}$.
 %
 The ``out-distribution'' metrics are similar, measuring the test error at samples drawn using two different random covariance matrices for both $X$ and $N$.
 %
@@ -48,10 +48,10 @@ The false positives, false negatives, and AUC statistics measure the quality of 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\textwidth]{synthetic.pdf}
-    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration, $20$ random seeds.}
+    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration averaged over $20$ random seeds.}
     \label{table:synthetic}
 \end{figure}
 
 Table~\ref{table:synthetic} summarizes the results for all experimental conditions, metrics, and methods.
 %
-B2B is the method obtaining best test error out-distribution, lowest false positive and false negative discovery about $E$, and overall the best AUC when it comes to detecting causal influences.
+B2B is the method obtaining best test errors, lowest false positive and false negative discovery about $E$, and overall the best AUC when it comes to detecting causal influences.

@@ -107,11 +107,11 @@ word features respectively are more easily detected with B2B than with standard 
 
     \node[] (times2) at (8.5, 0){$\times$};
 
-    \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times q}$}};
-    \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d}$}};
-    \node[] (annE) at (\posE, -1.8){\scalebox{0.85}{$E \in \mathbb{D}^{d \times d}$}};
-    \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d}$}};
-    \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d \times q}$}};
+    \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times d_y}$}};
+    \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d_x}$}};
+    \node[] (annE) at (\posE, -1.8){\scalebox{0.85}{$E \in \mathbb{D}^{d_x \times d_x}$}};
+    \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d_x}$}};
+    \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d_x \times d_y}$}};
 
     \node[] (labY) at (\posY, 2){Observations};
     \node[] (labX) at (\posX, 2){Factors};
@@ -179,7 +179,7 @@ This backward regression recovers the correlations between $Y$ and each factor o
 %
 Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\hat X$.
 %
-The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(E)$, is the desired estimate of the causal influence matrix $E$.
+The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(\hat{H})$, is the desired estimate of the causal influence matrix $E$.
 
 If using regularized least-squares, arguably the most commonly employed linear regression technique \citep{hoerl1959optimum, rifkin2007notes}, the solution of B2B has a closed form solution:
 \begin{align}
@@ -222,7 +222,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
         $(X_1, Y_1), (X_2, Y_2) \leftarrow \text{SplitRowsInHalf}((X, Y))$\;
         $\hat{G} = \text{LinearRegression}(Y_1, X_1)$ \Comment*[r]{$\hat G = (Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1$}
         $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$ \Comment*[r]{$\hat H=(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2 \hat G$}
-        $\hat{E} \leftarrow \hat{E} + \text{Diag}(H)$\;
+        $\hat{E} \leftarrow \hat{E} + \text{Diag}(\hat{H})$\;
     }
     $\hat{E} \leftarrow \hat{E} / m$\;
     $\hat{W} \leftarrow \text{LinearRegression}(X \hat{E}, Y)$\;
@@ -385,7 +385,7 @@ On the one hand, we have leveraged B2B to obtain the estimate $\hat{E}$, which i
 %
 On the other hand, the true causal influence matrix $E$ is a binary matrix, which hard-selects the causal factors of $Y$ from $X$.
 %
-In this section, we provide a recipe to binarize $\hat{E}$ and estimate the collection of causal factors.
+In this section, we provide one of the many possible recipes to binarize $\hat{E}$ and estimate the collection of causal factors.
 
 In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}.
 %
@@ -397,11 +397,11 @@ More specifically, we propose to maximize the ratio of inter-group variance and 
 %
 Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{sonquist_morgan} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
 %
-To binarize $\hat{E}$, set to one all the diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the diagonal entries.
+To binarize $\hat{E}$, set to one all the $p$ diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the $d_x-p$ diagonal entries.
 
 \section{Experiments}
 
-We perform two experiments to evaluate the performance of B2BR: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
+We perform two experiments to evaluate the performance of B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
 %
 We use scikit-learn to implement all of our simulations \citep{sklearn}.
 
