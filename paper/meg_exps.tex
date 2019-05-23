@@ -75,101 +75,43 @@ Forward regression performs a regularized least-squares regression $A \in \mathb
 %
 Backward regression performs a regularized least-squares regression $B \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YB$, using a validation sample.
 %
-For back-to-back regression, we observed that two modifications improved its performance on MEG data.
-%
-First, we replace the Tikhonov regularization in the first regression by truncated SVD \citep{HansenTSVD}.
-%
-Second, we invert the data covariances using all the data, and use these common inverses across B2BR repetitions.
-
-% \paragraph{Forward regression} also known as 'encoding' in neuroimaging, here consists of
-% fitting a ridge-regularized ordinary least squares (OLS) regression \footnote{We use scikit-learn \citep{sklearn}.} from $X$ to $Y$:
-% \begin{equation}
-%   H = (X^{T}X+\lambda I)^{-1} X^{T}Y
-% \end{equation}
-% where $\lambda$ is the
-% regularization parameter, cross-validated between $10^{-5}$ and $10^5$.
-%
-% We then estimate the contribution
-% $diag(\hat E) \in\mathbb{D}^{d} $ of each factor. However, $H\in\mathbb{R}^{d,
-% q}$ is a matrix of $d$ word features by $q$ MEG channels. We approximate
-% the relative contribution of each feature with the sum-of-squares of the corresponding coefficients in $H$; for the $j$-th feature:
-% \begin{equation}
-%   \hat e_j = \sum_{i=0}^{q} {h_{i,j}}^2
-% \end{equation}
-% \paragraph{Backward regression} or 'decoding', is similar but predicts $X$ from $Y$:
-% \begin{equation} G = (Y^{T}Y+\lambda I)^{-1} Y^{T}X \end{equation}
-% where $\lambda$ is cross-validated as for encoding. We estimate the
-% contribution $diag(\hat E) \in\mathbb{D}^{d} $ of each factor in the following
-% way. We predict $X$ on a held-out split \textit{test}:
-% % Using 10-fold cross-validation, we thus assessed the ability of this ridge
-% % regression to predict independent and identically distributed data:
-% \begin{equation} \hat X_{test} = Y_{test}\cdot G_{train} \end{equation}
-% and assess, for each factor of X independently, the Pearson correlation
-% coefficient $r$ between $X_{test}$ and $\hat X_{test}$. We repeat the procedure
-% for 20 random splits and average the result.
-
-%<<<<<<< HEAD
-% \paragraph{Back-to-back regression} We adapted back-to-back regression with two
-% changes. First, to avoid getting a slightly positively-biased estimate of the
-% factors contributing to the MEG signal, we swap the Tikhonov regularization of
-% the first regression $G$ with a truncated regularization. Truncation was fitted
-%  by maximum likelihood estimate, as implemented in scikit-learn principal
-%  component analysis. Second, to minimize the variance increase induced by
-%  bagging, we computed the inverse regularized covariance matrices outside
-%  bagging:
-% \begin{equation}
-%   G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
-% \end{equation}
-% \begin{equation}
-% \hat X_{test} = Y_{test} \cdot G^T
-% \end{equation} where $\left(train,test\right)$ are partitions of the data.
+Finally, we used the back-to-back regression as described earlier, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
 
 \subsubsection{Second-level statistics}
 
 The three types of analyses were implemented for each subject and each time
 sample independently.  To estimate the reliability of these estimates in the
 population, we tested, using one-sample $t$-test whether the distribution of
-the estimated contribution of each factor different from baseline ($t=-100$ms),
-as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
-400ms respectively
-% =======
-% \paragraph{Back-to-back regression} We adapted back-to-back regression with two
-% changes. First, to avoid getting a slightly positively-biased estimate of the
-% factors contributing to the MEG signal, we swap the Tikhonov regularization of
-% the first regression $G$ with a truncated regularization. Truncation was fitted
-%  by maximum likelihood estimate, as implemented in scikit-learn principal
-%  component analysis. Second, to minimize the variance increase induced by
-%  bagging, we computed the inverse regularized covariance matrices outside
-%  bagging:
-% \begin{equation}
-%   G = (Y^T Y+\lambda_Y I)^{-1} Y_{train}^T X_{train}
-% \end{equation}
-% \begin{equation}
-% \hat X_{test} = Y_{test} \cdot G^T
-% \end{equation} where $\left(train,test\right)$ are partitions of the data.
-% %
-% % \subsubsection{Second-level statistics}
-% %
-% % The three types of analyses were implemented for each subject and each time
-% % sample independently.  To estimate the reliability of these estimates in the
-% % population, we tested, using one-sample $t$-test whether the distribution of
-% % the estimated contribution of each factor different from baseline ($t=-100$ms),
-% % as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
-% % 400ms respectively
-% >>>>>>> 1775190a9737244f84b8ace529198a443029ad8d
-
+the estimated contribution of each factor different from baseline ($t=0$ms),
+as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ ranging from
+150ms to 1s after word onset. We use the resulting p-values as proxy to quantify
+the performance of each model. These results are depicted in Figure
+\ref{fig:meg_pval}. For concision purposes, we only report this metric averaged
+between 150ms and 1s after word onset.
 
 \subsubsection{Results}
+The number of letters in a string flashed onto the retina is known to modulate
+brain activity from 150ms after stimulus onset \cite{pegado2014timing}.
+Similarly, word frequency is known to modulate brain activity around 400ms
+\cite{kutas2011thirty}. Consequently, we aimed to compare how sensitive each
+model is in detecting these two types of brain responses in a large
+neuroimaging dataset, where word length and word frequency were collinear.
 
-We show all the feature coefficients as a function of time in the stacked plots,
-Figure \ref{fig:megresult}. Our method confirms previous findings in
-neuroscience literature. In particular, \cite{kutas2011thirty} find that word
-frequency correlates with a brain wave around 400ms. Similarly,
-\cite{pegado2014timing} show that letter strings correlate with early brain
-responses. Both these phenomena can be observed in Figures
-\ref{fig:meg_twocurves} and \ref{fig:megresult}, where we show that our
-method is able to separate them more clearly than the forward regression
-approach.
+In Figure \ref{fig:meg_twocurves} we show, for each model, the effects obtained
+in a representative subject, as well as the average effects across subjects.
+The results show that all models significantly detect that both word length and
+word frequency modulate brain responses after the stimulus onset. However
+forward regression detected word length ($t-value=10.6$, $p=10^{-16}$) and
+word frequency ($t-value=11.1$, $p=10^-17$) less reliably than B2B (length:
+$t-value=18.7$, $p=10^{-31}$, frequency:$t-value=15.9$, $p=10^{-26}$). B2B
+was less sensitive than the backward regression (length: $t-value=33.6$,
+$p=10^{-50}$, $t-value=31.7$, frequency:$p=10^{-48}$). However, as detailed in
+the introduction, backward models confound collinear factors. Consequently,
+the high sensitivity of our backward regression is likely to come from a loss of specificity. This possibility is corroborated by the fact that the dynamics
+associated with word length and word frequency are remarkably similar in the
+backward model.
+
+Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. All of these features appeared to be reliably detected \cite{fig:megbar}. B2B thus promises to improve the detectability of subtle effects.
 
 \begin{figure}
   \centering
