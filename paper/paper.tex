@@ -24,7 +24,7 @@
 \tikzset{round left paren/.style={ncbar=0.5cm,out=110,in=-110}}
 \tikzset{round right paren/.style={ncbar=0.5cm,out=70,in=-70}}
 
-\title{Measuring causal influence with\\ back-to-back regression}
+\title{Measuring causal influence with\\ back-to-back regression: the linear case}
 
 \author{%
   Jean-Remi King\\
@@ -53,15 +53,15 @@ Identifying causes from observations is at the core of science. This endeavor
 is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
 To address this issue, we introduce ``Back-to-Back'' regression (B2B), a
-method designed to measure, from a set of co-varying factors, the causal influences
-that most plausibly account for multidimensional observations. After proving the consistency of B2B, we show that our method outperforms least-squares and related
-regression and cross-decomposition  techniques (e.g. canonical
-correlation analysis and partial least squares) on two tasks: causal
+method designed to measure, from a set of co-varying factors, the causal
+influences that most plausibly account for multidimensional observations. After
+proving the consistency of B2B, we show that our method outperforms
+least-squares and related regression and cross-decomposition techniques (e.g.
+canonical correlation analysis and partial least squares) on two tasks: causal
 identification and out-of-distribution prediction. Finally, we apply B2B to
 neuroimaging recordings of 102 subjects reading word sequences. The results
 show that the early and late brain responses caused by low- and high-level
-word features are more easily detected with B2B than with standard forward
-regression whereas techniques.
+word features respectively are more easily detected with B2B than with standard forward regression.
 % conclude  open
 \end{abstract}
 
@@ -113,22 +113,22 @@ regression whereas techniques.
     \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d}$}};
     \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d \times q}$}};
 
-    \node[] (labY) at (\posY, 3){Observations};
-    \node[] (labX) at (\posX, 3){Factors};
-    \node[] (labE) at (\posE, 3.3){Cause};
-    \node[] (labE) at (\posE, 3){selection};
-    \node[] (labN) at (\posN, 3){Noise};
-    \node[] (labF) at (\posF, 3.3){Cause-effect};
-    \node[] (labF) at (\posF, 3){mapping};
+    \node[] (labY) at (\posY, 2){Observations};
+    \node[] (labX) at (\posX, 2){Factors};
+    \node[] (labE) at (\posE, 2){Cause};
+    \node[] (labE) at (\posE, 1.7){selection};
+    \node[] (labN) at (\posN, 2){Noise};
+    \node[] (labF) at (\posF, 2){Cause-effect};
+    \node[] (labF) at (\posF, 1.7){mapping};
 
-    \node[] (labY) at (\posY, 2)   {\color{gray} MEG recordings};
-    \node[] (labX) at (\posX, 2)   {\color{gray} stimulus};
-    \node[] (labX) at (\posX, 2.3) {\color{gray} features};
-    \node[] (labE) at (\posE, 2.3) {\color{gray} causal};
-    \node[] (labE) at (\posE, 2)   {\color{gray} features};
-    \node[] (labN) at (\posN, 2)   {\color{gray} breathing\ldots};
-    \node[] (labF) at (\posN, 2.3) {\color{gray} bloodflow,};
-    \node[] (labF) at (\posF, 2)   {\color{gray} MEG helmet};
+    % \node[] (labY) at (\posY, 2)   {\color{gray} MEG recordings};
+    % \node[] (labX) at (\posX, 2)   {\color{gray} stimulus};
+    % \node[] (labX) at (\posX, 2.3) {\color{gray} features};
+    % \node[] (labE) at (\posE, 2.3) {\color{gray} causal};
+    % \node[] (labE) at (\posE, 2)   {\color{gray} features};
+    % \node[] (labN) at (\posN, 2)   {\color{gray} breathing\ldots};
+    % \node[] (labF) at (\posN, 2.3) {\color{gray} bloodflow,};
+    % \node[] (labF) at (\posF, 2)   {\color{gray} MEG helmet};
 
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
