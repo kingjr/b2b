@@ -32,13 +32,6 @@ build an observation matrix $Y \in \mathbb{R}^{n, q}$ of $n\approx$ 2700 words
 by $q=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_sensors.pdf}
-  \caption{Magnetosensor response (femtoteslas fT) averaged across words for the first subject. The color coding corresponds to the positions of the sensors on the head as shown on the top-left diagram. The diverging curves correspond to artifacts in the MEG data.}
-  \label{fig:megavg}
-\end{figure}
-
 \subsubsection{Word features} We annotated each word with 38 features: 26
 correspond to the count of each letter in the word (from 'a' to 'z',
 independently of their case), the total number of letters ('word length'), the
@@ -55,8 +48,7 @@ have a mean and a standard deviation of 0 and 1 respectively.
 
 \subsubsection{Methods}
 
-We attempt to identify which factors of $X$ explain the MEG
-recordings $Y$ at each time sample and for each subject separately. To this aim,
+We attempt to identify which word features ($X$) is reliably associated with the MEG recordings $Y$ at each time sample and for each subject separately. To this aim,
 we compare three methods: forward regression, backward regression, and back-to-back regression.
 Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 
@@ -65,17 +57,19 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_twocurves.pdf}
   \caption{We applied the forward regression (a.k.a encoding coefficients), the backward regression (a.k.a decoding scores) and B2B on real MEG data. Top row: the first subject. Bottom row: average across subjects.
   We plot the contributions of the \textit{word frequency} and the \textit{word
-  length} over time. Our method can disambiguate them consistently with
-  previous neuroscientific work showing an early response ($\approx$ 150ms) to
-  length and a later response ($\approx$ 400ms) to frequency.}
+  length} over time. B2B can disambiguate these two factors consistently with
+  previous neuroscientific work \cite{kutas2011thirty}\citep{pegado2014timing}
+  showing an early response ($\approx$ 150ms) to length and a later response
+  ($\approx$ 400ms) to frequency.}
   \label{fig:meg_twocurves}
 \end{figure}
 
-Forward regression performs a regularized least-squares regression $A \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| A_{i, :} \|^2$.
+Forward regression was performed with an l2-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
 %
-Backward regression performs a regularized least-squares regression $B \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YB$, using a validation sample.
+Backward regression was performed with an l2-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample.
 %
-Finally, we used the back-to-back regression as described earlier, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
+Finally, we used the back-to-back regression was performed using two l2-regularized
+least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
 
 \subsubsection{Second-level statistics}
 
@@ -84,8 +78,8 @@ sample independently. To estimate the reliability of these estimates in the
 population, we tested, using one-sample $t$-test whether the distribution of
 the estimated contribution of each factor different from baseline ($t=0$ms),
 as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ ranging from
-150ms to 1s after word onset. We use the resulting p-values as proxy to quantify
-the performance of each model. These results are depicted in Figure
+150ms to 1s after word onset. We use the resulting t and p-values as proxy to
+quantify the performance of each model. These results are depicted in Figure
 \ref{fig:meg_pval}. For concision purposes, we only report this metric averaged
 between 150ms and 1s after word onset.
 
@@ -101,11 +95,11 @@ In Figure \ref{fig:meg_twocurves} we show, for each model, the effects obtained
 in a representative subject, as well as the average effects across subjects.
 The results show that all models significantly detect that both word length and
 word frequency modulate brain responses after the stimulus onset. However
-forward regression detected word length ($t-value=10.6$, $p=10^{-16}$) and
-word frequency ($t-value=11.1$, $p=10^-17$) less reliably than B2B (length:
-$t-value=18.7$, $p=10^{-31}$, frequency:$t-value=15.9$, $p=10^{-26}$). B2B
-was less sensitive than the backward regression (length: $t-value=33.6$,
-$p=10^{-50}$, $t-value=31.7$, frequency:$p=10^{-48}$). However, as detailed in
+forward regression detected word length ($t$-value$=10.6$, $p=10^{-16}$) and
+word frequency ($t$-value$=11.1$, $p=10^-17$) less reliably than B2B (length:
+$t$-value$=18.7$, $p=10^{-31}$, frequency:$t$-value$=15.9$, $p=10^{-26}$). B2B
+was less sensitive than the backward regression (length: $t$-value$=33.6$,
+$p=10^{-50}$, $t$-value$=31.7$, frequency:$p=10^{-48}$). However, as detailed in
 the introduction, backward models confound collinear factors. Consequently,
 the high sensitivity of our backward regression is likely to come from a loss of specificity. This possibility is corroborated by the fact that the dynamics
 associated with word length and word frequency are remarkably similar in the

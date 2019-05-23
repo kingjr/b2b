@@ -251,7 +251,7 @@ This section provides a consistency proof for B2BR in the case of low noise.
 \begin{theorem}[Low-noise consistency]
     Consider the B2BR model from Equation~\ref{eq:model}.
     %
-    Assume that $F$ and $X$ are full-rank on the subspace spanned by active entries in $E$. 
+    Assume that $F$ and $X$ are full-rank on the subspace spanned by active entries in $E$.
     %
     Then, as the variance of $N$ tends to zero and the sample size tends to infinity, B2BR recovers $E$.
 \end{theorem}
@@ -264,7 +264,7 @@ For centered noise $N$, the first regression satisfies:
 %
 The solution to this first regression is $\hat{G} = [(XEF)^\top (XEF) + (NF)^\top (NF)]^{-1} (XEF)^\top X$.
 
-The second regression is: 
+The second regression is:
 %
 \begin{align*}
     \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
@@ -291,12 +291,12 @@ Then,
 \begin{align*}
     \hat{E} &= EF(XEF)^\dagger X = K^\top K F(XK^\top K F)^\dagger X \stackrel{i)}{=} K^\top (K F) (KF)^\dagger (XK^\top)^\dagger X\\
             &\stackrel{ii)}{=} K^\top K(XK^\top)^\dagger X = E (XK^\top)^\dagger X \stackrel{iii)}{=} E (KX^\top X K^\top)^{-1} KX^\top X\\
-            &= E (KX^\top X K^\top)^{-1} (\Sigma_1 \,|\, \Sigma_2)  = E \Sigma_1^{-1} (\Sigma_1 \,|\, \Sigma_2)  
+            &= E (KX^\top X K^\top)^{-1} (\Sigma_1 \,|\, \Sigma_2)  = E \Sigma_1^{-1} (\Sigma_1 \,|\, \Sigma_2)
             = \left(\begin{array}{cc} I_k & \Sigma_1^{-1} \Sigma_2 \\ 0 & 0 \end{array}\right),
 \end{align*}
 where the equalities follow due to i) a full-rank factorization of $XEF$, ii) $KF$ being full-rank yields $(KF)(KF)^\dagger = K$, and iii) $X K^\top$ being full-rank yields $(XK^\top)^\dagger = (KX^\top X K^\top)^{-1} KX^\top$.
 %
-Therefore, $\text{Diag}(\hat{E})$ is the desired influence causal matrix $E$. 
+Therefore, $\text{Diag}(\hat{E})$ is the desired influence causal matrix $E$.
 \end{proof}
 
 We observe that, even in the presence of strong noise, the expression of our estimate \eqref{eq:estimate} involves the left-most multiplication with the true causal influence matrix $E$.
@@ -321,7 +321,7 @@ When the variance of $N$ increases, we of course pay a price: since the norm $\|
 %%%%%% Second, since $XK^\top$ is full rank, we write $(XK^\top)^\dagger = ((XK^\top)^\top (XK^\top))^{-1}(XK^\top)^\top$.
 %%%%%% %
 %%%%%% Then, $(XEF)^\dagger X = (KF)^\dagger (KX^\top XK^\top)^{-1} KX^\top X$.
-%%%%%% 
+%%%%%%
 %%%%%% %Recall the rank factorisation property of the pseudo-inverse \citep{ben2003generalized}: if $A=BC$ with $A\in\mathbb{R}^{m\times n}$ of rank $k$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$, then $A^\dagger=C^\dagger B^\dagger$ and, since $B$ is full rank, $B^\dagger=(B^\top B)^{-1} B^\top$.
 %%%%%% %
 %%%%%% % Using this property on the minimal norm solution $\hat G$ yields
@@ -332,25 +332,25 @@ When the variance of $N$ increases, we of course pay a price: since the norm $\|
 %%%%%% % &=(KF)^\dagger (KX^\top XK^\top)^{-1} KX^\top X
 %%%%%% % \end{aligned}
 %%%%%% % \end{equation}
-%%%%%% 
+%%%%%%
 %%%%%% Write the covariance of $X$ as $X^\top X = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, with the block $\Sigma_1$ being $k\times k$. Then, $(KX^\top X K^\top)=\Sigma_{1}$ and $(KX^\top XK^\top)^{-1} KX^\top X=\left(\begin{array}{c|c}I_{k} &  \Sigma_{1}^{-1} \Sigma_{2}\end{array}\right) =: S$.
-%%%%%% 
-%%%%%% 
+%%%%%%
+%%%%%%
 %%%%%% Under centred noise, and if the covariance of NF has low condition number (a weak assumption given that N is noise), we have $\left \| NFG\right \| ^2 \approx Var(NF) \left \| G\right \| ^2$, and minimisation of $\left \| X-XEFG\right\| ^2  + \left \| NFG\right \| ^2$ will recover a scaled version of the noiseless solution, $\lambda (KF)^\dagger S$, $\lambda$ a positive number below one.
-%%%%%% 
+%%%%%%
 %%%%%% Replacing in the left part of (ref), we have $X-XEFG=X- XK^\top KF \lambda (KF)^\dagger S= X - \lambda XE=X(I-\lambda E)$. Its square norm is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ ($Var(X_{.})$ denoting the variance of X over active and inactive features).
-%%%%%% 
+%%%%%%
 %%%%%% For the right part, we have $NFG=NF \lambda (KF)^\dagger S = NK^\top (KF+(I-K)F) \lambda  (KF)^\dagger S = \lambda NES=  \lambda NE$. (Since F is full rank over E, we have $(KF)^\dagger (I-K)F= 0$). The square norm is therefore $\lambda^2 Var(N_{active})$.
-%%%%%% 
+%%%%%%
 %%%%%% Thus, with centred and random noise, and with F full rank over E, we are minimising $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N_{active})$. Its least value is attained for $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N_{active})}$. Assuming X and N have the same variance over all features (this can always be guaranteed), active subscript can be dropped, and this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
-%%%%%% 
+%%%%%%
 %%%%%% The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} (KF)^\dagger S$.
-%%%%%% 
-%%%%%% 
+%%%%%%
+%%%%%%
 %%%%%% Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} (K^\top K F)(KF)^{\dagger} S = \frac{1}{1+nsr} E$.
-%%%%%% 
+%%%%%%
 %%%%%% ADD AGAIN:
-%%%%%% 
+%%%%%%
 %%%%%% Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=(XEF)^\dagger X=(KF)^\dagger S$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (if the causal features do not serve as confounders for non causal ones), then S=K, and we are retrieving $(KF)^\dagger K$.
 %%%=======
 %%%
@@ -453,6 +453,8 @@ Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter so
 
 \bibliographystyle{plain}
 \bibliography{paper}
+
+\input{supplementary.tex}
 
 %\section{Appendices}
 %
