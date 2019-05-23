@@ -171,7 +171,7 @@ Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back 
 \subsection{Algorithm}
 
 
-Back-to-Back Regression (B2B) consists in two steps.
+Back-to-Back Regression (B2B) consists of two steps.
 %
 First, we estimate the linear regression coefficients $\hat G$ from $Y$ to $X$, and construct the predictions $\hat X = Y \hat G$.
 %
@@ -275,7 +275,7 @@ Therefore, our estimate of $E$ is:
     \label{eq:estimate}
 \end{equation}
 %
-By the definition of the Moore-Penrose, if $(NF)^\top (NF)$ is full-rank with $\| (NF)^\top (NF) \| \to 0$, it follows that $\hat{E} = EF(XEF)^\dagger X$.
+By definition of the Moore-Penrose inverse (also known as pseudo-inverse), if $(NF)^\top (NF)$ is full-rank with $\|~(NF)^\top~(NF)~\|~\to~0$, it follows that $\hat{E} = EF(XEF)^\dagger X$.
 %
 Next, assume that the true causal influence matrix contains $k$ ones arranged as $E = \left(\begin{array}{cc} I_k & 0 \\ 0 & 0 \end{array}\right)$, and let $E = K^\top K$, where $K\in \mathbb{R}^{k \times d_x}$.
 %
@@ -290,7 +290,7 @@ Then,
 \end{align*}
 where the equalities follow due to i) a full-rank factorization of $XEF$, ii) $KF$ being full-rank yields $(KF)(KF)^\dagger = K$, and iii) $X K^\top$ being full-rank yields $(XK^\top)^\dagger = (KX^\top X K^\top)^{-1} KX^\top$.
 %
-Therefore, $\text{Diag}(\hat{E})$ is the desired influence causal matrix $E$.
+Therefore, $\text{Diag}(\hat{E})$ is the desired causal influence matrix $E$.
 \end{proof}
 
 We observe that, even in the presence of strong noise, the expression of our estimate \eqref{eq:estimate} involves the left-most multiplication with the true causal influence matrix $E$.
