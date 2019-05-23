@@ -417,30 +417,29 @@ We use scikit-learn to implement all of our simulations \citep{sklearn}.
 
 \section{Related work}
 
-Back-to-back regression is closely related to Canonical Correlation Analysis \citep{cca_hotelling}.
-%
-While CCA computes the eigenvector decomposition of \eqref{eq:solH}, while we compute its diagonal.
-%
-If \eqref{eq:solH} is diagonal, as in our model \eqref{eq:model}, the variables in $X$ are the eigenvectors.
-%
-If all the associated eigenvalues are either $0$ or $1$, then all the variables are either part of the $Y$ subspace, or orthogonal to it, respectively.
-%
-This is because these eigenvalues correspond to the squared cosine of the angle between the corresponding variable in $X$ and the $Y$ subspace.
-%
-Thus, back-to-back regression is equivalent to CCA under the constraint that the subspaces spanned by $X$ and $Y$ are perpendicular, $X$ is spanned by vectors of $Y$ and vectors orthogonal to $Y$, and that the parallel and orthogonal components of $X$ are spanned by disjoint sets of features of $X$.
+In the context of neuroimaging, the first regression of B2B relates to the first step of Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}. Indeed, RSA analyzes the similarity of brain responses associated with specific conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new contexts and (2)
+it is fully supervised.
 
-There are, however, differences between CCA and back-to-back regression.
+More generally, B2B is related to CCA \citep{cca_hotelling} in that it can be thought of as a cross-decomposition of $X$ and $Y$. B2B departs from CCA in four main aspect. First, CCA performs an additional eigenvector decomposition what would be the $H$ coefficients in B2B \eqref{eq:solH}. Second, CCA does not typically optimize two distinct regularization parameters. Third CCA does not use bagging between $G$ and $H$. Finally, CCA does not diagonalize nor binarize the $H$ matrix to estimate $\hat E$. More generally, CCA aims to find maximally correlated components between $X$ and $Y$, and does not assume any causal direction. By contrast, B2B assumes that $X$ causes $Y$. Together, these differences may explain why B2B can reliably outperform CCA on estimating causal influences and predicting $Y$ in novel environments \ref{table:synthetic}.
 %
-First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA.
-%
-Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
+% If all the associated eigenvalues are either $0$ or $1$, then all the variables are either part of the $Y$ subspace, or orthogonal to it, respectively.
+% %
+% This is because these eigenvalues correspond to the squared cosine of the angle between the corresponding variable in $X$ and the $Y$ subspace.
+% %
+% Thus, B2B is equivalent to CCA under the constraint that the subspaces spanned by $X$ and $Y$ are perpendicular, $X$ is spanned by vectors of $Y$ and vectors orthogonal to $Y$, and that the parallel and orthogonal components of $X$ are spanned by disjoint sets of features of $X$.
+
+% There are, however, differences between CCA and back-to-back regression.
+% %
+% First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA.
+% %
+% Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
 
 B2B is also related, but different, from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
 %
 B2B seems to have a similar flavour to half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the study of the precise link between these two models for future work.
 
-\section{Conclusion}
 
+\section{Conclusion}
 \input{conclusion}
 
 % \section{Acknowlegements}
