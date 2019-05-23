@@ -54,7 +54,7 @@ if __name__ == "__main__":
         if eid not in results:
             results[eid] = {}
 
-        if model not in results[eid]: 
+        if model not in results[eid]:
             results[eid][model] = {}
 
         for stat in stats:
@@ -62,7 +62,6 @@ if __name__ == "__main__":
                 results[eid][model][stat] = []
             results[eid][model][stat].append(line_dict[stat])
 
-    
     plt.figure(figsize=(8, 5))
     counter = 0
     for m, model in enumerate(models):
@@ -100,7 +99,7 @@ if __name__ == "__main__":
 
             ax.set_xlim(min_, max_)
             ax.set_ylim(min_, max_)
-            
+
             if m != (len(models) - 1):
                 plt.xticks([])
                 plt.yticks([])
@@ -110,3 +109,70 @@ if __name__ == "__main__":
     plt.tight_layout(0, 0, 0)
     plt.savefig(args.file + ".pdf")
     # plt.show()
+
+    # Figure 2
+    # Gather results
+    import pandas as pd
+    summary = list()
+    for m, model in enumerate(models):
+        for s, stat in enumerate(stats):
+            data_jrr = []
+            data_other = []
+            data_nl = []
+            if model != "JRR":
+                for eid in results:
+                    if model in results[eid]:
+                        data_jrr.append(np.mean(results[eid]["JRR"][stat]))
+                        data_other.append(np.mean(results[eid][model][stat]))
+                        is_nonlinear = int(eid.split("_")[5])
+                        data_nl.append(is_nonlinear)
+            # Compare jrr metric with model metric
+            diff = np.array(data_other) - np.array(data_jrr)
+            for d, nl in zip(diff, data_nl):
+                summary.append(dict(model=model, stat=stat,
+                                    effect=d, nonlinear=nl))
+
+    summary = pd.DataFrame(summary)
+    fig, axes = plt.subplots(1, 7, figsize=(8, 2), sharex=True)
+    for stat, ax in zip(stats, axes):
+        effect = summary.query('stat==@stat')
+
+        x = 0
+        colors = dict(Ridge='C0', Lasso='C1', PLS='C2', CCA='C3', RRR='C4')
+        for (model, nonlinear), d in effect.groupby(['model', 'nonlinear']):
+            x += 1
+            # plot mearn
+            m = d.effect.mean()
+            ax.bar(x, m,
+                   label=model if not nonlinear else None,
+                   color=colors[model] if not nonlinear else 'w',
+                   edgecolor=colors[model])
+            # plot error bar
+            sem = d.effect.std() / np.sqrt(len(d))
+            ax.plot([x, x], [m+sem, m-sem], color='k')
+            if nonlinear:
+                x += 1
+
+        ax.set_title(stats[stat])
+        ax.set_xticks([])
+        ax.set_ylabel('')
+        ax.set_xlabel('')
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        if 'error' in stat:
+            ax.set_ylim(-.01, .03)
+            if ax != axes[0]:
+                ax.set_yticklabels([])
+        elif 'false' in stat:
+            ax.set_ylim(-.1, .65)
+            if ax != axes[4]:
+                ax.set_yticklabels([])
+
+        if ax == axes[3]:
+            ax.bar(0, 0, color='k', label='linear', zorder=-1)
+            ax.bar(0, 0, color='w', edgecolor='k', label='non linear',
+                   zorder=-1)
+            ax.legend(bbox_to_anchor=(4, -.1), ncol=7)
+    plt.tight_layout(0, 0, 0)
+    plt.show()
+    plt.savefig(args.file + "2.pdf")
