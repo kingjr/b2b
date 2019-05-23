@@ -173,9 +173,9 @@ Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back 
 
 Back-to-Back Regression (B2B) consists in two steps.
 %
-First, we estimate the linear regression coefficients $\hat G$ from $Y$ to $X$, and construct the predictions $\hat X = \hat Y \hat G$.
+First, we estimate the linear regression coefficients $\hat G$ from $Y$ to $X$, and construct the predictions $\hat X = Y \hat G$.
 %
-This backward regression recovers an approximation of the causes of $Y$ in $X$.
+This backward regression recovers the correlations between $Y$ and each factor of $X$.
 %
 Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\hat X$.
 %
@@ -241,14 +241,14 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 %
 % The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
-This section provides a consistency proof for B2BR in the case of low noise.
+This section provides a consistency proof for B2B in the case of low noise.
 
 \begin{theorem}[Low-noise consistency]
-    Consider the B2BR model from Equation~\ref{eq:model}.
+    Consider the B2B model from Equation~\ref{eq:model}.
     %
     Assume that $F$ and $X$ are full-rank on the subspace spanned by active entries in $E$.
     %
-    Then, as the variance of $N$ tends to zero and the sample size tends to infinity, B2BR recovers $E$.
+    Then, as the variance of $N$ tends to zero and the sample size tends to infinity, B2B recovers $E$.
 \end{theorem}
 \begin{proof}
 For centered noise $N$, the first regression satisfies:
@@ -385,7 +385,7 @@ On the one hand, we have leveraged B2B to obtain the estimate $\hat{E}$, which i
 %
 On the other hand, the true causal influence matrix $E$ is a binary matrix, which hard-selects the causal factors of $Y$ from $X$.
 %
-In this section, we provide a recipe to binarize $\hat{E}$ to estimate the collection of causal factors.
+In this section, we provide a recipe to binarize $\hat{E}$ and estimate the collection of causal factors.
 
 In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}.
 %
@@ -435,9 +435,9 @@ First, since our objective is not to characterise the proximity between $X$ and 
 %
 Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
 
-B2BR is also related, but different, from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
+B2B is also related, but different, from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
 %
-B2BR seems to have a similar flavour to half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the study of the precise link between these two models for future work.
+B2B seems to have a similar flavour to half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the study of the precise link between these two models for future work.
 
 \section{Conclusion}
 
