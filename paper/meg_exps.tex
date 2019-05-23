@@ -77,7 +77,7 @@ Backward regression performs a regularized least-squares regression $B \in \math
 %
 For back-to-back regression, we observed that two modifications improved its performance on MEG data.
 %
-First, we replace the Tikhonov regularization in the first regression by truncated SVD (performed as a maximum likelihood estimation of principal components).
+First, we replace the Tikhonov regularization in the first regression by truncated SVD \citep{HansenTSVD}.
 %
 Second, we invert the data covariances using all the data, and use these common inverses across B2BR repetitions.
 
