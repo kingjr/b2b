@@ -1,7 +1,29 @@
+\documentclass{article}
 
-\begin{figure}
+\usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx, hyperref, amsthm}
+\usepackage[ruled, linesnumbered]{algorithm2e}
+\usepackage[]{neurips_2019}
+
+\title{Measuring causal influence with\\ back-to-back regression: the linear case - supplementary material}
+
+\begin{document}
+
+\maketitle
+
+\begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_sensors.pdf}
   \caption{Magnetosensor response (femtoteslas fT) averaged across words for the first subject. The color coding corresponds to the positions of the sensors on the head as shown on the top-left diagram. The diverging curves correspond to artifacts in the MEG data.}
   \label{fig:megavg}
 \end{figure}
+
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/ridgecv_baseline_result.pdf}
+  \caption{Regression baseline. Coefficients appear to be
+  linearly correlated, unlike our method in the main text.}
+  \label{fig:ridgebaselineresult}
+\end{figure}
+
+\end{document}
