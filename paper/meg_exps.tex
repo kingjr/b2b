@@ -13,26 +13,22 @@ Each word was presented on the computer screen for 351ms on average (min: 300ms,
 max: 1400ms). Successive words were separated by a blank screen for 300ms, and
 successive sentences were separated by an empty screen for a few (3-4) seconds.
 
-\subsubsection{MEG preprocessing}
+\subsubsection{MEG preprocessing and feature generation}
 
 The raw MEG data was bandpass-filtered between 0.1 and 40Hz using MNE-Python
 default parameters \citep{gramfort2013meg, gramfort2014mne}. Specifically, we used a zero-phase finite impulse
 response filter (FIR) with a Hamming window and with transition bands of 0.1Hz
-and 10Hz for the low and high cut-off frequencies.
-
-The raw data was then segmented 100ms before word onset and 1s after
+and 10Hz for the low and high cut-off frequencies. The raw data was then segmented 100ms before word onset and 1s after
 word onset ($t=0$ms corresponds to word onset). Finally, each resulting
 segment was baseline-corrected between -100ms and 0ms, and decimated by 5 and
 thus led a sampling frequency of 240Hz. Figure 1 in the supplementary material
 shows the average response of the magnetometers evoked by the words presented
-to the first subject.
-
-For each subject and each time sample relative to word onset, we
+to the first subject. For each subject and each time sample relative to word onset, we
 build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 2700 words
 by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
-\subsubsection{Word features} We annotated each word with 38 features: 26
+We annotated each word with 38 features: 26
 correspond to the count of each letter in the word (from 'a' to 'z',
 independently of their case), the total number of letters ('word length'), the
 frequency of the word in natural language (using the Zipf logarithmic scale
@@ -46,7 +42,7 @@ procedure yields an $X \in \mathbb{R}^{n \times d_x}$ matrix of $n\approx$ 2700 
 $d_x=38$ features for each subject. Each of the columns of $X$ is normalized to
 have a mean and a standard deviation of 0 and 1 respectively.
 
-\subsubsection{Methods}
+\subsubsection{Models and statistics}
 
 Our goal is to identify which word features ($X$) lead to a reliable modulation of brain activity as measured with MEG recordings ($Y$) at each time sample and for each subject separately. To this aim,
 we compare three methods: forward regression, backward regression, and back-to-back regression.
@@ -63,13 +59,8 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 \end{figure}
 
 Forward regression was performed with an $\ell_2$-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
-%
-Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample.
-%
-Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
+Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample. Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
 least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging factor of 10, and alpha cross-validated between $10^{-5}$ and $10^{5}$.
-
-\subsubsection{Second-level statistics}
 
 The three types of analyses were implemented for each subject and each time
 sample independently. To estimate the reliability of these estimates in the
