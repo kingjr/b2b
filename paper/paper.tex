@@ -1,8 +1,3 @@
-% TODO: talk about causal discovery methos: peters2017elements
-% TODO: talk about causal influence: janzing2013quantifying
-% TODO: talk about half-sibling: scholkopf2016modeling
-% TODO: talk about transfer entropy, granger methods?
-
 \documentclass{article}
 
 \usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx, hyperref, amsthm}
@@ -209,7 +204,7 @@ Then, the first regression is performed using $(X_1, Y_1)$, and the second regre
 %
 To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
 %
-After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$ as a final B2B prediction rule.
+After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$.
 
 We summarize the B2B procedure in Algorithm~\ref{algorithm:b2br}.
 %
@@ -279,7 +274,6 @@ Therefore, our estimate of $E$ is:
     \hat{E} = EF[(XEF)^\top (XEF) + (NF)^\top (NF)]^{-1} (XEF)^\top X.
     \label{eq:estimate}
 \end{equation}
-<<<<<<< HEAD
 %
 By the definition of the Moore-Penrose, if $(NF)^\top (NF)$ is full-rank with $\| (NF)^\top (NF) \| \to 0$, it follows that $\hat{E} = EF(XEF)^\dagger X$.
 %
@@ -422,6 +416,7 @@ We use scikit-learn to implement all of our simulations \citep{sklearn}.
 \input{meg_exps.tex}
 
 \section{Related work}
+% scholkopf2016modeling
 
 Back-to-back regression is closely related to Canonical Correlation Analysis \citep{cca_hotelling}.
 %
@@ -440,6 +435,8 @@ There are, however, differences between CCA and back-to-back regression.
 First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA.
 %
 Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
+
+B2BR is also related, but different, from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
 
 \section{Conclusion}
 
