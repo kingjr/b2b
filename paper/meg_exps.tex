@@ -75,11 +75,7 @@ Forward regression performs a regularized least-squares regression $A \in \mathb
 %
 Backward regression performs a regularized least-squares regression $B \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YB$, using a validation sample.
 %
-For back-to-back regression, we observed that two modifications improved its performance on MEG data.
-%
-First, we replace the Tikhonov regularization in the first regression by truncated SVD \citep{HansenTSVD}.
-%
-Second, we invert the data covariances using all the data, and use these common inverses across B2BR repetitions.
+Finally, we used the back-to-back regression as described earlier, using a bagging of 10 alphas logarithmically distributed between -5 and 5.
 
 % \paragraph{Forward regression} also known as 'encoding' in neuroimaging, here consists of
 % fitting a ridge-regularized ordinary least squares (OLS) regression \footnote{We use scikit-learn \citep{sklearn}.} from $X$ to $Y$:
@@ -129,9 +125,10 @@ Second, we invert the data covariances using all the data, and use these common 
 The three types of analyses were implemented for each subject and each time
 sample independently.  To estimate the reliability of these estimates in the
 population, we tested, using one-sample $t$-test whether the distribution of
-the estimated contribution of each factor different from baseline ($t=-100$ms),
-as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
-400ms respectively
+the estimated contribution of each factor different from baseline ($t=0$ms),
+as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ 150ms and
+400ms respectively. We use the resulting p-values as proxy to quantify the
+performance of each model.
 % =======
 % \paragraph{Back-to-back regression} We adapted back-to-back regression with two
 % changes. First, to avoid getting a slightly positively-biased estimate of the
@@ -153,23 +150,35 @@ as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
 % % The three types of analyses were implemented for each subject and each time
 % % sample independently.  To estimate the reliability of these estimates in the
 % % population, we tested, using one-sample $t$-test whether the distribution of
-% % the estimated contribution of each factor different from baseline ($t=-100$ms),
-% % as $\text{t-test}(\hat E_{t=-100} - \hat E_{\tau})$, with $\tau \in $ 150ms and
+% % the estimated contribution of each factor different from baseline ($t=0$ms),
+% % as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ 150ms and
 % % 400ms respectively
 % >>>>>>> 1775190a9737244f84b8ace529198a443029ad8d
 
 
 \subsubsection{Results}
+It is a well established fact that the number of letters in a string flashed
+onto the retina modulates brain activity from 150ms after stimulus onset
+\cite{pegado2014timing}. Similarly, word frequency is known to modulate brain
+activity around 400ms \cite{kutas2011thirty}. Consequently, we aimed to compare
+how sensitive each modeling approach in detecting these two types of brain
+responses in a large neuroimaging dataset.
 
-We show all the feature coefficients as a function of time in the stacked plots,
-Figure \ref{fig:megresult}. Our method confirms previous findings in
-neuroscience literature. In particular, \cite{kutas2011thirty} find that word
-frequency correlates with a brain wave around 400ms. Similarly,
-\cite{pegado2014timing} show that letter strings correlate with early brain
-responses. Both these phenomena can be observed in Figures
-\ref{fig:meg_twocurves} and \ref{fig:megresult}, where we show that our
-method is able to separate them more clearly than the forward regression
-approach.
+In Figure \ref{fig:meg_twocurves} we show for each model the effects obtained in a
+representative subject, as well as the average effects obtained across subjects.
+The results show that all methods significantly detect that both word length and
+word frequency modulate brain responses after the stimulus onset. However
+forward regression detected word length effects (XXX) and word frequency (XXX)
+effects less reliably than B2BR (length=XXX, frequency=XXX). B2BR appeared to
+be less sensitive than the backward regression (mean XXX). However, it is
+important to highlight that backward models may mistakenly confound the two
+factors and thus double the signal-to-noise ratio. This possibility is
+corroborated by the remarkably similar dynamics between the two curves.
+
+Finally we show in Figure \ref{fig:megresult} that B2BR is sufficiently sensitive
+to reliably detect a multiplicity of subtle features, such as individual letters
+and part-of-speech. This methods thus promises to improve the detectability of
+subtle effects.
 
 \begin{figure}
   \centering
