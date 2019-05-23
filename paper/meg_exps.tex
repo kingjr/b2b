@@ -3,14 +3,14 @@
 
 Next, we apply our method to brain imaging data from the anonymized multimodal
 neuroimaging ``Mother Of all Unification Studies'' (MOUS) dataset
-\citep{schoffelen2019204}.  The dataset contains magneto-encephalography (MEG)
+\citep{schoffelen2019204}. The dataset contains magneto-encephalography (MEG)
 recordings of 102 healthy native-Dutch adults who participated in a reading
 task.
 %
 Subjects were exposed to a rapid serial visual presentation of Dutch words. The
 word lists consisted of 120 sentences, and scrambled lists of the same words.
 Each word was presented on the computer screen for 351ms on average (min: 300ms,
-max: 1400ms).  Successive words were separated by a blank screen for 300ms, and
+max: 1400ms). Successive words were separated by a blank screen for 300ms, and
 successive sentences were separated by an empty screen for a few (3-4) seconds.
 
 \subsubsection{MEG preprocessing}
@@ -35,7 +35,7 @@ of the columns of $Y$ is normalized to have zero mean and unit variance.
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_sensors.pdf}
-  \caption{Magnetosensor response (femtoteslas fT) averaged across words for the first subject. The color coding corresponds to the positions of the sensors on the head as shown on the top-left diagram. The diverging curves correspond to artifacts in data collection.}
+  \caption{Magnetosensor response (femtoteslas fT) averaged across words for the first subject. The color coding corresponds to the positions of the sensors on the head as shown on the top-left diagram. The diverging curves correspond to artifacts in the MEG data.}
   \label{fig:megavg}
 \end{figure}
 
@@ -45,10 +45,10 @@ independently of their case), the total number of letters ('word length'), the
 frequency of the word in natural language (using the Zipf logarithmic scale
 of \citep{van2014subtlex}), and the part-of-speech tags (i.e. NOUN, PROPN (proper
 noun), VERB, PRON (pronoun), CONJ (conjunction), DET (determinant), ADJ
-(adjective), ADV (adverb), and NUM (numerical)) using the packages Spacy
-\citep{spacy2} and WordFreq \citep{speerwordfreq}. For clarity purposes, we refer to these
+(adjective), ADV (adverb), and NUM (numerical)) using Spacy \citep{spacy2} and
+WordFreq \citep{speerwordfreq}. For clarity purposes, we refer to these
 features using two broad categories: visual (i.e. each letter and the total
-number of letters) and lexical (part-of-speech and word frequency).  This
+number of letters) and lexical (part-of-speech and word frequency). This
 procedure yields an $X \in \mathbb{R}^{n, d}$ matrix of $n\approx$ 2700 words by
 $d=38$ features for each subject. Each of the columns of $X$ is normalized to
 have a mean and a standard deviation of 0 and 1 respectively.
@@ -63,7 +63,7 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 \begin{figure}[t!]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_twocurves.pdf}
-  \caption{We compare the encoding approach (columns 1 and 2, ridge regression $X \rightarrow Y$) and the decoding approach (column 3, ridge regression $Y \rightarrow X$) to our method (column 4, $X \rightarrow Y \rightarrow X$) on real MEG data from the MOUS dataset. Top row: the first subject. Bottom row: average across subjects.
+  \caption{We applied the forward regression (a.k.a encoding coefficients), the backward regression (a.k.a decoding scores) and B2B on real MEG data. Top row: the first subject. Bottom row: average across subjects.
   We plot the contributions of the \textit{word frequency} and the \textit{word
   length} over time. Our method can disambiguate them consistently with
   previous neuroscientific work showing an early response ($\approx$ 150ms) to
@@ -80,7 +80,7 @@ Finally, we used the back-to-back regression as described earlier, using a baggi
 \subsubsection{Second-level statistics}
 
 The three types of analyses were implemented for each subject and each time
-sample independently.  To estimate the reliability of these estimates in the
+sample independently. To estimate the reliability of these estimates in the
 population, we tested, using one-sample $t$-test whether the distribution of
 the estimated contribution of each factor different from baseline ($t=0$ms),
 as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau \in $ ranging from

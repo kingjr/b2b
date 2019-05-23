@@ -28,7 +28,7 @@
 \tikzset{round left paren/.style={ncbar=0.5cm,out=110,in=-110}}
 \tikzset{round right paren/.style={ncbar=0.5cm,out=70,in=-70}}
 
-\title{Measuring causal influence with\\ back-to-back regression}
+\title{Measuring causal influence with\\ back-to-back regression: the linear case}
 
 \author{%
   Jean-Remi King\\
@@ -57,10 +57,11 @@ Identifying causes from observations is at the core of science. This endeavor
 is particularly challenging when i) potential factors are difficult to
 manipulate individually and ii) observations are complex and multi-dimensional.
 To address this issue, we introduce ``Back-to-Back'' regression (B2B), a
-method designed to measure, from a set of co-varying factors, the causal influences
-that most plausibly account for multidimensional observations. After proving the consistency of B2B, we show that our method outperforms least-squares and related
-regression and cross-decomposition  techniques (e.g. canonical
-correlation analysis and partial least squares) on two tasks: causal
+method designed to measure, from a set of co-varying factors, the causal
+influences that most plausibly account for multidimensional observations. After
+proving the consistency of B2B, we show that our method outperforms
+least-squares and related regression and cross-decomposition techniques (e.g.
+canonical correlation analysis and partial least squares) on two tasks: causal
 identification and out-of-distribution prediction. Finally, we apply B2B to
 neuroimaging recordings of 102 subjects reading word sequences. The results
 show that the early and late brain responses caused by low- and high-level
