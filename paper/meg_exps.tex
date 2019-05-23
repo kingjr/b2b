@@ -20,8 +20,8 @@ default parameters \citep{gramfort2013meg, gramfort2014mne}. Specifically, we us
 response filter (FIR) with a Hamming window and with transition bands of 0.1Hz
 and 10Hz for the low and high cut-off frequencies.
 
-The raw data was then segmented 100ms before word onset and 1.000 sec after
-word onset. Time $t=0$ms corresponds to the word onset. Finally, each resulting
+The raw data was then segmented 100ms before word onset and 1s after
+word onset ($t=0$ms corresponds to word onset). Finally, each resulting
 segment was baseline-corrected between -100ms and 0ms, and decimated by 5 and
 thus led a sampling frequency of 240Hz. Figure 1 in the supplementary material
 shows the average response of the magnetometers evoked by the words presented
@@ -48,14 +48,15 @@ have a mean and a standard deviation of 0 and 1 respectively.
 
 \subsubsection{Methods}
 
-We attempt to identify which word features ($X$) are reliably associated with the MEG recordings $Y$ at each time sample and for each subject separately. To this aim,
+Our goal is to identify which word features ($X$) lead to a reliable modulation of brain activity as measured with MEG recordings ($Y$) at each time sample and for each subject separately. To this aim,
 we compare three methods: forward regression, backward regression, and back-to-back regression.
 Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 
 \begin{figure}[t!]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_twocurves.pdf}
-  \caption{We applied forward regression (a.k.a encoding coefficients), backward regression (a.k.a decoding scores) and B2B regression on 301-sensor MEG recordings of brain activity, while subjects were flashed with individual words every $\approx$650ms. Top row: the first subject. Bottom row: average across subjects. Each line represent the association between the MEG signals and two word features as a function of time relative to word onset. Forward regression makes prediction for each MEG channel independently; detecting an effect thus requires an additional sum-square operation, which can dimish sensitivity. Backward regression operates across all channels, but does not learn to disambiguate the two word features. B2B efficiently disambiguates these two factors consistently with previous neuroscientific work \cite{kutas2011thirty}\citep{pegado2014timing}
+  \caption{We applied forward regression (a.k.a encoding coefficients), backward regression (a.k.a decoding scores) and B2B regression on 301-sensor MEG recordings of brain activity, while subjects were flashed with individual words every $\approx$650ms. Top row: the first subject. Bottom row: average across subjects. Each line represent the link between word features $X$ and MEG signals $Y$
+  as a function of time relative to word onset ($x$ axis). The $y$-axis varies for each model (forward: H coefficients; backward: pearson correlation coefficients; B2B: $\hat E$). Forward regression makes prediction for each MEG channel independently; detecting an effect thus requires an additional average of the norm and can diminish sensitivity. Backward regression operates across all channels, but does not learn to disambiguate the two word features. B2B disambiguates these two factors consistently with previous neuroscientific work \cite{kutas2011thirty}\citep{pegado2014timing}
   showing early responses ($\approx$ 150ms) to word length and later responses
   ($\approx$ 400ms) to word frequency.}
   \label{fig:meg_twocurves}
@@ -94,7 +95,7 @@ forward regression detected word length ($t$-value$=10.6$, $p=10^{-16}$) and
 word frequency ($t$-value$=11.1$, $p=10^-17$) less reliably than B2B (length:
 $t$-value$=18.7$, $p=10^{-31}$, frequency: $t$-value$=15.9$, $p=10^{-26}$). B2B
 was less sensitive than the backward regression (length: $t$-value$=33.6$,
-$p=10^{-50}$, frequency: $t$-value$=31.7$, $p=10^{-48}$). However, as backward models confound collinear factors, such high sensitivity likely comes from a loss of specificity. This possibility is corroborated by the fact that the effects of word length and word frequency identified with backward regression present similar dynamics.
+$p=10^{-50}$, frequency: $t$-value$=31.7$, $p=10^{-48}$). However, as backward models confound collinear factors, this high sensitivity likely comes from a loss of specificity. This possibility is corroborated by the fact that the effects of word length and word frequency identified with backward regression present largely similar dynamics.
 
 Finally we investigate in Figure \ref{fig:megresult} whether B2B was sufficiently sensitive to reliably detect a multiplicity of subtle features, such as individual letters and part-of-speech. The vast majority of the visual and lexical features appeared to be reliably detected (see Figure 4 in Supplementary Material). B2B thus promises to improve the detectability of subtle effects.
 

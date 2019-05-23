@@ -20,16 +20,8 @@
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/ridgecv_baseline_result.pdf}
-  \caption{Regression baseline. Coefficients appear to be
-  linearly correlated, unlike our method in the main text.}
-  \label{fig:ridgebaselineresult}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues.pdf}
-  \caption{We apply a statistical t-test to measure if coefficients were significantly different from the baseline value (at word onset, $t=0$ms).
+  \caption{We apply a statistical t-test to measure if coefficients were significantly different from baseline value (at word onset, $t=0$ms).
   We compute the negative logarithm of the p-value (\textit{higher is better}: nonzero effects are more easily detected). We plot the average across features, over time. Red: word length, blue: word frequency.
   Full line: B2B, dashed line: Forward regression. We see that our method more easily detects the influence of causes of MEG response.}
 \end{figure}
@@ -38,7 +30,7 @@
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues_vertical.pdf}
-  \caption{We show the average value and the standard deviation of the coefficients obtained with out method during the trials. the $\star$  symbol corresponds to statistically significant (t-test) nonzero values. We notice in particular that the letters q, x, y are under-represented, as expected. Similarly there were only few proper nouns (PROPN) in the word lists shown to subjects. }
+  \caption{We show the average value and the standard deviation across subjects of the coefficients obtained with our method during the trials. the $\star$  symbol corresponds to statistically significant (t-test) nonzero values.}
   \label{fig:ridgebaselineresult}
 \end{figure}
 

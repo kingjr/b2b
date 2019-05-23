@@ -121,15 +121,6 @@ word features respectively are more easily detected with B2B than with standard 
     \node[] (labF) at (\posF, 2){Cause-effect};
     \node[] (labF) at (\posF, 1.7){mapping};
 
-    % \node[] (labY) at (\posY, 2)   {\color{gray} MEG recordings};
-    % \node[] (labX) at (\posX, 2)   {\color{gray} stimulus};
-    % \node[] (labX) at (\posX, 2.3) {\color{gray} features};
-    % \node[] (labE) at (\posE, 2.3) {\color{gray} causal};
-    % \node[] (labE) at (\posE, 2)   {\color{gray} features};
-    % \node[] (labN) at (\posN, 2)   {\color{gray} breathing\ldots};
-    % \node[] (labF) at (\posN, 2.3) {\color{gray} bloodflow,};
-    % \node[] (labF) at (\posF, 2)   {\color{gray} MEG helmet};
-
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
     \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{Diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
@@ -160,14 +151,6 @@ This process, along with the sizes of all variables involved, is illustrated in 
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
-%Without loss of generality, we may assume N to be centred(adding, when necessary, an intercept to the causal features), and redefine features and noise so that the model be written $Y=f(EX+N)$ (f a function, E, X and N matrices). In particular, the addition of "external noise" M, as in $Y=F(EX+N)+M$ can be viewed as a small change in F and N.
-
-%We consider both the linear and non linear case. In the first one, our model is $$Y = F(EX+N)$$, with  $Y\in\mathbb{R}^{n\times ny}$, $F\in\mathbb{R}^{ny\times nx}$, $X\in\mathbb{R}^{nx\times n}$, $N\in\mathbb{R}^{nx\times n}$, and E a binary diagonal square matrice of size nx.
-
-% In the non linear model, $F(EX+N)$ is defined as before, but Y is the result of a non linear transformation of it $$Y=\sigma (F(EX+N))$$
-
-%Under this formalism, we are given samples of Y and X, and are tasked to recover E and use it to predict Y from X.
-
 \subsection{Algorithm}
 
 
@@ -188,13 +171,6 @@ If using regularized least-squares, arguably the most commonly employed linear r
 \end{align}
 %
 where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices of regularization parameters, useful to invert the covariance matrices of $X$ and $Y$ if these are ill-conditioned.
-
-
-% If, in the above formalism, F is invertible with respect to the causal features of X (ie the problem has a solution), and the relation is linear or close to linear, the diagonal of $\hat H$ will be a scaled approximation of the diagonal of E. That is to say, back to back regression will recover the causal features of the process considered, even in the presence of heavy noise N, and without needing to estimate the transformation F.
-
-% In practical cases, the covariance matrices of Y and X will often be badly conditioned (because features of X are related, or measurement produces correlated features of Y). This makes the inversion of $X'X$ and $Y'Y$ sensitive to noise (either from N, from sampling or from computation rounding). To guard against high condition numbers, we have used two methods: truncated SVD (ref) and ridge regression (ref).
-
-% In both, we compute the singular value decompositions of the covariance matrix, transform its diagonal part, and invert it. In truncated SVD, the lowest eigenvalues are set to zero, and the corresponding vectors eliminated from future calculations. In ridge regression, a constant factor is added to all eigenvalues. The regularisation factor and truncation threshold are chosen via leave one out cross validation. In practice, ridge regression tends to provide better stability but introduces a bias in the estimates. Truncated SVD is used to provide better results in low noise cases.
 
 Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data absorbed by the first regression will be leveraged by the second one.
 %
@@ -233,13 +209,6 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 
 \subsection{Theoretical guarantees}
 \label{sec:theorem}
-% As discussed in the introduction, our problem can be formulated (up to a redefinition of the features of X) as $Y=f(EX+N)$, with f an unknown function.
-% %
-% If F is linear we can rewrite it as $Y = F(EX + N)$, with X an (dx, n) matrix of possible causes, E a (dx,dx) binary diagonal matrix selecting active features of X.
-% %
-% N a (dx,n) homoscedastic noise matrix, F an unknown (possibly full rank) (dy,dx) transformation corresponding to the measuring apparatus, and Y a (dy, n) matrix of measured effects.
-%
-% The two steps of back-to-back regression amounts to finding $\hat G=\arg \min_G \left \| X-GY \right \|^2$ and $\hat H =\arg \min_H \left \| \hat GY - HX \right \|^2$ (all matrix norms henceforth are Frobenius norms).
 
 This section provides a consistency proof for B2B in the case of low noise.
 
@@ -299,86 +268,6 @@ This means that our estimate will, in expectation, contain zeros for all feature
 %
 When the variance of $N$ increases, we of course pay a price: since the norm $\| X - XEF\hat{G} \| = \| X - X\hat{H} \|$ increases, this means that the values of $\hat{E}$ associated to the causal factors will be dampened.
 
-%%%%%% Next, let $k$ be the number of ones in the binary diagonal causal influence matrix $E$.
-%%%%%% %
-%%%%%% That is, $\text{tr}(E) = k$.
-%%%%%% %
-%%%%%% Without loss of generality, assume that these are the first $k$ variables in $X$.
-%%%%%% %
-%%%%%% Assume that $XEF$ is of rank $k$, which means that $F$ and $X$ have full rank on the space spanned by the active elements in $E$.
-%%%%%% %
-%%%%%% Let $K \in \mathbb{R}^{k \times d_{x}}$ be the diagonal matrix obtained by deleting the bottom $d_{x} - k$ rows of $E$.
-%%%%%% %
-%%%%%% %
-%%%%%% First, we factorize $(XEF)^\dagger = ((XK^\top)(KF))^\dagger = (KF)^\dagger (XK^\top)^\dagger$.
-%%%%%% %
-%%%%%% Second, since $XK^\top$ is full rank, we write $(XK^\top)^\dagger = ((XK^\top)^\top (XK^\top))^{-1}(XK^\top)^\top$.
-%%%%%% %
-%%%%%% Then, $(XEF)^\dagger X = (KF)^\dagger (KX^\top XK^\top)^{-1} KX^\top X$.
-%%%%%%
-%%%%%% %Recall the rank factorisation property of the pseudo-inverse \citep{ben2003generalized}: if $A=BC$ with $A\in\mathbb{R}^{m\times n}$ of rank $k$, $B\in\mathbb{R}^{m\times k}$ and $C\in\mathbb{R}^{k\times n}$, then $A^\dagger=C^\dagger B^\dagger$ and, since $B$ is full rank, $B^\dagger=(B^\top B)^{-1} B^\top$.
-%%%%%% %
-%%%%%% % Using this property on the minimal norm solution $\hat G$ yields
-%%%%%% % \begin{equation}
-%%%%%% % \begin{aligned}
-%%%%%% % (XEF)^\dagger X&=((XK^\top)(KF))^\dagger X\\
-%%%%%% % &=(KF)^\dagger ((XK^\top)^\top (XK^\top))^{-1} (XK^\top)^\top X\\
-%%%%%% % &=(KF)^\dagger (KX^\top XK^\top)^{-1} KX^\top X
-%%%%%% % \end{aligned}
-%%%%%% % \end{equation}
-%%%%%%
-%%%%%% Write the covariance of $X$ as $X^\top X = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, with the block $\Sigma_1$ being $k\times k$. Then, $(KX^\top X K^\top)=\Sigma_{1}$ and $(KX^\top XK^\top)^{-1} KX^\top X=\left(\begin{array}{c|c}I_{k} &  \Sigma_{1}^{-1} \Sigma_{2}\end{array}\right) =: S$.
-%%%%%%
-%%%%%%
-%%%%%% Under centred noise, and if the covariance of NF has low condition number (a weak assumption given that N is noise), we have $\left \| NFG\right \| ^2 \approx Var(NF) \left \| G\right \| ^2$, and minimisation of $\left \| X-XEFG\right\| ^2  + \left \| NFG\right \| ^2$ will recover a scaled version of the noiseless solution, $\lambda (KF)^\dagger S$, $\lambda$ a positive number below one.
-%%%%%%
-%%%%%% Replacing in the left part of (ref), we have $X-XEFG=X- XK^\top KF \lambda (KF)^\dagger S= X - \lambda XE=X(I-\lambda E)$. Its square norm is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ ($Var(X_{.})$ denoting the variance of X over active and inactive features).
-%%%%%%
-%%%%%% For the right part, we have $NFG=NF \lambda (KF)^\dagger S = NK^\top (KF+(I-K)F) \lambda  (KF)^\dagger S = \lambda NES=  \lambda NE$. (Since F is full rank over E, we have $(KF)^\dagger (I-K)F= 0$). The square norm is therefore $\lambda^2 Var(N_{active})$.
-%%%%%%
-%%%%%% Thus, with centred and random noise, and with F full rank over E, we are minimising $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N_{active})$. Its least value is attained for $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N_{active})}$. Assuming X and N have the same variance over all features (this can always be guaranteed), active subscript can be dropped, and this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
-%%%%%%
-%%%%%% The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} (KF)^\dagger S$.
-%%%%%%
-%%%%%%
-%%%%%% Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} (K^\top K F)(KF)^{\dagger} S = \frac{1}{1+nsr} E$.
-%%%%%%
-%%%%%% ADD AGAIN:
-%%%%%%
-%%%%%% Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=(XEF)^\dagger X=(KF)^\dagger S$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (if the causal features do not serve as confounders for non causal ones), then S=K, and we are retrieving $(KF)^\dagger K$.
-%%%=======
-%%%
-%%%Let $X^\top X = \left(\begin{array}{c|c}\Sigma_{1} & \Sigma_{2} \\\hline \Sigma_{2} & \Sigma_{3}\end{array}\right)$, the top left block being $k\times k$. Then, $(KX^\top X K^\top)=\Sigma_{1}$ and $(KX^\top XK^\top)^{-1} KX^\top X=\left(\begin{array}{cc}I_{k} &  \Sigma_{1}^{-1} \Sigma_{2}\end{array}\right)$, call it S.
-%%%
-%%%Thus, in the absence of noise, and if F and X have full rank on the subspace spanned by E, we have $G\hat=(XEF)^\dagger X=(KF)^\dagger S$. If the covariance of X is block diagonal, that is if inactive features and active features are not correlated (if the causal features do not serve as confounders for non causal ones), then S=K, and we are retrieving $(KF)^\dagger K$.
-%%%
-%%%Under centred noise, and if the covariance of NF has low condition number (a weak assumption given that N is noise), we have $\left \| NFG\right \| ^2 \approx Var(NF) \left \| G\right \| ^2$, and minimisation of $\left \| X-XEFG\right\| ^2  + \left \| NFG\right \| ^2$ will recover a scaled version of the noiseless solution, $\lambda (KF)^\dagger S$, $\lambda$ a positive number below one.
-%%%
-%%%Replacing in the left part of (ref), we have $X-XEFG=X- XK^\top KF \lambda (KF)^\dagger S= X - \lambda XE=X(I-\lambda E)$. Its square norm is $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})$ ($Var(X_{.})$ denoting the variance of X over active and inactive features).
-%%%
-%%%For the right part, we have $NFG=NF \lambda (KF)^\dagger S = NK^\top (KF+(I-K)F) \lambda  (KF)^\dagger S = \lambda NES=  \lambda NE$. (Since F is full rank over E, we have $(KF)^\dagger (I-K)F= 0$). The square norm is therefore $\lambda^2 Var(N_{active})$.
-%%%
-%%%Thus, with centred and random noise, and with F full rank over E, we are minimising $(1-\lambda)^2 Var(X_{active}) + Var(X_{inactive})+\lambda^2 Var(N_{active})$. Its least value is attained for $\lambda = \frac{Var(X_{active})}{Var(X_{active})+Var(N_{active})}$. Assuming X and N have the same variance over all features (this can always be guaranteed), active subscript can be dropped, and this simplifies to $\lambda= \frac {Var(X)}{Var(X)+ Var(N)}=\frac{1}{1+nsr}$ nsr the noise to signal ratio, Var(N) divided by Var(X).
-%%%
-%%%The first step of the back to back regression therefore retrieves $\frac{1}{1+nsr} S (KF)^\dagger$.
-%%%
-%%%The second step is straightforward, replacing Y, we have
-%%%\begin{equation}
-%%%\begin{aligned}
-%%%\arg \min_H \left \| \hat YG - XH \right \|^2 &=\arg  \min_H \left \| (XE + N)F \hat G - XH \right \|^2 \\
-%%%&=\arg \min_H \left \| X(EF \hat G - H) \right \| ^2 + \left \| NF\hat G \right \| ^2\\
-%%%&= \arg \min_H \left \| X(EF \hat G - H) \right \| ^2\\
-%%%&= EF \hat G
-%%%\end{aligned}
-%%%\end{equation}
-%%%
-%%%Thus, in the linear case, back to back regression retrieves $\hat H = \frac{1}{1+nsr} (K^\top K F)(KF)^{\dagger} S = \frac{1}{1+nsr} E$.
-%%%>>>>>>> 4d110522fbb65b4da60327da2627241785a06113
-
-
-%The diagonal of $\hat H$ recovered by back to back regression is a scaled approximation of the diagonal of E. Noise tends reduce the large diagonal elements, whereas the bias introduced by regularisation tends to increase the lowest ones.
-% \subsection{Asymptotic behaviour - non linear case}
-
 \subsection{Binarizing $\hat{E}$}
 
 On the one hand, we have leveraged B2B to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
@@ -420,19 +309,7 @@ We use scikit-learn to implement all of our simulations \citep{sklearn}.
 In the context of neuroimaging, the first regression of B2B relates to the first step of Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}. Indeed, RSA analyzes the similarity of brain responses associated with specific conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new contexts and (2)
 it is fully supervised.
 
-More generally, B2B is related to CCA \citep{cca_hotelling} in that it can be thought of as a cross-decomposition of $X$ and $Y$. B2B departs from CCA in four main aspects. First, CCA performs an additional eigenvector decomposition what would be the $H$ coefficients in B2B \eqref{eq:solH}. Second, CCA does not typically optimize two distinct regularization parameters. Third, CCA does not use bagging between $G$ and $H$. Finally, CCA does not diagonalize nor binarize the $H$ matrix to estimate $\hat E$. More generally, CCA aims to find maximally correlated components between $X$ and $Y$, and does not assume any causal direction. By contrast, B2B assumes that $X$ causes $Y$. Together, these differences may explain why B2B can reliably outperform CCA on estimating causal influences and predicting $Y$ in novel environments \ref{table:synthetic}.
-%
-% If all the associated eigenvalues are either $0$ or $1$, then all the variables are either part of the $Y$ subspace, or orthogonal to it, respectively.
-% %
-% This is because these eigenvalues correspond to the squared cosine of the angle between the corresponding variable in $X$ and the $Y$ subspace.
-% %
-% Thus, B2B is equivalent to CCA under the constraint that the subspaces spanned by $X$ and $Y$ are perpendicular, $X$ is spanned by vectors of $Y$ and vectors orthogonal to $Y$, and that the parallel and orthogonal components of $X$ are spanned by disjoint sets of features of $X$.
-
-% There are, however, differences between CCA and back-to-back regression.
-% %
-% First, since our objective is not to characterise the proximity between $X$ and $Y$, but to measure causal influences, we can disregard the diagonalization of \eqref{eq:solH} performed by CCA.
-% %
-% Second, whereas CCA leverages all correlations between $X$ and $Y$, we filter some of them, through splitting and bagging.
+More generally, B2B is related to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, CCA performs an additional eigenvector decomposition of what would be the $H$ coefficients in B2B \eqref{eq:solH}. Second, CCA does not typically optimize two distinct regularization parameters. Third, CCA does not use bagging between $G$ and $H$. Finally, CCA does not diagonalize nor binarize the $H$ matrix to estimate $\hat E$. More generally, CCA aims to find maximally correlated components between $X$ and $Y$, and does not assume any causal direction. By contrast, B2B assumes that $X$ causes $Y$. Together, these differences may explain why B2B can reliably outperform CCA on estimating causal influences and predicting $Y$ in novel environments (Fig. \ref{table:synthetic}).
 
 B2B is also related to, but different from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
 %
@@ -441,9 +318,6 @@ B2B seems to have a similar flavour to half-sibling regression \citep{scholkopf2
 
 \section{Conclusion}
 \input{conclusion}
-
-% \section{Acknowlegements}
-% Data were provided (in part) by the Donders Institute for Brain, Cognition and Behaviour.
 
 \clearpage
 \newpage
