@@ -82,10 +82,10 @@ $X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & 
 
 $\hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X2} \\0 & 0\end{array}\right)$
 
-Because $\hat H$ is built from covariance matrices of $X$ and $N$, all its diagonal elements are positive, with only the k first different from zero. Their average value is $\frac{1}{k} Tr(\hat H)$. When noise tends to zero, they approach one, and $Diag(\hat H) = E$.
+$Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1})$
 
-In any case, positive diagonal elements will be bounded by the maximum and minimum value of $\frac{\sigma_X}{\sigma_X + \sigma_N}$ over all eigenvalues of the covariance matrices of $XE$ and $NE$, that is, denoting $\sigma_{X1_1}$, $\sigma_{X1_k}$, $\sigma_{N1_1}$ and $\sigma_{N1_k}$ the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$, all positive diagonal values of $\hat H$ are bounded by $\frac{\sigma_{X1_1}}{\sigma_{X1_1} +\sigma_{N1_k}}$ and $\frac{\sigma_{X1_k}}{\sigma_{X1_k} +\sigma_{N1_1}}$.
+In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Else the k first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$.
 
-On average, and since $X$ and $N$ are uncorrelated, the average value of positive diagonal terms of $\hat H$ should be close to $\frac{Var(X)}{Var(X)+Var(N)}$ 
+The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by k. On average, since $X$ and $N$ are not correlated, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition numbers, and $\frac{Var(X)}{Var(X)+Var(N)}$ provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
 
 \end{document}
