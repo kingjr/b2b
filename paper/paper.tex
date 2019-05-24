@@ -267,6 +267,8 @@ We observe that, even in the presence of strong noise, the expression of our est
 This means that our estimate will, in expectation, contain zeros for all features that do not causally influence $Y$.
 %
 When the variance of $N$ increases, we of course pay a price: since the norm $\| X - XEF\hat{G} \| = \| X - X\hat{H} \|$ increases, this means that the values of $\hat{E}$ associated to the causal factors will be dampened.
+%
+A precise characterization of this dampening, which results in a consistency proof for B2B under the presence of noise, can be found in Theorem 2 from the Supplementary Material.
 
 \subsection{Binarizing $\hat{E}$}
 
@@ -292,7 +294,7 @@ To binarize $\hat{E}$, set to one all the $p$ diagonal entries belonging to the 
 
 We perform two experiments to evaluate the performance of B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
 %
-We use scikit-learn to implement all of our simulations \citep{sklearn}.
+We use scikit-learn \citep{sklearn}.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
