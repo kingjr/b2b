@@ -210,65 +210,49 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 \subsection{Theoretical guarantees}
 \label{sec:theorem}
 
-This section provides a consistency proof for B2B in the case of low noise.
+\begin{theorem}[B2B consistency - general case]
 
-\begin{theorem}[Low-noise consistency]
-    Consider the B2B model from Equation~\ref{eq:model}.
-    %
-    Assume that $F$ and $X$ are full-rank on the subspace spanned by active entries in $E$.
-    %
-    Then, as the variance of $N$ tends to zero and the sample size tends to infinity, B2B recovers $E$.
+     Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centred and full rank noise.
+     %
+     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimise
+     %
+     $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
 \begin{proof}
-For centered noise $N$, the first regression satisfies:
-\begin{align*}
-    \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
-                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2].
-\end{align*}
-%
-The solution to this first regression is $\hat{G} = [(XEF)^\top (XEF) + (NF)^\top (NF)]^{-1} (XEF)^\top X$.
 
-The second regression is:
-%
+ Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
+ \begin{align*}
+    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
+%                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2]\\
+                                                        &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
+     \label{eq:doublenorm}
+\end{align*}
 \begin{align*}
-    \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
+    \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
-    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]
+%    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]\\
+    &= EF \hat G
 \end{align*}
-%
-The solution to this second regression is $H = EF\hat{G}$.
-%
-Therefore, our estimate of $E$ is:
-\begin{equation}
-    \hat{E} = EF[(XEF)^\top (XEF) + (NF)^\top (NF)]^{-1} (XEF)^\top X.
-    \label{eq:estimate}
-\end{equation}
-%
-By definition of the Moore-Penrose inverse (also known as pseudo-inverse), if $(NF)^\top (NF)$ is full-rank with $\|~(NF)^\top~(NF)~\|~\to~0$, it follows that $\hat{E} = EF(XEF)^\dagger X$.
-%
-Next, assume that the true causal influence matrix contains $k$ ones arranged as $E = \left(\begin{array}{cc} I_k & 0 \\ 0 & 0 \end{array}\right)$, and let $E = K^\top K$, where $K\in \mathbb{R}^{k \times d_x}$.
-%
-    Also, let the covariance matrix of $X$ be $X^\top X = \left(\begin{array}{cc}\Sigma_{1} & \Sigma_{2} \\ \Sigma_{3} & \Sigma_{4}\end{array}\right)$, where $\Sigma_1 \in \mathbb{R}^{k\times k}$.
-%
-Then,
-\begin{align*}
-    \hat{E} &= EF(XEF)^\dagger X = K^\top K F(XK^\top K F)^\dagger X \stackrel{i)}{=} K^\top (K F) (KF)^\dagger (XK^\top)^\dagger X\\
-            &\stackrel{ii)}{=} K^\top K(XK^\top)^\dagger X = E (XK^\top)^\dagger X \stackrel{iii)}{=} E (KX^\top X K^\top)^{-1} KX^\top X\\
-            &= E (KX^\top X K^\top)^{-1} (\Sigma_1 \,|\, \Sigma_2)  = E \Sigma_1^{-1} (\Sigma_1 \,|\, \Sigma_2)
-            = \left(\begin{array}{cc} I_k & \Sigma_1^{-1} \Sigma_2 \\ 0 & 0 \end{array}\right),
-\end{align*}
-where the equalities follow due to i) a full-rank factorization of $XEF$, ii) $KF$ being full-rank yields $(KF)(KF)^\dagger = K$, and iii) $X K^\top$ being full-rank yields $(XK^\top)^\dagger = (KX^\top X K^\top)^{-1} KX^\top$.
-%
-Therefore, $\text{Diag}(\hat{E})$ is the desired causal influence matrix $E$.
+
+Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore, 
+ $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
+
+But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
 \end{proof}
 
-We observe that, even in the presence of strong noise, the expression of our estimate \eqref{eq:estimate} involves the left-most multiplication with the true causal influence matrix $E$.
-%
-This means that our estimate will, in expectation, contain zeros for all features that do not causally influence $Y$.
-%
-When the variance of $N$ increases, we of course pay a price: since the norm $\| X - XEF\hat{G} \| = \| X - X\hat{H} \|$ increases, this means that the values of $\hat{E}$ associated to the causal factors will be dampened.
-%
-A precise characterization of this dampening, which results in a consistency proof for B2B under the presence of noise, can be found in Theorem 2 from the Supplementary Material.
+So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
+
+Assuming, without loss of generality, that the active features are the $k$ first, we have 
+
+$X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & \Sigma_{X3}\end{array}\right)$, $N^\top N = \left(\begin{array}{lccl}\Sigma_{N1} & \Sigma_{N2} \\ \Sigma_{N2} & \Sigma_{N3}\end{array}\right)$ and
+
+$\hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X2} \\0 & 0\end{array}\right)$
+
+$Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1})$
+
+In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Else the k first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$. 
+
+The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by k. On average, since $X$ and $N$ are not correlated, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition numbers, and $\frac{Var(X)}{Var(X)+Var(N)}$ provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
 
 \subsection{Binarizing $\hat{E}$}
 
