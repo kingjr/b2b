@@ -48,10 +48,10 @@ The false positives, false negatives, and AUC statistics measure the quality of 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\textwidth]{synthetic.pdf}
-    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for JRR ($x$-axis) against a competitor ($y$-axis) for each experiment configuration averaged over $20$ random seeds. The prediction error on $Y$ within (in) and outside (out) of the training distribution are weakly but consistently larger for all of the models as compared to B2B with and without the Sonquist binarization (E). The AUC, measuring the ability of each model to separate causal from noncausal factors, is consistently larger in B2B as compared to the other models.}
+    \caption{Results of synthetic experiments. Each dot depicts the average value of a metric for B2B ($x$-axis) against a competitor ($y$-axis) for each experiment configuration averaged over $20$ random seeds. The prediction error on $Y$ within (in) and outside (out) of the training distribution are weakly but consistently larger for all of the models as compared to B2B with and without the Sonquist binarization (E). The AUC, measuring the ability of each model to separate causal from noncausal factors, is consistently larger in B2B as compared to the other models.}
     \label{table:synthetic}
 \end{figure}
 
-Table~\ref{table:synthetic} summarizes the results for all experimental conditions, metrics, and methods.
+Figure~\ref{table:synthetic} summarizes the results for all experimental conditions, metrics, and methods.
 %
 B2B is the method obtaining best test errors, lowest false positive and false negative discovery about $E$, and overall the best AUC when it comes to detecting causal influences.
