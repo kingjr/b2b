@@ -5,6 +5,12 @@ import pandas as pd
 import subprocess
 import spacy
 from wordfreq import zipf_frequency as word_frequency
+import subprocess
+try:
+    spacy.load('nl_core_news_sm')
+except:
+    process = subprocess.Popen('python -m spacy download nl_core_news_sm'.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
 
 # Setup paths and file names
 this_path = '/' + op.join(*op.realpath(__file__).split('/')[:-1])
@@ -20,7 +26,7 @@ def setup_datapath():
         with open(fname_datapath, 'w') as f:
             f.write(data_path)
     with open(fname_datapath, 'r') as f:
-        data_path = f.read()
+        data_path = f.read().strip('\n')
     return data_path
 
 
