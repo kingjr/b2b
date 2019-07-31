@@ -1,8 +1,9 @@
 from base import fetch_data, B2B, Forward
-from common import log_files
+from common import log_files, data_path
 from sklearn.model_selection import KFold
 import numpy as np
 from tqdm import trange
+import pickle
 
 
 def run(name, meg, features):
@@ -46,6 +47,14 @@ def run(name, meg, features):
     K_r = K_r.mean(0)
     return H, H_r, K_r
 
+
+fname = op.join(data_path, 'jrr', '%s-preproc.pkl' % log_file.subject)
+if op.isfile(fname):
+    meg, times, features, names = pickle.load(fname)
+else:
+    meg, times, features, names = fetch_data(log_file)
+    with open(fname, 'wb') as f:
+        pickle.dump([meg, times, features, names])
 
 subject = 0
 log_file = log_files.iloc[subject]
