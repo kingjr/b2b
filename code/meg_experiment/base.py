@@ -9,38 +9,32 @@ from common import (add_part_of_speech, add_word_frequency, add_word_length,
 
 
 def fetch_data(log_file):
-    fname = op.join(data_path, '%s-epo.fif' % log_file.subject)
-    if op.isfile(fname):
-        epochs = mne.read_epochs(fname, preload=True)
-    else:
-        # file name
-        raw_fname = op.join(data_path, log_file['meg_file'])
-        log_fname = op.join(data_path, log_file['log_file'])
+    # file name
+    raw_fname = op.join(data_path, log_file['meg_file'])
+    log_fname = op.join(data_path, log_file['log_file'])
 
-        # preprocess meg data
-        raw = mne.io.read_raw_ctf(raw_fname, preload=True)
-        raw.filter(.1, 40.)
-        events = mne.find_events(raw)
+    # preprocess meg data
+    raw = mne.io.read_raw_ctf(raw_fname, preload=True)
+    raw.filter(.1, 40.)
+    events = mne.find_events(raw)
 
-        # preprocess annotations
-        log = read_log(log_fname)
+    # preprocess annotations
+    log = read_log(log_fname)
 
-        # link meg and annotations
-        log = get_log_times(log, events,  raw.info['sfreq'])
+    # link meg and annotations
+    log = get_log_times(log, events,  raw.info['sfreq'])
 
-        # Segment into word-locked epochs
-        log_events = np.c_[log.meg_sample, np.ones((len(log), 2), int)]
-        _, idx = np.unique(log_events[:, 0], return_index=True)
-        picks = mne.pick_types(raw.info, meg=True, eeg=False,
-                               stim=False, eog=False, ecg=False)
-        epochs = mne.Epochs(
-            raw,
-            events=log_events[idx], metadata=log.iloc[idx],
-            tmin=-.100, tmax=1.5, decim=20,
-            picks=picks, preload=True,
-        )
-        epochs.save(fname)
-
+    # Segment into word-locked epochs
+    log_events = np.c_[log.meg_sample, np.ones((len(log), 2), int)]
+    _, idx = np.unique(log_events[:, 0], return_index=True)
+    picks = mne.pick_types(raw.info, meg=True, eeg=False,
+                           stim=False, eog=False, ecg=False)
+    epochs = mne.Epochs(
+        raw,
+        events=log_events[idx], metadata=log.iloc[idx],
+        tmin=-.100, tmax=1.5, decim=20,
+        picks=picks, preload=True,
+    )
     epochs = epochs['condition=="word"']
 
     epochs = epochs.apply_baseline(None, 0).crop(-.2, 1.)
