@@ -185,6 +185,9 @@ class B2B():
 
         return R_score - K_scores
 
+    def solution(self):
+        return np.diag(self.H_)
+
 
 class Forward():
     def __init__(self,
@@ -230,6 +233,9 @@ class Forward():
 
         return R_scores - K_scores
 
+    def solution(self, ):
+        return np.sum(self.H_**2, 0)
+
 
 class CrossDecomp():
     def __init__(self,
@@ -253,6 +259,9 @@ class CrossDecomp():
         YG = self.G.transform(Y)
         return self.H.score(X, YG)
 
+    def solution(self, ):
+        return self.H.solution()
+
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -274,12 +283,9 @@ if __name__ == '__main__':
         Y = (X @ E + Nx / snr) @ F + Ny
         return scale(X), scale(Y), np.diag(E)
 
-    X, Y, e = make_data(snr=1.)
+    X, Y, e = make_data(snr=.1)
 
-    train = range(len(X) // 2)
-    test = range(len(X) // 2, len(X))
-
-    #  let's give CCA a chance and already give the right amount of dimensions
+    # let's give CCA a chance and already give the right amount of dimensions
     n_comp = int(np.sum(e))
     models = dict(
         Forward=Forward(),
@@ -287,6 +293,21 @@ if __name__ == '__main__':
         CCA=CrossDecomp(CCA(n_comp)),
         PLS=CrossDecomp(PLSRegression(n_comp)))
 
+    # model parameters
+    lines = list()
+    for name, model in models.items():
+        model.fit(X, Y)
+        sol = model.solution()
+        plt.plot(sol, label=name)
+    plt.legend()
+    plt.title('model solution (y axis not comparable)')
+    plt.ylabel('coef')
+    plt.xlabel('X')
+
+    # held out evaluation
+    plt.figure()
+    train = range(len(X) // 2)
+    test = range(len(X) // 2, len(X))
     lines = list()
     for idx, (name, model) in enumerate(models.items()):
         model.fit(X[train], Y[train])
@@ -294,4 +315,6 @@ if __name__ == '__main__':
 
         lines.append(plt.plot(R, color='C%i' % idx))
     plt.legend([l[0] for l in lines], models.keys())
-    plt.show()
+    plt.title('model prediction score (y axis comparable)')
+    plt.xlabel('X')
+    plt.ylabel('R')
