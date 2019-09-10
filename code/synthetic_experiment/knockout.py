@@ -4,6 +4,7 @@ from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 from sklearn.cross_decomposition import PLSRegression, CCA
 from sklearn.model_selection import ShuffleSplit
+from sklearn.base import clone
 
 
 def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
@@ -112,7 +113,7 @@ class B2B():
         self.independent_alphas = independent_alphas
         self.ensemble = ensemble
 
-    def fit(self, X, Y):
+    def _fit(self, X, Y):
         self.G_ = list()
         self.H_ = list()
         self.Ks_ = list()
@@ -148,10 +149,22 @@ class B2B():
             self.Ks_ = np.mean(self.Ks_, 0)
         return self
 
-    def predict(self, X):
-        return X @ self.H_.T
+    def fit(self, X, Y):
+        # for held out prediction evaluation
+        train = range(len(X) // 2)
+        test = range(len(X) // 2, len(X))
+        self._fit(X[train], Y[train])
+        self.R_score_ = self._score(X[test], Y[test])
 
-    def score(self, X, Y):
+        # for predictions
+        self._fit(X, Y)
+        self.coef, _, _ = ridge_cv(X @ np.diag(np.diag(self.H_)), Y,
+                                   self.alphas)
+
+    def predict(self, X):
+        return X @ np.diag(np.diag(self.H_)) @ self.coef
+
+    def _score(self, X, Y):
         """return the specific contribution of feature i:
         R(XH, YG) - R(Xk Hk, YG)
 
@@ -161,7 +174,7 @@ class B2B():
         YG = Y @ self.G_.T
 
         # compute score with complete model
-        R_score = r_score(YG, self.predict(X))
+        R_score = r_score(YG, X @ self.H_.T)
 
         # compute score with all but one feature (a.k.a knockout score)
         # Allow knocking out blocks of features
@@ -186,7 +199,7 @@ class B2B():
         return R_score - K_scores
 
     def solution(self):
-        return np.diag(self.H_)
+        return self.R_score_
 
 
 class Forward():
@@ -198,7 +211,7 @@ class Forward():
         self.independent_alphas = independent_alphas
         self.knockout = knockout
 
-    def fit(self, X, Y):
+    def _fit(self, X, Y):
         # Fit encoder
         self.H_, H_alpha, _ = ridge_cv(X, Y, self.alphas,
                                        self.independent_alphas)
@@ -209,10 +222,20 @@ class Forward():
 
         return self
 
+    def fit(self, X, Y):
+        # for held out prediction evaluation
+        train = range(len(X) // 2)
+        test = range(len(X) // 2, len(X))
+        self._fit(X[train], Y[train])
+        self.R_score_ = self._score(X[test], Y[test])
+
+        # for predictions
+        self._fit(X, Y)
+
     def predict(self, X):
         return X @ self.H_.T
 
-    def score(self, X, Y):
+    def _score(self, X, Y):
         # Compute R for each column of Y
         R_scores = r_score(self.predict(X), Y)
 
@@ -246,21 +269,32 @@ class CrossDecomp():
         self.G = G
         self.H = Forward(alphas, independent_alphas, knockout)
 
-    def fit(self, X, Y):
+    def _fit(self, X, Y):
         self.G.fit(Y, X)
         YG = self.G.transform(Y)
         self.H.fit(X, YG)
         return self
 
-    def predict(self, X):
-        return self.H.predict(X)
+    def fit(self, X, Y):
+        # for held out prediction evaluation
+        train = range(len(X) // 2)
+        test = range(len(X) // 2, len(X))
+        self._fit(X[train], Y[train])
+        self.R_score_ = self._score(X[test], Y[test])
 
-    def score(self, X, Y):
+        # for predictions
+        self._fit(X, Y)
+        self.invG = clone(self.G).fit(X, Y)
+
+    def predict(self, X):
+        return self.invG.predict(X)
+
+    def _score(self, X, Y):
         YG = self.G.transform(Y)
-        return self.H.score(X, YG)
+        return self.H._score(X, YG)
 
     def solution(self, ):
-        return self.H.solution()
+        return np.sum(self.R_score_**2, 1)
 
 
 if __name__ == '__main__':
@@ -283,7 +317,7 @@ if __name__ == '__main__':
         Y = (X @ E + Nx / snr) @ F + Ny
         return scale(X), scale(Y), np.diag(E)
 
-    X, Y, e = make_data(snr=.1)
+    X, Y, e = make_data(snr=.25)
 
     # let's give CCA a chance and already give the right amount of dimensions
     n_comp = int(np.sum(e))
@@ -301,20 +335,5 @@ if __name__ == '__main__':
         plt.plot(sol, label=name)
     plt.legend()
     plt.title('model solution (y axis not comparable)')
-    plt.ylabel('coef')
+    plt.ylabel('R or sum(R^2)')
     plt.xlabel('X')
-
-    # held out evaluation
-    plt.figure()
-    train = range(len(X) // 2)
-    test = range(len(X) // 2, len(X))
-    lines = list()
-    for idx, (name, model) in enumerate(models.items()):
-        model.fit(X[train], Y[train])
-        R = model.score(X[test], Y[test])
-
-        lines.append(plt.plot(R, color='C%i' % idx))
-    plt.legend([l[0] for l in lines], models.keys())
-    plt.title('model prediction score (y axis comparable)')
-    plt.xlabel('X')
-    plt.ylabel('R')
