@@ -3,8 +3,12 @@ from scipy.linalg import svd
 from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 from sklearn.cross_decomposition import PLSRegression, CCA
+from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import ShuffleSplit
 from sklearn.base import clone
+
+
+N_JOBS = 1
 
 
 def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
@@ -102,9 +106,9 @@ def r_score(Y_true, Y_pred):
     return R
 
 
-class B2B():
+class JRR_k():
     def __init__(self,
-                 alphas=np.logspace(-4, 4, 20),
+                 alphas=np.logspace(-5, 5, 20),
                  independent_alphas=True,
                  knockout=True,
                  ensemble=None):
@@ -202,9 +206,9 @@ class B2B():
         return self.R_score_
 
 
-class Forward():
+class Ridge_k():
     def __init__(self,
-                 alphas=np.logspace(-4, 4, 20),
+                 alphas=np.logspace(-5, 5, 20),
                  independent_alphas=False,
                  knockout=True):
         self.alphas = alphas
@@ -256,21 +260,28 @@ class Forward():
 
         return R_scores - K_scores
 
-    def solution(self, ):
+    def solution(self):
         return np.sum(self.H_**2, 0)
 
 
-class CrossDecomp():
+class CCA_k():
     def __init__(self,
-                 G=CCA(2),
-                 alphas=np.logspace(-4, 4, 20),
+                 # G=CCA(2),
+                 alphas=np.logspace(-5, 5, 20),
                  independent_alphas=False,
                  knockout=True):
-        self.G = G
-        self.H = Forward(alphas, independent_alphas, knockout)
+        # self.G = G
+        self.H = Ridge_k(alphas, independent_alphas, knockout)
 
     def _fit(self, X, Y):
+        # fit CCA
+        m = min(X.shape[1], Y.shape[1])
+        grid = {
+            "n_components": np.linspace(1, m, 10).astype(int)
+        }
+        self.G = GridSearchCV(CCA(max_iter=1000), grid, n_jobs=N_JOBS, cv=5)
         self.G.fit(Y, X)
+
         YG = self.G.transform(Y)
         self.H.fit(X, YG)
         return self
@@ -293,47 +304,5 @@ class CrossDecomp():
         YG = self.G.transform(Y)
         return self.H._score(X, YG)
 
-    def solution(self, ):
+    def solution(self):
         return np.sum(self.R_score_**2, 1)
-
-
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
-    def make_data(snr=1):
-        dx = 20
-        dy = 20
-        n = 1000
-        e = dx // 2
-        E = np.diag(np.ones(dx))
-        E[e:] = 0
-        Cx = np.random.randn(dx, dx)
-        X = np.random.multivariate_normal(np.zeros(dx), Cx, n)
-        # make source noise move in different dimension than causal factors
-        Nx = np.random.randn(n, dx)
-        Nx[:, :e] = 0
-        Ny = np.random.randn(n, dy)
-        F = np.random.randn(dx, dy)
-        Y = (X @ E + Nx / snr) @ F + Ny
-        return scale(X), scale(Y), np.diag(E)
-
-    X, Y, e = make_data(snr=.25)
-
-    # let's give CCA a chance and already give the right amount of dimensions
-    n_comp = int(np.sum(e))
-    models = dict(
-        Forward=Forward(),
-        B2B=B2B(),
-        CCA=CrossDecomp(CCA(n_comp)),
-        PLS=CrossDecomp(PLSRegression(n_comp)))
-
-    # model parameters
-    lines = list()
-    for name, model in models.items():
-        model.fit(X, Y)
-        sol = model.solution()
-        plt.plot(sol, label=name)
-    plt.legend()
-    plt.title('model solution (y axis not comparable)')
-    plt.ylabel('R or sum(R^2)')
-    plt.xlabel('X')
