@@ -162,7 +162,7 @@ class B2B():
                                    self.alphas)
 
     def predict(self, X):
-        return X @ np.diag(np.diag(self.H_)) @ self.coef
+        return X @ np.diag(np.diag(self.H_)) @ self.coef.T
 
     def _score(self, X, Y):
         """return the specific contribution of feature i:
@@ -302,7 +302,7 @@ if __name__ == '__main__':
 
     def make_data(snr=1):
         dx = 20
-        dy = 20
+        dy = 21
         n = 1000
         e = dx // 2
         E = np.diag(np.ones(dx))
@@ -331,9 +331,11 @@ if __name__ == '__main__':
     lines = list()
     for name, model in models.items():
         model.fit(X, Y)
+        assert(np.array_equal(Y.shape, model.predict(X).shape))
         sol = model.solution()
         plt.plot(sol, label=name)
     plt.legend()
     plt.title('model solution (y axis not comparable)')
     plt.ylabel('R or sum(R^2)')
     plt.xlabel('X')
+    plt.show()
