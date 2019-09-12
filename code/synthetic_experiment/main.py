@@ -1,4 +1,5 @@
 from models import JRR, OLS, Ridge, Oracle, PLS, Lasso, RRR, CCA
+from models_k import JRR_k, Ridge_k, CCA_k
 from sklearn.metrics import roc_auc_score
 from data import Synthetic
 import numpy as np
@@ -7,14 +8,17 @@ import random
 
 
 models = {
-    "JRR": JRR,
-    "OLS": OLS,
-    "Ridge": Ridge,
-    "CCA": CCA,
-    "Oracle": Oracle,
-    "PLS": PLS,
-    "RRR": RRR,
-    "Lasso": Lasso
+    # "JRR": JRR,
+    # "OLS": OLS,
+    # "Ridge": Ridge,
+    # "CCA": CCA,
+    # "Oracle": Oracle,
+    # "PLS": PLS,
+    # "RRR": RRR,
+    # "Lasso": Lasso,
+    "JRR_k": JRR_k,
+    "Ridge_k": Ridge_k,
+    "CCA_k": CCA_k
 }
 
 
