@@ -158,7 +158,7 @@ class JRR_k():
         train = range(len(X) // 2)
         test = range(len(X) // 2, len(X))
         self._fit(X[train], Y[train])
-        self.R_score_ = self._score(X[test], Y[test])
+        self.R_score_ = self._score(X[test], Y[test])[:, None]
 
         # for predictions
         self._fit(X, Y)
@@ -261,7 +261,7 @@ class Ridge_k():
         return R_scores - K_scores
 
     def solution(self):
-        return np.sum(self.H_**2, 0)
+        return self.R_score_
 
 
 class CCA_k():
@@ -305,4 +305,99 @@ class CCA_k():
         return self.H._score(X, YG)
 
     def solution(self):
-        return np.sum(self.R_score_**2, 1)
+        return self.R_score_
+
+
+class PLS_k():
+    def __init__(self,
+                 # G=CCA(2),
+                 alphas=np.logspace(-5, 5, 20),
+                 independent_alphas=False,
+                 knockout=True):
+        # self.G = G
+        self.H = Ridge_k(alphas, independent_alphas, knockout)
+
+    def _fit(self, X, Y):
+        # fit CCA
+        m = min(X.shape[1], Y.shape[1])
+        grid = {
+            "n_components": np.linspace(1, m, 10).astype(int)
+        }
+        self.G = GridSearchCV(PLSRegression(max_iter=1000), grid,
+                              n_jobs=N_JOBS, cv=5)
+        self.G.fit(Y, X)
+
+        YG = self.G.transform(Y)
+        self.H.fit(X, YG)
+        return self
+
+    def fit(self, X, Y):
+        # for held out prediction evaluation
+        train = range(len(X) // 2)
+        test = range(len(X) // 2, len(X))
+        self._fit(X[train], Y[train])
+        self.R_score_ = self._score(X[test], Y[test])
+
+        # for predictions
+        self._fit(X, Y)
+        self.invG = clone(self.G).fit(X, Y)
+
+    def predict(self, X):
+        return self.invG.predict(X)
+
+    def _score(self, X, Y):
+        YG = self.G.transform(Y)
+        return self.H._score(X, YG)
+
+    def solution(self):
+        return self.R_score_
+
+
+if __name__ == '__main__':
+    # demo
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import roc_auc_score
+
+    def make_data(snr=1):
+        dx = 30
+        dy = 31
+        n = 1000
+        e = dx // 2
+        E = np.diag(np.ones(dx))
+        E[e:] = 0
+        Cx = np.random.randn(dx, dx)
+        X = np.random.multivariate_normal(np.zeros(dx), Cx, n)
+        # make source noise move in different dimension than causal factors
+        Nx = np.random.randn(n, dx)
+        Nx[:, :e] = 0
+        Ny = np.random.randn(n, dy)
+        F = np.random.randn(dx, dy)
+        Y = (X @ E + Nx / snr) @ F + Ny
+        return scale(X), scale(Y), np.diag(E)
+
+    X, Y, e_true = make_data(snr=.15)
+
+    models = dict(
+        Forward=Ridge_k(),
+        B2B=JRR_k(),
+        PLS=PLS_k(),
+        )
+
+    # model parameters
+    lines = list()
+    title = ''
+    for idx, (name, model) in enumerate(models.items()):
+        model.fit(X, Y)
+        assert np.array_equal(model.predict(X).shape, Y.shape)
+        sol = model.solution()
+        lines.append(plt.plot(sol, color='C%i' % idx))
+
+        # this is the unclear bit
+        e_pred = np.sum(sol ** 2, axis=1)
+        auc = roc_auc_score(e_true, e_pred)
+        title += '%s: AUC=%.3f    ' % (name, auc)
+    plt.title(title)
+    plt.legend([l[0] for l in lines], models.keys())
+    plt.ylabel('R on held-out data')
+    plt.xlabel('X feature')
+    plt.show()
