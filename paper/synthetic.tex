@@ -5,7 +5,7 @@ The purpose of these experiments is to evaluate the ability of B2B in terms of
 prediction (inside and outside the training distribution), as well as a method
 to recover causal factors.
 
-The data generating process for each experiment constructs $n$ training examples
+The data generating process for each experiment constructs $n=1000$ training examples
 according to the model $Y = (\text{snr} \cdot XE + N)F$, where $\text{snr}$ is a
 scalar that modulates the signal-to-noise ratio.
 %
@@ -29,11 +29,11 @@ $\mathcal{N}(0, d_x^{-1})$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
 \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$, and the
 factor $\text{snr} \in (0, \infty)$.
 
-To simulate a wide range of experimental conditions, we vary $n \in \{500, 1000,
-2000\}$, $d_x, d_y \in \{ 25, 50, 100, 150 \}$, $n_c \in \{ 5, 10 \}$,
-$\text{snr} \in \{ 0.2, 0.5, 0.75, 1 \}$.
+To simulate a wide range of experimental conditions, we vary $d_x, d_y \in \{ 10, 15, 25, 39, 63, 100 \}$, $n_c \in \{ 1, 2, 6, 15, 39, 100 \}$,
+$\text{snr} \in \{ 0.001, 0.015, 0.25, 3.98, 63, 1000 \}$. We discard the cases where $n_c > d_x$. We limit $d_x, d_y$ to 100 in order to keep the running time under 2 hours for each condition.
 %
-Each condition is simulated under $20$ different random seeds.
+
+Each condition is simulated under $5$ different random seeds.
 
 We compare the performance of B2B against four competing methods, all
 implemented in scikit-learn \citep{scikit}:
@@ -49,17 +49,23 @@ putative causes $X$ to the observations $Y$: \begin{equation} H = (X^T X
 Backward regression consists of an $l2$-regularized "ridge" regression from $Y$
 to $X$: \begin{equation} G = (Y^T Y +\lambda I)^{-1} Y^T X \end{equation}
 
-CCA finds $G\in\mathbb{R}^{d_z, d_y}$ and $H\in\mathbb{R}^{d_z, d_x}$ such that
-$X$ and $Y$ are maximally correlated in a latent $Z$ space: \begin{equation} max
-corr(XH^T, YG^T) \end{equation}
+CCA finds $G\in\mathbb{R}^{d_z, d_y}$ and $H\in\mathbb{R}^{d_z, d_x}$
+% such that
+s.t.
+$X$ and $Y$ are maximally correlated in a latent $Z$ space:
+% \begin{equation} maxcorr(XH^T, YG^T) \end{equation}
+\begin{equation} G,H = \argmax_{G,H} corr(XH^T, YG^T) \end{equation}
 
 % To be checked
-PLS finds $G\in\mathbb{R}^{d_z, d_y}$ and $H\in\mathbb{R}^{d_z, d_x}$ such that
-$X$ and $Y$ are maximally covarying in a latent $Z$ space: \begin{equation} max
-cov(XH^T, YG^T) \end{equation}
+PLS finds $G\in\mathbb{R}^{d_z, d_y}$ and $H\in\mathbb{R}^{d_z, d_x}$
+% such that
+s.t.
+$X$ and $Y$ are maximally covarying in a latent $Z$ space:
+% \begin{equation} maxcov(XH^T, YG^T) \end{equation}
+\begin{equation} G,H = \argmax_{G,H} cov(XH^T, YG^T) \end{equation}
 
 We employ $5$-fold cross-validation to select the optimal number of components
-for CCA and PLS. Regressions were l2-regularized with a $\lambda$ regularization
+for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regularization
 parameters fitted with the efficient leave-one-out procedure implemented in
 scikit-learn RidgeCV \citep{scikit}.
 
@@ -77,6 +83,19 @@ To estimate whether models accurately identify causal factors, we compute the
 area-under-the-curve (AUC) across factors $AUC(E, \hat E)$.
 %\begin{equation} AUC = 1 - \sum_1^n (E_k - E_{k-1}) ( \hat{E}_k +
 %\hat{E}_{k-1}) / 2 \end{equation}
+
+The AUC allows evaluating the capacity of models at detecting the causal
+importance of factors when ground truth labels are available, as is the case in
+this setup.
+
+We report AUC results in Figure~\ref{fig:auc_plots}, and compare favorably to all baselines.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/AUC.png}
+  \caption{We show boxplots for the AUC metric obtained in our synthetic experiments. Higher is better. B2B compares favorably to baselines.}
+  \label{fig:auc_plots}
+\end{figure}
 
 \subsection{Evaluating Causal Discovery with held-out prediction reliability}
 
@@ -105,10 +124,16 @@ Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test})$\;
 {H_k}, Y_{test})$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \caption{Forward feature importance.} \label{algorithm:fwd_fi} \end{algorithm}
 
-\iffalse \begin{enumerate} \item Fit $H$ given $X_{train}$ and $Y_{train}$ \item
-For each feature $i$: \begin{itemize} \item Define $K$, and identity matrix
-whose row $i$ has been zeroed-out \item Fit $H^i_k$ given $X_{train} K$ and
-$Y_{train}$ \end{itemize} \end{enumerate} \fi
+\iffalse
+\begin{enumerate}
+  \item Fit $H$ given $X_{train}$ and $Y_{train}$
+  \item For each feature $i$:
+  \begin{itemize}
+    \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
+    \item Fit $H^i_k$ given $X_{train} K$ and $Y_{train}$
+  \end{itemize}
+  \end{enumerate}
+\fi
 
 \begin{algorithm}[H]
     %\SetAlgoLined
@@ -124,11 +149,17 @@ Y_{test} G_k)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \caption{CCA and PLS feature importance.} \label{algorithm:cdp_fi}
 \end{algorithm}
 
-\iffalse For CCA and PLS, feature importance is assessed as follow:
-\begin{enumerate} \item Fit $H$ and $G$ given $X_{train}$ and $Y_{train}$ \item
-For each feature $i$: \begin{itemize} \item Define $K$, and identity matrix
-whose row $i$ has been zeroed-out \item Fit $H^i_k$ and $G_k$ given $X_{train}
-K$ and $Y_{train}$ \end{itemize} \end{enumerate} \fi
+\iffalse
+For CCA and PLS, feature importance is assessed as follow:
+\begin{enumerate}
+  \item Fit $H$ and $G$ given $X_{train}$ and $Y_{train}$
+  \item For each feature $i$:
+  \begin{itemize}
+    \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
+    \item Fit $H^i_k$ and $G_k$ given $X_{train} K$ and $Y_{train}$
+  \end{itemize}
+\end{enumerate}
+\fi
 
 For the Backward Model, feature importance cannot be assessed. We thus simply
 report the model performance $R_i = corr(YG_i, X_i)$
@@ -150,17 +181,25 @@ $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
 \Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:cdp_fi}
 \end{algorithm}
 
-\iffalse \begin{enumerate}
+\iffalse
+\begin{enumerate}
 
-  \item Fit $G$ given $X_{train}$ and $Y_{train}$ \item Fit $H$ given
-$X_{train}$ and $Y_{train} G^T$ \item For each feature $i$: \begin{itemize}
-\item Define $K$, and identity matrix whose row $i$ has been zeroed-out \item
-Fit $H^i_k$ given $X_{train} K$ and $Y_{train} G^T$ \end{itemize}
+  \item Fit $G$ given $X_{train}$ and $Y_{train}$
+  \item Fit $H$ given $X_{train}$ and $Y_{train} G^T$
+  \item For each feature $i$:
+  \begin{itemize}
+    \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
+    \item Fit $H^i_k$ given $X_{train} K$ and $Y_{train} G^T$
+  \end{itemize}
 
-  \item Compute $R_{full}$ given $Y_{test} G^T$ and $X_{test}$ \item For all $i
-\in d_x$: \begin{itemize} \item Compute $R^i_{knockout}$ given $Y_{test} G^T$
-and $X_{test} K {H^i_k}^T$ \item Compute $R^i_{delta}=R_{full} - R^i_{knockout}$
-\end{itemize} \end{enumerate} \fi
+  \item Compute $R_{full}$ given $Y_{test} G^T$ and $X_{test}$
+  \item For all $i \in d_x$:
+  \begin{itemize}
+    \item Compute $R^i_{knockout}$ given $Y_{test} G^T$ and $X_{test} K {H^i_k}^T$
+    \item Compute $R^i_{delta}=R_{full} - R^i_{knockout}$
+  \end{itemize}
+  \end{enumerate}
+\fi
 
 \iffalse Ridge regression \citep{hoerl1959optimum}, multitask Lasso
 \citep{argyriou2008convex}, Partial Least Squares or PLS \citep{wold_pls,
@@ -211,3 +250,10 @@ conditions, metrics, and methods.
 B2B is the method obtaining best test errors, lowest false positive and false
 negative discovery about $E$, and overall the best AUC when it comes to
 detecting causal influences.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/delta_b2b.png}
+  \caption{Boxplots "boxen" of feature importance values relative to B2B on synthetic experiments. Boxes below the dashed line mean B2B is better.}
+  \label{}
+\end{figure}
