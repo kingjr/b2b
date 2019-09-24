@@ -29,7 +29,7 @@
 \author{%
   Jean-Remi King\\
   CNRS\\
-  \texttt{email} \\
+  \texttt{jeanremi.king@gmail.com} \\
   \And
   Fran\c{c}ois Charton\\
   Facebook AI\\
@@ -49,19 +49,17 @@
 \maketitle
 
 \begin{abstract}
-Identifying causes from observations is at the core of science. This endeavor
-is particularly challenging when i) potential factors are difficult to
-manipulate individually and ii) observations are complex and multi-dimensional.
+Identifying causes from observations can be particularly challenging when i) potential factors are difficult to manipulate individually and ii) observations are complex and multi-dimensional.
 To address this issue, we introduce ``Back-to-Back'' regression (B2B), a
-method designed to measure, from a set of co-varying factors, the causal
+method designed to efficiently measure, from a set of co-varying factors, the causal
 influences that most plausibly account for multidimensional observations. After
-proving the consistency of B2B, we show that our method outperforms
-least-squares and related regression and cross-decomposition techniques (e.g.
-canonical correlation analysis and partial least squares) on two tasks: causal
-identification and out-of-distribution prediction. Finally, we apply B2B to
+proving the consistency of B2B and its links to other linear approaches, we show that our method outperforms
+least-squares regression and cross-decomposition techniques (e.g.
+canonical correlation analysis and partial least squares) on causal
+identification. Finally, we apply B2B to
 neuroimaging recordings of 102 subjects reading word sequences. The results
 show that the early and late brain responses caused by low- and high-level
-word features respectively are more easily detected with B2B than with standard forward regression.
+word features respectively are more reliably detected with B2B than with  other standard techniques.
 % conclude  open
 \end{abstract}
 
@@ -69,7 +67,7 @@ word features respectively are more easily detected with B2B than with standard 
 
 \input{introduction.tex}
 
-\section{Back to back regression}
+\section{Back-to-Back regression}
 \label{sec:algorithm}
 
 
@@ -144,6 +142,7 @@ In summary, our model can be formalized as:
 where $N$ is a centered, unobserved noise variable.
 %
 While the triplet of variables $X$ and $N$ are independent, we allow each of them to have a general covariance matrix.
+% what is a general covariance matrix?
 %
 In practice, we observe $n$ samples $(X, Y)$ from the model.
 %
@@ -174,20 +173,38 @@ where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices of regularization pa
 
 Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data absorbed by the first regression will be leveraged by the second one.
 %
-To avoid this issue, we split our sample $(X, Y)$ at random into two equally-sized halves $(X_1, Y_1)$ and $(X_2, Y_2)$.
+To avoid this issue, we split our sample $(X, Y)$ at random into two subsets $(X_1, Y_1)$ and $(X_2, Y_2)$.
 %
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
 To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
 %
-After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$.
+To accelerate this ensembling procedure, we implemented an efficient leave-one-out cross-validation scheme as detailed in \citep{RifkinLippert2007} % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf
+, as follow:
+%
+
+\begin{equation}
+\hat{Y} = (\Sigma_X G Y - diag(\Sigma_X G) Y) / diag(I - \Sigma_X G)
+\end{equation}
+
+where $\Sigma_X$ is the $X$ kernel matrix and where $G$ is computed with an eigen decomposition of $X$:
+\begin{equation}
+  \begin{aligned}
+  \Sigma_X = Q V Q^T \\
+  G = Q (V + \alpha*I)^{-1} Q^T\\
+  \end{aligned}
+\end{equation}
+where $Q$, $V$ and $\alpha$ are the eigen vectors, eigen values and regularization, respectively.
+
+%
+% After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$.
 
 We summarize the B2B procedure in Algorithm~\ref{algorithm:b2br}.
 %
 The rest of this section provides a theoretical guarantee on the correctness of B2B, and an optional post-processing step to binarize the estimated causal influence matrix.
 
 
-
+% JR: shall we update algorithm with LOO trick?
 \begin{algorithm}[H]
     %\SetAlgoLined
     \KwIn{input data $X \in \mathbb{R}^{n \times d_x}$, output data $Y \in \mathbb{R}^{n\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
@@ -214,7 +231,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 
      Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centred and full rank noise.
      %
-     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimise
+     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimize
      %
      $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
@@ -234,7 +251,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
     &= EF \hat G
 \end{align*}
 
-Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore, 
+Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore,
  $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
 
 But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
@@ -242,7 +259,7 @@ But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right
 
 So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
-Assuming, without loss of generality, that the active features are the $k$ first, we have 
+Assuming, without loss of generality, that the active features are the $k$ first, we have
 
 $X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & \Sigma_{X3}\end{array}\right)$, $N^\top N = \left(\begin{array}{lccl}\Sigma_{N1} & \Sigma_{N2} \\ \Sigma_{N2} & \Sigma_{N3}\end{array}\right)$ and
 
@@ -250,35 +267,15 @@ $\hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\S
 
 $Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1})$
 
-In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Else the k first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$. 
+In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Else the k first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$.
 
-The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by k. On average, since $X$ and $N$ are not correlated, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition numbers, and $\frac{Var(X)}{Var(X)+Var(N)}$ provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
-
-\subsection{Binarizing $\hat{E}$}
-
-On the one hand, we have leveraged B2B to obtain the estimate $\hat{E}$, which is a diagonal matrix with real entries.
-%
-On the other hand, the true causal influence matrix $E$ is a binary matrix, which hard-selects the causal factors of $Y$ from $X$.
-%
-In this section, we provide one of the many possible recipes to binarize $\hat{E}$ and estimate the collection of causal factors.
-
-In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}.
-%
-However, this test will not succeed here, since the estimate $\hat{E}$ is obtained from a double regression, and any employed regularization will add a bias to the diagonal of $\hat{E}$.
-%
-Instead, we treat the binarization of $\hat{E}$ as a clustering problem: separate the elements in the diagonal into a group of ``small values'', and a group of ``large values''.
-%
-More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
-%
-Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{sonquist_morgan} \citep{kass75} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
-%
-To binarize $\hat{E}$, set to one all the $p$ diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the $d_x-p$ diagonal entries.
+The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by k. On average, since $X$ and $N$ are not correlated by definition, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition numbers, and $\frac{Var(X)}{Var(X)+Var(N)}$ provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
 
 \section{Experiments}
 
-We perform two experiments to evaluate the performance of B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
+We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
 %
-We use scikit-learn \citep{sklearn}.
+We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the standard baselines \citep{sklearn}.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
@@ -292,9 +289,10 @@ We use scikit-learn \citep{sklearn}.
 
 \section{Related work}
 
-In the context of neuroimaging, the first regression of B2B relates to the first step of Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}. Indeed, RSA analyzes the similarity of brain responses associated with specific conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new contexts and (2)
+In the context of neuroimaging, the first regression of B2B relates to the first step of Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}. Indeed, RSA analyzes the similarity of brain responses associated with specific categorical conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new contexts and (2)
 it is fully supervised.
 
+% THIS NEEDS TO BE UPDATED: see de chevigner's latest paper
 More generally, B2B is related to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, CCA performs an additional eigenvector decomposition of what would be the $H$ coefficients in B2B \eqref{eq:solH}. Second, CCA does not typically optimize two distinct regularization parameters. Third, CCA does not use bagging between $G$ and $H$. Finally, CCA does not diagonalize nor binarize the $H$ matrix to estimate $\hat E$. More generally, CCA aims to find maximally correlated components between $X$ and $Y$, and does not assume any causal direction. By contrast, B2B assumes that $X$ causes $Y$. Together, these differences may explain why B2B can reliably outperform CCA on estimating causal influences and predicting $Y$ in novel environments (Fig. \ref{table:synthetic}).
 
 B2B is also related to, but different from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.

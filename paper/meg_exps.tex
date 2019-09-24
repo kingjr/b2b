@@ -13,7 +13,7 @@ Each word was presented on the computer screen for 351ms on average (min: 300ms,
 max: 1400ms). Successive words were separated by a blank screen for 300ms, and
 successive sentences were separated by an empty screen for a few (3-4) seconds.
 
-\subsubsection{MEG preprocessing and feature generation}
+\subsubsection{MEG preprocessing}
 
 The raw MEG data was bandpass-filtered between 0.1 and 40Hz using MNE-Python
 default parameters \citep{gramfort2013meg, gramfort2014mne}. Specifically, we used a zero-phase finite impulse
@@ -21,31 +21,37 @@ response filter (FIR) with a Hamming window and with transition bands of 0.1Hz
 and 10Hz for the low and high cut-off frequencies. The raw data was then segmented 100ms before word onset and 1s after
 word onset ($t=0$ms corresponds to word onset). Finally, each resulting
 segment was baseline-corrected between -100ms and 0ms, and decimated by 5 and
-thus led a sampling frequency of 240Hz. Figure 1 in the supplementary material
-shows the average response of the magnetometers evoked by the words presented
-to the first subject. For each subject and each time sample relative to word onset, we
+thus led a sampling frequency of 240Hz.
+For each subject and each time sample relative to word onset, we
 build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 2700 words
 by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
-We annotated each word with 38 features: 26
-correspond to the count of each letter in the word (from 'a' to 'z',
-independently of their case), the total number of letters ('word length'), the
-frequency of the word in natural language (using the Zipf logarithmic scale
-of \citep{van2014subtlex}), and the part-of-speech tags (i.e. NOUN, PROPN (proper
-noun), VERB, PRON (pronoun), CONJ (conjunction), DET (determinant), ADJ
-(adjective), ADV (adverb), and NUM (numerical)) using Spacy \citep{spacy2} and
-WordFreq \citep{speerwordfreq}. For clarity purposes, we refer to these
-features using two broad categories: visual (i.e. each letter and the total
-number of letters) and lexical (part-of-speech and word frequency). This
-procedure yields an $X \in \mathbb{R}^{n \times d_x}$ matrix of $n\approx$ 2700 words by
-$d_x=38$ features for each subject. Each of the columns of $X$ is normalized to
+\subsubsection{Feature definition}
+We annotated each word with three collinear features.
+%
+"Word Length' refers to the total number of letters, and is expected to specifically cause a variation in the early evoked MEG responses (i.e. from 100 ms after stimulus onset), because it variably engages different retinotopically-tuned visual areas in the primary visual cortex.
+%
+'Word Frequency', as derived with WordFreq \citep{speerwordfreq}, indexes how frequently each word appears in Dutch (using the Zipf logarithmic scale of \citep{van2014subtlex}). This feature is expected to specifically cause a variation in the late evoked MEG responses (i.e. from 400 ms), because it variably engages semantic processes in the temporal cortices \citep{kutas2011thirty}.
+%
+Finally, 'Word Function' indicates whether each word is a content word (i.e. a noun, a verb, an adjective or an adverb) or a function word (i.e. a preposition, a conjunction, a determinant, a pronoun or a numeral), and was derived from Spacy's part of speech tagger \citep{spacy2}. To our knowledge, this feature has not been thouroughly investigated with MEG. Its causal contribution to reading processes in the brain is therefore largely unknown.
+%
+To verify that B2B and other models would not inadequately identify non-causal features, we added a dummy feature, constructed from a noisy combination of "Word Length" and "Word Frequency":
+\begin{equation}
+  dummy = z(length) + z(frequency) + z(\mathcal{N})
+\end{equation}
+where $z$ transforms features into zero-mean and unit variance vectors.
+
+This procedure yields an $X \in \mathbb{R}^{n \times d_x}$ matrix of $n\approx$ 2700 words by
+$d_x=4$ features for each subject. Each of the columns of $X$ is normalized to
 have a mean and a standard deviation of 0 and 1 respectively.
 
 \subsubsection{Models and statistics}
 
-Our goal is to identify which word features ($X$) lead to a reliable modulation of brain activity as measured with MEG recordings ($Y$) at each time sample and for each subject separately. To this aim,
-we compare three methods: forward regression, backward regression, and back-to-back regression.
+We compare B2B to four standard models: forward regression, backward regression, CCA and PLS, as implemented in scikit-learn, and optimized with nested cross validation over 20 $\lambda$ l2 regularization parameters logarithmically spaced between $10^-4$ and $10^4$ or 1 to 4 caconical components.
+
+We used the feature importance described in XXX algorithms XXX to assess the extent to which each feature $X_i$ specifically improves the prediction of held-out $Y$ data.
+
 Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
 
 \begin{figure}[t!]
@@ -58,19 +64,20 @@ Corresponding results can be found in Figure \ref{fig:meg_twocurves}.
   \label{fig:meg_twocurves}
 \end{figure}
 
-Forward regression was performed with an $\ell_2$-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
-Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample. Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
-least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging factor of 10, and alpha cross-validated between $10^{-5}$ and $10^{5}$.
+%Forward regression was performed with an $\ell_2$-regularized least-squares regression $H \in \mathbb{R}^{d_x \times d_y}$ from $X$ to $Y$, and estimates the causal influence $E_{i,i}$ as $\| H_{i, :} \|^2$.
+%Backward regression was performed with an $\ell_2$-regularized least-squares regression $G \in \mathbb{R}^{d_y \times d_x}$ from $Y$ to $X$, and estimates the causal influence $E_{i, i}$ as the Pearson correlation between the $i$-th column of $X$ and the $i$-th column of $YG$, using a validation sample. Finally, we used the back-to-back regression was performed using two $\ell_2$-regularized
+%least squares regressions $G$ and $H$ as described in section \ref{sec:algorithm}, using a bagging factor of 10, and alpha cross-validated between $10^{-5}$ and $10^{5}$.
 
-The three types of analyses were implemented for each subject and each time
-sample independently. To estimate the reliability of these estimates in the
-population, we tested, using a one-sample $t$-test whether the distribution of
-the estimated contribution of each factor differed from baseline ($t=0$ms),
-as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau$ ranging from
-150ms to 1s after word onset. We use the resulting t and p-values as proxy to
-quantify the performance of each model. These results are depicted in Figure
-3 of the Supplementary Material. For concision purposes, we only report this metric averaged
-between 150ms and 1s after word onset.
+
+%The three types of analyses were implemented for each subject and each time
+%sample independently. To estimate the reliability of these estimates in the
+%population, we tested, using a one-sample $t$-test whether the distribution of
+%the estimated contribution of each factor differed from baseline ($t=0$ms),
+%as $\text{t-test}(\hat E_{t=0} - \hat E_{\tau})$, with $\tau$ ranging from
+%150ms to 1s after word onset. We use the resulting t and p-values as proxy to
+%quantify the performance of each model. These results are depicted in Figure
+%3 of the Supplementary Material. For concision purposes, we only report this metric averaged
+%between 150ms and 1s after word onset.
 
 \subsubsection{Results}
 When human subjects read individual words, the number of letters is known to modulate
