@@ -76,6 +76,7 @@ Corresponding results are shown in Figure~\ref{fig:meg_results}.
     \label{fig:meg_results}
   \end{center}
   \caption{Multiple models (color-coded) are compared on their ability to reliably predict single-trial MEG signals evoked by words. Left. Average improvement of correlation coefficient $\Delta R$ for each pf the four features (rows). Error bars indicate standard error of the mean (SEM) across subjects. Right. Average $\Delta R$ across time for each subject (dot). Top horizontal lines indicate when B2B significantly outperform other methods.}
+  \vspace{-9ex}
 \end{wrapfigure}
 
 \subsubsection{Results}
@@ -87,6 +88,6 @@ We thus focus on the four remaining methods (i.e. Forward Regression, PLS, CCA, 
 
 Figure \ref{fig:meg_results} shows, for each model, the effects obtained across time (left) and subjects (right).
 
-Word Length and Word Frequency improved the prediction performance of all methods: $\Delta R>0$ for all models (all $p<0.0001$). As expected, the time course associated with Word Length and Word Frequency rose from $\approx$ 100 ms and from $\approx$ 400 ms respectively. Furthermore, Word Function improved the prediction performance of all models (all $p < 0.0002$) except PLS ($p=0.7989$). Overall, these results confirm that Word Length, Word Frequency and Word Function causally influence specific periods of brain responses to words.
+Word Length and Word Frequency improved the prediction performance of all methods: $\Delta R>0$ for all models (all $p<0.0001$). As expected, the time course associated with Word Length and Word Frequency rose from $\approx$ 100 ms and from $\approx$ 400 ms respectively. Furthermore, Word Function improved the prediction performance of all models (all $p < 0.0002$) except for PLS~($p=0.7989$). Overall, these results confirm that Word Length, Word Frequency and Word Function causally influence specific periods of brain responses to words.
 
 To assess which model would be most sensitive to these causal discoveries, we compared B2B to other models across subjects (Figure \ref{fig:meg} right). For Word Length B2B outperforms all models (all $p < 0.00001$) but CCA ($p=0.0678$). For Word Frequency, B2B outperforms all models (all $p < 0.0006$). For "Word Function", B2B outperforms all models (all $p < 0.0015$). Overall, these results show that B2B reliably outperform standard methods, especially when the effects are difficult to detect.
