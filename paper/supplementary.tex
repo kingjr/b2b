@@ -21,27 +21,27 @@
 \begin{theorem}[B2B consistency - general case]
 
      Consider the B2B model from Equation $$Y = (XE + N)F$$ $N$ centred and full rank noise.
-     
+
      If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimise
-     
-     $$\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$$ and satisfy 
-     
+
+     $$\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$$ and satisfy
+
      $$E\hat H = \hat H$$
 \end{theorem}
 \begin{proof}
 
- Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B. 
- 
+ Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B.
+
  Since $\hat G$ is the least square estimator of $X$ from $Y$
  \begin{align*}
-    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] 
+    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2]
 \end{align*}
 Replacing $Y$ by its model definition $Y = (XE+N)F$, we have
- \begin{align*}    
+ \begin{align*}
     \hat G &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2] =\arg \min_G \mathbb{E}[\left \| X - XEFG + NFG \right\|^2]
   \end{align*}
-  Since $N$ is centered and independent of $X$, we have 
-  \begin{align}  
+  Since $N$ is centered and independent of $X$, we have
+  \begin{align}
     	  \hat G &=  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
      \label{eq:Gdoublenorm}
 \end{align}
@@ -52,13 +52,13 @@ Samely, for $\hat H$, we have
     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
     &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]
  \end{align*}
- a positive quantity which reaches a minimum (zero) for 
+ a positive quantity which reaches a minimum (zero) for
  \begin{align}
     \hat H = EF \hat G
     \label{eq:Hdoublenom}
 \end{align}
 
-Let us now prove that $EF\hat G = F\hat G$. 
+Let us now prove that $EF\hat G = F\hat G$.
 
 Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger EF\hat G$, we have $FZ = FF^\dagger EF \hat G$
 
@@ -83,7 +83,7 @@ Replacing into $\eqref{eq:Gdoublenorm}$, and setting $H = EFG$, we have
 	\hat G &=  \arg \min_G  \left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 \\
 	&=   \arg \min_G \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 \\
 	\hat H &=  \arg \min_H \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2
-	\label{eq:4}	
+	\label{eq:4}
 \end{align*}
 
 Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagonal matrix, is involutive. This completes the proof.
@@ -93,28 +93,12 @@ Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagona
 
 \section{Additional Figures}
 
-\begin{figure}[h]
+
+\begin{figure}[t!]
   \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_sensors.pdf}
-  \caption{Magnetosensor response (femtoteslas fT) averaged across words for the first subject. The color coding corresponds to the positions of the sensors on the head as shown on the top-left diagram. The diverging curves correspond to artifacts in the MEG data.}
-  \label{fig:megavg}
-\end{figure}
-
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues.pdf}
-  \caption{We apply a statistical t-test to measure if coefficients were significantly different from baseline value (at word onset, $t=0$ms).
-  We compute the negative logarithm of the p-value (\textit{higher is better}: nonzero effects are more easily detected). We plot the average across features, over time. Red: word length, blue: word frequency.
-  Full line: B2B, dashed line: Forward regression. We see that our method more easily detects the influence of causes of MEG response.}
-\end{figure}
-
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm]{figures/pvalues_vertical.pdf}
-  \caption{We show the average value and the standard deviation across subjects of the coefficients obtained with our method during the trials. the $\star$  symbol corresponds to statistically significant (t-test) nonzero values.}
-  \label{fig:ridgebaselineresult}
+  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_supp.pdf}
+  \caption{}
+  \label{fig:meg_supp}
 \end{figure}
 
 \end{document}

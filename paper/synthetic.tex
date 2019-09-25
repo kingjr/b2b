@@ -178,7 +178,7 @@ $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
     \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
 \text{LinearRegression}(X_{train} K, Y_{train} G_i)$\; $R_{k} =
 \text{corr}(X_{test} H_k, Y_{test} G_i)$\; $\Delta R_i = R_{full} - R_{k}$\; }
-\Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:cdp_fi}
+\Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:b2b_fi}
 \end{algorithm}
 
 \iffalse
