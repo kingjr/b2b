@@ -182,8 +182,8 @@ Then, the first regression is performed using $(X_1, Y_1)$, and the second regre
 %
 To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
 %
-To accelerate this ensembling procedure, we implemented an efficient leave-one-out cross-validation scheme as detailed in \citep{RifkinLippert2007} % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf
-, as follow:
+To accelerate this ensembling procedure, we implemented an efficient leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes} % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf
+, as follows:
 %
 
 \begin{equation}
@@ -194,10 +194,10 @@ where $\Sigma_X$ is the $X$ kernel matrix and where $G$ is computed with an eige
 \begin{equation}
   \begin{aligned}
   \Sigma_X = Q V Q^T \\
-  G = Q (V + \alpha*I)^{-1} Q^T\\
+  G = Q (V + \lambda*I)^{-1} Q^T\\
   \end{aligned}
 \end{equation}
-where $Q$, $V$ and $\alpha$ are the eigen vectors, eigen values and regularization, respectively.
+where $Q$, $V$ and $\lambda$ are the eigen vectors, eigen values and regularization, respectively.
 
 %
 % After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$.
@@ -312,16 +312,16 @@ We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the s
 
 \section{Related work}
 
-In the context of neuroimaging, the first regression of B2B relates to the first step of Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}. Indeed, RSA analyzes the similarity of brain responses associated with specific categorical conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new contexts and (2)
-it is fully supervised.
+B2B present multiple major advantages as compared to other
+B2B provides a single scalar values $\hat E$ tending towards 1
 
-% THIS NEEDS TO BE UPDATED: see de chevigner's latest paper
-More generally, B2B is related to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, CCA performs an additional eigenvector decomposition of what would be the $H$ coefficients in B2B \eqref{eq:solH}. Second, CCA does not typically optimize two distinct regularization parameters. Third, CCA does not use bagging between $G$ and $H$. Finally, CCA does not diagonalize nor binarize the $H$ matrix to estimate $\hat E$. More generally, CCA aims to find maximally correlated components between $X$ and $Y$, and does not assume any causal direction. By contrast, B2B assumes that $X$ causes $Y$. Together, these differences may explain why B2B can reliably outperform CCA on estimating causal influences and predicting $Y$ in novel environments (Fig. \ref{table:synthetic}).
+A variety of statistical methods applied to neuroimaging data have been proposed to clarify what is being represented in brain activity - i.e. what feature cause specifically cause brain activity. One of the popular method is Representational Similarity Analysis (RSA) \citep{kriegeskorte2008representational}, and consists in analyzing the similarity of brain responses associated with specific categorical conditions (e.g. distinct images), by (1) fitting one-against-all classifiers on each condition and (2) testing whether these classifiers can discriminate all other conditions. The resulting confusion matrix can then be analyzed in an unsupervised manner to reveal that some conditions lead to similar brain activity patterns. B2B differs from RSA in that (1) it uses regressions instead of classifications, and can thus generalize to new items and new contexts and (2) it is fully supervised.
+
+Furthermore, B2B closely relates to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, B2B is not symmetric between $X$ and $Y$: it aims to identify specific causal features by first optimizing over the decoders $G$ and then over $H$. By contrast, CCA is symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they project $X$ and $Y$ on maximally correlated dimensions. Second, CCA is based a eigenvector decomposition of $XH$ and $YG$ - the corresponding canonical components are thus mixing the $X$ features in way that limit interpretability. Third, CCA does not typically optimize two distinct regularization parameters. Finally, CCA does not use different data splits to estimate $G$ and $H$. Together, these differences may explain why B2B reliably outperform CCA on estimating causal influences (Fig. \ref{table:synthetic}). Extensions of CCA have been explored in neuroimaging (see \citep{de2019multiway} for brief review), but typically do not address the issue of causal detection.
 
 B2B is also related to, but different from usual causal discovery algorithms \citep{peters2017elements} that hypothesize on the direction of causality, or from measures of causal influence requiring time information \citep{granger1969investigating, janzing2013quantifying}.
 %
 B2B seems to have a similar flavour to half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the study of the precise link between these two models for future work.
-
 
 \section{Conclusion}
 \input{conclusion}
