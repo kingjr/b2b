@@ -238,11 +238,11 @@ The rest of this section provides a theoretical guarantee on the correctness of 
      %
      $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
-
+%
 \begin{proof}
   See Appendix \ref{appendix:theorem_proof}.
 \end{proof}
-
+%
 % \begin{proof}
 %
 %  Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
@@ -264,8 +264,11 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 %
 % But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
 % \end{proof}
-
-So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
+%
+\begin{equation}
+  \text{So, }\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top.
+\end{equation}
+% So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
 Assuming, without loss of generality, that the active features are the $k$ first, we have
 
