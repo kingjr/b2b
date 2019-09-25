@@ -130,7 +130,7 @@ word features respectively, are more reliably detected with B2B than with other 
     \label{fig:b2b}
 \end{figure}
 
-We consider the measurement of multivariate signal $Y$, generated from a set of variables $X$, via some unknown linear apparatus $F$.
+We consider the measurement of multivariate signal $Y$, generated from a set of putative causes $X$, via some unknown linear apparatus $F$.
 %
 Not all the variables in $X$ exert a causal influence on $Y$.
 %
@@ -144,12 +144,12 @@ In summary, the problem can be formalized as:
 %
 where $N$ is a centered, unobserved noise variable.
 %
-While the triplet of variables $X$ and $N$ are independent, we allow each of them to have a general covariance matrix.
+While the triplet of variables $X$ and $N$ are independent, we allow each of them to have any form of covariance.
 % what is a general covariance matrix?
 %
 In practice, we observe $n$ samples $(X, Y)$ from the model.
 %
-This process, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
+This problem space, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
@@ -176,7 +176,7 @@ where $\Lambda_X$ and $\Lambda_Y$ are two diagonal matrices of regularization pa
 
 Performing two regressions over the same data sample can result in overfitting, as spurious correlations in the data absorbed by the first regression will be leveraged by the second one.
 %
-To avoid this issue, we split our sample $(X, Y)$ at random into two subsets $(X_1, Y_1)$ and $(X_2, Y_2)$.
+To avoid this issue, we split our sample $(X, Y)$ into two splits $(X_1, Y_1)$ and $(X_2, Y_2)$.
 %
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
@@ -187,7 +187,7 @@ To accelerate this ensembling procedure, we implemented an efficient leave-one-o
 %
 
 \begin{equation}
-\hat{Y} = (\Sigma_X G Y - diag(\Sigma_X G) Y) / diag(I - \Sigma_X G)
+\hat{Y} = (\Sigma_X G Y - diag(\Sigma_X G) Y) \;/\; diag(I - \Sigma_X G) \qquad \text{(element-wise division)}
 \end{equation}
 
 where $\Sigma_X$ is the $X$ kernel matrix and where $G$ is computed with an eigen decomposition of $X$:
@@ -204,7 +204,7 @@ where $Q$, $V$ and $\lambda$ are the eigen vectors, eigen values and regularizat
 
 We summarize the B2B procedure in Algorithm~\ref{algorithm:b2br}.
 %
-The rest of this section provides a theoretical guarantee on the correctness of B2B, and an optional post-processing step to binarize the estimated causal influence matrix.
+The rest of this section provides a theoretical guarantee on the correctness of B2B.
 
 
 % JR: shall we update algorithm with LOO trick?
@@ -296,7 +296,7 @@ The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$
 
 \section{Experiments}
 
-We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography dataset.
+We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
 %
 We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the standard baselines \citep{sklearn}.
 
