@@ -238,11 +238,11 @@ The rest of this section provides a theoretical guarantee on the correctness of 
      %
      $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
-
+%
 \begin{proof}
   See Appendix \ref{appendix:theorem_proof}.
 \end{proof}
-
+%
 % \begin{proof}
 %
 %  Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
@@ -264,20 +264,35 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 %
 % But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
 % \end{proof}
-
-So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
+%
+\begin{equation}
+  \text{So, }\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top.
+\end{equation}
+% So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
 Assuming, without loss of generality, that the active features are the $k$ first, we have
 
-$X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & \Sigma_{X3}\end{array}\right)$, $N^\top N = \left(\begin{array}{lccl}\Sigma_{N1} & \Sigma_{N2} \\ \Sigma_{N2} & \Sigma_{N3}\end{array}\right)$ and
+% $$
+\begin{equation}
+  X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & \Sigma_{X3}\end{array}\right),\qquad\qquad N^\top N = \left(\begin{array}{lccl}\Sigma_{N1} & \Sigma_{N2} \\ \Sigma_{N2} & \Sigma_{N3}\end{array}\right),
+\end{equation}
+% $$
+% and
+\begin{equation}
+  \hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X2} \\0 & 0\end{array}\right),
+\end{equation}
+\begin{equation}
+  Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1}).
+\end{equation}
+%
+% $$
+% $$
+% $$
+% $$
+%
+In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Otherwise the $k$ first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$.
 
-$\hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X2} \\0 & 0\end{array}\right)$
-
-$Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1})$
-
-In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Else the k first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$.
-
-The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by k. On average, since $X$ and $N$ are not correlated by definition, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition numbers, and $\frac{Var(X)}{Var(X)+Var(N)}$ provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
+The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by $k$. On average, since $X$ and $N$ are not correlated by definition, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition number, and $\frac{Var(X)}{Var(X)+Var(N)}$ provides a good estimate of $\frac{1}{k}Tr(\hat H)$.
 
 \section{Experiments}
 
