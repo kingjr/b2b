@@ -75,30 +75,26 @@ features. In contrast, the Forward, Backward, CCA and PLS models lead to a
 loading vector $H_i$ per feature $i$ (or one vector $G^i$ for the backward
 model). To transform such vector into an estimated causal contribution $\hat E$,
 we take the sum of square coefficients:
-
-\begin{equation} \hat E_i = \sum_j {H^j_i}^2 \end{equation}
+% \begin{equation}
+  $\hat E_i = \sum_j {H^j_i}^2 $
+% \end{equation}
 
 To estimate whether models accurately identify causal factors, we compute the
 area-under-the-curve (AUC) across factors $AUC(E, \hat E)$.
 %\begin{equation} AUC = 1 - \sum_1^n (E_k - E_{k-1}) ( \hat{E}_k +
 %\hat{E}_{k-1}) / 2 \end{equation}
-
 The AUC allows evaluating the capacity of models at detecting the causal
 importance of factors when ground truth labels are available, as is the case in
 this setup.
 
-We report AUC results in Figures~\ref{fig:auc_plots}~(left) and ~\ref{fig:percondition}~(top), and compare favorably to all baselines.
+We report AUC results in Figures~\ref{fig:auc_plots}~(left) and ~\ref{fig:percondition}~(top, in Appendix), and compare favorably to all baselines.
 
-\begin{figure}[ht]
+\begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figures/AUC_R.png}
-  \vspace{-4ex}
-  \caption{Synthetic experiments. Distribution (over conditions) of differences in AUC (left) and Feature Importance $\Delta R$ (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
-  \vspace{2ex}
   \includegraphics[width=\linewidth]{figures/AUC_conditions}
   \includegraphics[width=\linewidth]{figures/R_conditions}
   \vspace{-4ex}
-  \caption{Synthetic experiments. Average AUC (top) and Feature Importance $\Delta R$ (bottom) metrics as a function of experimental conditions. Higher is better. \label{fig:percondition}}
+  \caption{Synthetic experiments. Average AUC (top) and Feature Importance $\Delta R$ (bottom) when varying experimental conditions individually. Higher is better. B2B compares favorably in all cases. \label{fig:percondition}}
 \end{figure}
 
 
@@ -115,25 +111,11 @@ improves the prediction of $Y$.
 %beyond what can be predicted from all other features $X_{-i}$.
 In our figures, $\Delta R$ is the average of $\Delta R_i$. A higher score means that for prediction, the model relies on individual features rather than combinations of features.
 
-For B2B, feature importance is assessed as follows:
+We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as there is no prediction.
 
-\begin{algorithm}[H]
-    %\SetAlgoLined
-    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
-\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
-\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
-$\Delta{R} \in \mathbb{D}^{d_x}$.} $H, G = \text{B2B}(X_{train}, Y_{train})$\;
-$R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
+% Feature importance can be computed similarly for the CCA, PLS and Forward baselines (see Appendix \ref{appendix:feature_importance}). For the Backward Model, feature importance cannot be assessed as there is no prediction.
 
-    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
-\text{LinearRegression}(X_{train} K, Y_{train} G_i)$\; $R_{k} =
-\text{corr}(X_{test} H_k, Y_{test} G_i)$\; $\Delta R_i = R_{full} - R_{k}$\; }
-\Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:b2b_fi}
-\end{algorithm}
-
-Feature importance can be computed similarly for the CCA, PLS and Forward baselines (see Appendix \ref{appendix:feature_importance}). For the Backward Model, feature importance cannot be assessed as there is no prediction.
-
-We show in Figures~\ref{fig:auc_plots} (right) and~\ref{fig:percondition} (bottom) that our method compares favorably to baselines.
+We show in Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in Appendix) that our method compares favorably to baselines.
 
 %
 % \iffalse
@@ -147,8 +129,7 @@ We show in Figures~\ref{fig:auc_plots} (right) and~\ref{fig:percondition} (botto
 %   \end{itemize}
 % \end{enumerate}
 % \fi
-
-For the Backward Model, feature importance cannot be assessed because there is no prediction.
+% For the Backward Model, feature importance cannot be assessed because there is no prediction.
 % We thus simply
 % report the model performance $R_i = corr(YG_i, X_i)$.
 
@@ -216,9 +197,9 @@ For the Backward Model, feature importance cannot be assessed because there is n
 % factors, is consistently larger in B2B as compared to the other models.}
 % \label{table:synthetic} \end{figure} \fi
 
-Figure~\ref{table:synthetic} summarizes the results for all experimental
-conditions, metrics, and methods.
-%
-B2B is the method obtaining best test errors, lowest false positive and false
-negative discovery about $E$, and overall the best AUC when it comes to
-detecting causal influences.
+% Figure~\ref{table:synthetic} summarizes the results for all experimental
+% conditions, metrics, and methods.
+% %
+% B2B is the method obtaining best test errors, lowest false positive and false
+% negative discovery about $E$, and overall the best AUC when it comes to
+% detecting causal influences.
