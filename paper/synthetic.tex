@@ -29,11 +29,10 @@ $\mathcal{N}(0, d_x^{-1})$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
 \times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$, and the
 factor $\text{snr} \in (0, \infty)$.
 
-To simulate a wide range of experimental conditions, we vary $d_x, d_y \in \{ 10, 15, 25, 39, 63, 100 \}$, $n_c \in \{ 1, 2, 6, 15, 39, 100 \}$,
-$\text{snr} \in \{ 0.001, 0.015, 0.25, 3.98, 63, 1000 \}$. We discard the cases where $n_c > d_x$. We limit $d_x, d_y$ to 100 in order to keep the running time under 2 hours for each condition.
+To simulate a wide range of experimental conditions, we sample 10 values in log-space for $d_x, d_y \in \left[ 10, 100 \right]$, $n_c \in \left[ 3, 63 \right]$,
+$\text{snr} \in \left[ 0.001, 10 \right]$. We discard the cases where $n_c > d_x$, limit $d_x, d_y$ to 100 to keep the running time under 2 hours for each condition, and average over 5 random seeds.
 %
-
-Each condition is simulated under $5$ different random seeds.
+% Each condition is simulated under $5$ different random seeds.
 
 We compare the performance of B2B against four competing methods, all
 implemented in scikit-learn \citep{scikit}:
@@ -88,14 +87,25 @@ The AUC allows evaluating the capacity of models at detecting the causal
 importance of factors when ground truth labels are available, as is the case in
 this setup.
 
-We report AUC results in Figure~\ref{fig:auc_plots}, and compare favorably to all baselines.
+We report AUC results in Figures~\ref{fig:auc_plots}~(left) and ~\ref{fig:percondition}~(top), and compare favorably to all baselines.
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.8\linewidth]{figures/AUC.png}
-  \caption{We show boxplots for the AUC metric obtained in our synthetic experiments. Higher is better. B2B compares favorably to baselines.}
-  \label{fig:auc_plots}
+  \includegraphics[width=\linewidth]{figures/AUC_R.png}
+  \vspace{-4ex}
+  \caption{Synthetic experiments. Distribution of differences in AUC (left) and Feature Importance (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
+  \vspace{2ex}
+  \includegraphics[width=\linewidth]{figures/AUC_conditions.png}
+  \includegraphics[width=\linewidth]{figures/R_conditions.png}
+  \vspace{-4ex}
+  \caption{Synthetic experiments. Average AUC (top) and Feature Importance R (bottom) metrics as a function of experimental conditions. Higher is better. \label{fig:percondition}}
 \end{figure}
+
+\begin{figure}
+  \centering
+  \label{}
+\end{figure}
+
 
 \subsection{Evaluating Causal Discovery with held-out prediction reliability}
 
@@ -250,10 +260,3 @@ conditions, metrics, and methods.
 B2B is the method obtaining best test errors, lowest false positive and false
 negative discovery about $E$, and overall the best AUC when it comes to
 detecting causal influences.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.7\linewidth]{figures/delta_b2b.png}
-  \caption{Boxplots "boxen" of feature importance values relative to B2B on synthetic experiments. Boxes below the dashed line mean B2B is better.}
-  \label{}
-\end{figure}
