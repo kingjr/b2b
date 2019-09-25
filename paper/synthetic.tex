@@ -93,12 +93,12 @@ We report AUC results in Figures~\ref{fig:auc_plots}~(left) and ~\ref{fig:percon
   \centering
   \includegraphics[width=\linewidth]{figures/AUC_R.png}
   \vspace{-4ex}
-  \caption{Synthetic experiments. Distribution of differences in AUC (left) and Feature Importance (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
+  \caption{Synthetic experiments. Distribution of differences in AUC (left) and Feature Importance $\Delta R$ (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
   \vspace{2ex}
-  \includegraphics[width=\linewidth]{figures/AUC_conditions.png}
-  \includegraphics[width=\linewidth]{figures/R_conditions.png}
+  \includegraphics[width=\linewidth]{figures/AUC_conditions}
+  \includegraphics[width=\linewidth]{figures/R_conditions}
   \vspace{-4ex}
-  \caption{Synthetic experiments. Average AUC (top) and Feature Importance R (bottom) metrics as a function of experimental conditions. Higher is better. \label{fig:percondition}}
+  \caption{Synthetic experiments. Average AUC (top) and Feature Importance $\Delta R$ (bottom) metrics as a function of experimental conditions. Higher is better. \label{fig:percondition}}
 \end{figure}
 
 \begin{figure}
@@ -113,10 +113,11 @@ In most cases, $E$ is not known and AUC can thus not be estimated.
 
 To address this issue, we assess the ability of each model to reliably predict
 independent and identically distributed data from $Y$, given all of the $X$
-features versus all but one feature: $X_k$ (i.e. 'knock-out X'). This procedure
+features versus all-but-one feature: $X_k$ (i.e. 'knock-out X'). This procedure
 results in two correlation metrics $R_{full}$ and $R_{knockout}$, whose
 difference $\Delta R=R_{full}-R_{knockout}$ indicates how much $X_i$ improves
-the prediction of $Y$ above and beyond what can be predicted from all other
+the prediction of $Y$% above and
+beyond what can be predicted from all other
 features $X_k$.
 
 For, the Forward Model, this feature importance is assessed as follow:
