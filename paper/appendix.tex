@@ -1,0 +1,48 @@
+\newpage
+\appendix
+\section{Appendix}
+\subsection{Feature importance}
+
+For the Forward Model, the feature importance is assessed as follows:
+
+\begin{algorithm}[H]
+    %\SetAlgoLined
+    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
+\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
+\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+$\Delta{R} \in \mathbb{D}^{d_x, d_y}$.} $H = \text{LinearRegression}(X_{train},
+Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test})$\;
+
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
+\text{LinearRegression}(X_{train} K, Y_{train})$\; $R_{k} = \text{corr}(X_{test}
+{H_k}, Y_{test})$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
+\caption{Forward feature importance.} \label{algorithm:fwd_fi} \end{algorithm}
+
+% \iffalse
+% \begin{enumerate}
+%   \item Fit $H$ given $X_{train}$ and $Y_{train}$
+%   \item For each feature $i$:
+%   \begin{itemize}
+%     \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
+%     \item Fit $H^i_k$ given $X_{train} K$ and $Y_{train}$
+%   \end{itemize}
+%   \end{enumerate}
+% \fi
+
+For the CCA and PLS models, the feature importance is assessed as follows:
+
+\begin{algorithm}[H]
+    %\SetAlgoLined
+    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
+\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
+\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+$\Delta{R} \in \mathbb{D}^{d_x, d_z}$.} $H, G = \text{CCA}(X_{train},
+Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
+
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k, G_k =
+\text{CCA}(X_{train} K, Y_{train})$\; $R_{k} = \text{corr}(X_{test} H_k,
+Y_{test} G_k)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
+\caption{CCA and PLS feature importance.} \label{algorithm:cdp_fi}
+\end{algorithm}
+
+For the Backward Model, feature importance cannot be assessed because there is no prediction.
