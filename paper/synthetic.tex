@@ -100,9 +100,7 @@ We report AUC results in Figures~\ref{fig:percondition}~(top) and ~\ref{fig:auc_
 
 \subsection{Evaluating Causal Discovery with held-out prediction reliability}
 
-In most cases, $E$ is not known and AUC can thus not be estimated.
-
-To address this issue, we assess the ability of each model to reliably predict
+In most cases, $E$ is not known and AUC can thus not be estimated. To address this issue, we assess the ability of each model to reliably predict
 independent and identically distributed data from $Y$, given all of the $X$
 features versus all-but-ones feature $X_{-i}$ (i.e. 'knock-out X'). This procedure
 results in two correlation metrics $R_{full}$ and $R_{knockout}$, whose
@@ -111,11 +109,11 @@ improves the prediction of $Y$.
 %beyond what can be predicted from all other features $X_{-i}$.
 In our figures, $\Delta R$ is the average of $\Delta R_i$. A higher score means that for prediction, the model relies on individual features rather than combinations of features.
 
-We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as there is no prediction.
+We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as the $X$ colinearity is never taken into account.
 
 % Feature importance can be computed similarly for the CCA, PLS and Forward baselines (see Appendix \ref{appendix:feature_importance}). For the Backward Model, feature importance cannot be assessed as there is no prediction.
 
-We show in Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in Appendix) that our method compares favorably to baselines.
+We show in Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in Appendix) that our method outperforms baselines.
 
 %
 % \iffalse
