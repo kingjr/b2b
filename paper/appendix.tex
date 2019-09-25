@@ -42,6 +42,22 @@ But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right
 \subsection{Feature importance}
 \label{appendix:feature_importance}
 
+For B2B, feature importance is assessed as follows:
+
+\begin{algorithm}[H]
+    %\SetAlgoLined
+    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
+\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
+\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+$\Delta{R} \in \mathbb{D}^{d_x}$.} $H, G = \text{B2B}(X_{train}, Y_{train})$\;
+$R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
+
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
+\text{LinearRegression}(X_{train} K, Y_{train} G_i)$\; $R_{k} =
+\text{corr}(X_{test} H_k, Y_{test} G_i)$\; $\Delta R_i = R_{full} - R_{k}$\; }
+\Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:b2b_fi}
+\end{algorithm}
+
 For the Forward Model, the feature importance is assessed as follows:
 
 \begin{algorithm}[H]
@@ -95,4 +111,11 @@ For the Backward Model, feature importance cannot be assessed because there is n
   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_supp.pdf}
   \caption{}
   \label{fig:meg_supp}
+\end{figure}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{figures/AUC_R.png}
+  \caption{Synthetic experiments. Distribution (over conditions) of differences in AUC (left) and Feature Importance $\Delta R$ (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
 \end{figure}
