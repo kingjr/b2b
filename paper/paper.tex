@@ -6,6 +6,7 @@
 \DeclareMathOperator*{\argmax}{argmax} % thin space, limits underneath in displays
 
 \newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
 
 \SetKwComment{Comment}{$\triangleright$\ }{}
 
@@ -236,27 +237,32 @@ The rest of this section provides a theoretical guarantee on the correctness of 
      %
      $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
+
 \begin{proof}
-
- Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
- \begin{align*}
-    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
-%                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2]\\
-                                                        &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
-     \label{eq:doublenorm}
-\end{align*}
-\begin{align*}
-    \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
-    &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
-%    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]\\
-    &= EF \hat G
-\end{align*}
-
-Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore,
- $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
-
-But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
+  See Appendix \ref{appendix:theorem_proof}.
 \end{proof}
+
+% \begin{proof}
+%
+%  Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
+%  \begin{align*}
+%     \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
+% %                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2]\\
+%                                                         &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
+%      \label{eq:doublenorm}
+% \end{align*}
+% \begin{align*}
+%     \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
+%     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
+% %    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]\\
+%     &= EF \hat G
+% \end{align*}
+%
+% Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore,
+%  $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
+%
+% But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
+% \end{proof}
 
 So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
