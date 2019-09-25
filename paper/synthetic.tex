@@ -35,7 +35,7 @@ $\text{snr} \in \left[ 0.001, 10 \right]$. We discard the cases where $n_c > d_x
 % Each condition is simulated under $5$ different random seeds.
 
 We compare the performance of B2B against four competing methods, all
-implemented in scikit-learn \citep{scikit}:
+implemented in scikit-learn \citep{sklearn}:
 %
 % To be updated
 
@@ -66,7 +66,7 @@ $X$ and $Y$ are maximally covarying in a latent $Z$ space:
 We employ $5$-fold cross-validation to select the optimal number of components
 for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regularization
 parameters fitted with the efficient leave-one-out procedure implemented in
-scikit-learn RidgeCV \citep{scikit}.
+scikit-learn RidgeCV \citep{sklearn}.
 
 \subsection{Evaluating Causal Discovery from models' coefficients}
 
