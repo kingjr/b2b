@@ -1,10 +1,215 @@
 import numpy as np
 from scipy import linalg
+from scipy.stats import pearsonr
 from sklearn.cross_decomposition import CCA as SkCCA
 from sklearn.cross_decomposition import PLSRegression as SkPLS
-from sklearn.base import clone
 from sklearn.model_selection import GridSearchCV
-from base import rn_score
+from sklearn.model_selection import ShuffleSplit
+from sklearn.metrics import r2_score
+from sklearn.base import BaseEstimator, RegressorMixin
+
+
+def r_score(X, Y, multioutput='uniform_average'):
+    """column-wise correlation coefficients"""
+
+    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
+    if X.ndim == 1:
+        X = X[:, None]
+    if Y.ndim == 1:
+        Y = Y[:, None]
+    assert len(X) >= 2
+    np.testing.assert_equal(X.shape, Y.shape)
+
+    R = np.zeros(X.shape[1])
+    for idx, (x, y) in enumerate(zip(X.T, Y.T)):
+        R[idx] = pearsonr(x, y)[0]
+
+    if multioutput == 'uniform_average':
+        R = R.mean()
+    elif multioutput == 'variance_weighted':
+        std = np.r_[X, Y].std(0)
+        R = np.average(R, weights=std)
+    return R
+
+
+def rn_score(X, Y, scoring='r', multioutput='uniform_average'):
+    assert scoring in ('r', 'r2')
+    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
+
+    if scoring == 'r':
+        return r_score(X, Y, multioutput=multioutput)
+
+    elif scoring == 'r2':
+        return r2_score(X, Y, multioutput=multioutput)
+
+
+class B2B(BaseEstimator, RegressorMixin):
+    def __init__(self, alphas=np.logspace(-4, 4, 20),
+                 independent_alphas=True, ensemble=None):
+        self.alphas = alphas
+        self.independent_alphas = independent_alphas
+        self.ensemble = ensemble
+
+    def fit(self, X, Y):
+
+        self.G_ = list()
+        self.H_ = list()
+
+        # Prepare ensembling
+        if self.ensemble is None:
+            ensemble = [(range(len(X)), range(len(X))), ]
+        else:
+            if isinstance(self.ensemble, int):
+                ensemble = ShuffleSplit(self.ensemble)
+            else:
+                ensemble = self.ensemble
+            ensemble = [split for split in ensemble.split(X)]
+
+        # Ensembling loop
+        for train, test in ensemble:
+
+            # Fit decoder
+            G, G_alpha, YG = ridge_cv(Y[train], X[train],
+                                      self.alphas,
+                                      self.independent_alphas)
+            self.G_.append(G)
+
+            if len(X[train]) != len(X):
+                YG = Y @ G.T
+
+            # Fit encoder
+            H, H_alpha, _ = ridge_cv(X[test], YG[test],
+                                     self.alphas,
+                                     self.independent_alphas)
+            self.H_.append(H)
+
+        # Aggregate ensembling
+        self.G_ = np.mean(self.G_, 0)
+        self.H_ = np.mean(self.H_, 0)
+        self.E_ = np.diag(self.H_)
+
+        return self
+
+    def fit_H(self, X, Y):
+
+        assert hasattr(self, 'G_')
+
+        YG = Y @ self.G_.T
+        # Fit encoder
+        self.H_, H_alpha, _ = ridge_cv(X, YG,
+                                       self.alphas,
+                                       self.independent_alphas)
+
+        # Aggregate ensembling
+        self.E_ = np.diag(self.H_)
+        return self
+
+    def score(self, X, Y, scoring='r', multioutput='raw'):
+        if multioutput != 'raw':
+            raise NotImplementedError
+        # Transform with decoder
+        YG = Y @ self.G_.T
+        # Make standard and knocked-out encoders predictions
+        XH = X @ self.H_.T
+        # Compute R for each column X
+        return rn_score(YG, XH, scoring=scoring, multioutput='raw')
+
+
+def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
+    """ Similar to sklearn RidgeCV but
+   (1) can optimize a different alpha for each column of Y
+   (2) return leave-one-out Y_hat
+   """
+    if isinstance(alphas, (float, int)):
+        alphas = np.array([alphas, ], np.float64)
+    if Y.ndim == 1:
+        Y = Y[:, None]
+    n, n_x = X.shape
+    n, n_y = Y.shape
+    # Decompose X
+    if Uv is None:
+        U, s, _ = linalg.svd(X, full_matrices=0)
+        v = s**2
+    else:
+        U, v = Uv
+    UY = U.T @ Y
+
+    # For each alpha, solve leave-one-out error coefs
+    cv_duals = np.zeros((len(alphas), n, n_y))
+    cv_errors = np.zeros((len(alphas), n, n_y))
+    for alpha_idx, alpha in enumerate(alphas):
+        # Solve
+        w = ((v + alpha) ** -1) - alpha ** -1
+        c = U @ np.diag(w) @ UY + alpha ** -1 * Y
+        cv_duals[alpha_idx] = c
+
+        # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
+        G_diag = (w * U ** 2).sum(axis=-1) + alpha ** -1
+        error = c / G_diag[:, np.newaxis]
+        cv_errors[alpha_idx] = error
+
+    # identify best alpha for each column of Y independently
+    if independent_alphas:
+        best_alphas = (cv_errors ** 2).mean(axis=1).argmin(axis=0)
+        duals = np.transpose([cv_duals[b, :, i]
+                              for i, b in enumerate(best_alphas)])
+        cv_errors = np.transpose([cv_errors[b, :, i]
+                                  for i, b in enumerate(best_alphas)])
+    else:
+        _cv_errors = cv_errors.reshape(len(alphas), -1)
+        best_alphas = (_cv_errors ** 2).mean(axis=1).argmin(axis=0)
+        duals = cv_duals[best_alphas]
+        cv_errors = cv_errors[best_alphas]
+
+    coefs = duals.T @ X
+    Y_hat = Y - cv_errors
+    return coefs, best_alphas, Y_hat
+
+
+class Forward():
+    def __init__(self, alphas=np.logspace(-4, 4, 20), independent_alphas=True):
+        self.alphas = alphas
+        self.independent_alphas = independent_alphas
+
+    def fit(self, X, Y):
+        # Fit encoder
+        self.H_, H_alpha, _ = ridge_cv(X, Y, self.alphas,
+                                       self.independent_alphas)
+
+        self.E_ = np.sum(self.H_**2, 0)
+        return self
+
+    def score(self, X, Y, scoring='r', multioutput='raw'):
+        # Make standard and knocked-out encoders predictions
+        XH = X @ self.H_.T
+        # Compute R for each column of Y
+        return rn_score(Y, XH, scoring=scoring, multioutput=multioutput)
+
+    def predict(self, X):
+        return X @ self.H_.T
+
+
+class Backward():
+    def __init__(self, alphas=np.logspace(-4, 4, 20), independent_alphas=True):
+        self.alphas = alphas
+        self.independent_alphas = independent_alphas
+
+    def fit(self, X, Y):
+        # Fit encoder
+        self.H_, H_alpha, _ = ridge_cv(Y, X, self.alphas,
+                                       self.independent_alphas)
+
+        self.E_ = np.sum(self.H_**2, 1)
+        return self
+
+    def score(self, X, Y, scoring='r', multioutput='raw'):
+        # Make standard and knocked-out encoders predictions
+        YH = Y @ self.H_.T
+        # Compute R for each column of Y
+        return rn_score(X, YH, scoring=scoring, multioutput=multioutput)
+
+    def predict(self, X):
+        return 0
 
 
 def canonical_correlation(model, X, Y, scoring, multioutput):
@@ -48,6 +253,7 @@ class CCA(SkCCA):
 
     def fit(self, X, Y):
         super().fit(X, Y)
+        self.E_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -68,6 +274,7 @@ class PLS(SkPLS):
 
     def fit(self, X, Y):
         super().fit(X, Y)
+        self.E_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -115,7 +322,7 @@ class RegCCA(CCA):
                                    reg=self.alpha, numCC=dz)
         self.x_rotations_[self.x_valid_] = comps[0]
         self.y_rotations_[self.y_valid_] = comps[1]
-
+        self.E_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def _compute_kcca(self, data, reg=0., numCC=None):
@@ -172,53 +379,6 @@ class RegCCA(CCA):
         for i in range(nDs):
             comp.append(Vs[sum(nFs[:i]):sum(nFs[:i + 1]), :numCC])
         return comp
-
-
-class CrossKnockout(object):
-    """Parent class to fit knockout cross decomposition model"""
-    def __init__(self, model):
-        self.model = model
-
-        m = model.estimator if isinstance(model, GridSearchCV) else model
-        assert isinstance(m, (CCA, PLS, RegCCA))
-
-    def fit(self, X, Y):
-        self.model.fit(X, Y)
-
-        if isinstance(self.model, GridSearchCV):
-            self.model_ = self.model.best_estimator_
-        else:
-            self.model_ = self.model
-
-        # fit_knockout
-        n_x = X.shape[1]
-        self.knockout_models_ = list()
-        for xi in np.arange(n_x):
-
-            knockout = np.diag(np.ones(n_x))
-            knockout[xi] = 0
-            ko_model = clone(self.model_).fit(X @ knockout, Y)
-            self.knockout_models_.append(ko_model)
-
-        self.E_ = np.sum(self.model_.x_rotations_**2, 1)
-        return self
-
-    def score(self, X, Y, scoring=None, multioutput=None):
-        return self.model_.score(X, Y, scoring, multioutput)
-
-    def score_knockout(self, X, Y, scoring=None, multioutput=None):
-        n_x = X.shape[1]
-
-        K_scores = list()
-        for xi, model in enumerate(self.knockout_models_):
-
-            knockout = np.diag(np.ones(n_x))
-            knockout[xi] = 0
-
-            R = model.score(X @ knockout, Y, scoring, multioutput)
-            K_scores.append(R)
-
-        return np.array(K_scores)
 
 
 if __name__ == '__main__':

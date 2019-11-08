@@ -2,8 +2,6 @@ import mne
 import numpy as np
 import os.path as op
 from sklearn.preprocessing import scale
-from sklearn.metrics import r2_score
-from scipy.stats import pearsonr
 from common import (add_part_of_speech, add_word_frequency, add_word_length,
                     read_log, get_log_times, data_path)
 
@@ -64,37 +62,3 @@ def fetch_data(log_file):
     features = scale(df[names].values)
 
     return meg, epochs.times, features, names, df.word
-
-
-def r_score(X, Y, multioutput='uniform_average'):
-    """column-wise correlation coefficients"""
-
-    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
-    if X.ndim == 1:
-        X = X[:, None]
-    if Y.ndim == 1:
-        Y = Y[:, None]
-    assert len(X) >= 2
-    np.testing.assert_equal(X.shape, Y.shape)
-
-    R = np.zeros(X.shape[1])
-    for idx, (x, y) in enumerate(zip(X.T, Y.T)):
-        R[idx] = pearsonr(x, y)[0]
-
-    if multioutput == 'uniform_average':
-        R = R.mean()
-    elif multioutput == 'variance_weighted':
-        std = np.r_[X, Y].std(0)
-        R = np.average(R, weights=std)
-    return R
-
-
-def rn_score(X, Y, scoring='r', multioutput='uniform_average'):
-    assert scoring in ('r', 'r2')
-    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
-
-    if scoring == 'r':
-        return r_score(X, Y, multioutput=multioutput)
-
-    elif scoring == 'r2':
-        return r2_score(X, Y, multioutput=multioutput)
