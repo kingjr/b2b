@@ -7,36 +7,79 @@
 
 Proof of the theorem in \ref{sec:theorem}:
 
-\begin{theorem*}[B2B consistency - general case]
 
-     Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centred and full rank noise.
-     %
-     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimize
-     %
-     $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
-\end{theorem*}
+\begin{theorem}[B2B consistency - general case]
 
+     Consider the B2B model from Equation $$Y = (XE + N)F$$ $N$ centred and full rank noise.
+
+     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimise
+
+     $$\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$$ and satisfy
+
+     $$E\hat H = \hat H$$
+\end{theorem}
 \begin{proof}
 
- Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
+ Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B.
+
+ Since $\hat G$ is the least square estimator of $X$ from $Y$
  \begin{align*}
-    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
-%                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2]\\
-                                                        &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
-     \label{eq:doublenorm}
+    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2]
 \end{align*}
+Replacing $Y$ by its model definition $Y = (XE+N)F$, we have
+ \begin{align*}
+    \hat G &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2] =\arg \min_G \mathbb{E}[\left \| X - XEFG + NFG \right\|^2]
+  \end{align*}
+  Since $N$ is centered and independent of $X$, we have
+  \begin{align}
+    	  \hat G &=  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
+     \label{eq:Gdoublenorm}
+\end{align}
+
+Samely, for $\hat H$, we have
 \begin{align*}
     \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
-%    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]\\
-    &= EF \hat G
-\end{align*}
+    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]
+ \end{align*}
+ a positive quantity which reaches a minimum (zero) for
+ \begin{align}
+    \hat H = EF \hat G
+    \label{eq:Hdoublenom}
+\end{align}
 
-Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore,
+Let us now prove that $EF\hat G = F\hat G$.
+
+Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger EF\hat G$, we have $FZ = FF^\dagger EF \hat G$
+
+Since $F$ is full rank on $Img(E)$, we have $FF^\dagger E =E$, and $FZ = EF\hat G$
+
+As $E$ is a binary diagonal matrix, it is an orthogonal projection and therefore a contraction, thus
+ $$ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$$ and
  $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
 
-But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
+But since $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, we also have
+$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2$$
+
+Summarizing the above,
+$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
+$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2$$
+$$\left \| NF\hat G\right \| ^2 =  \| NEF\hat G \| ^2$$
+
+$N$ being full rank, this yields $EF\hat G = F\Hat G$.
+
+Replacing into $\eqref{eq:Gdoublenorm}$, and setting $H = EFG$, we have
+\begin{align*}
+	\hat G &=  \arg \min_G  \left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 \\
+	&=   \arg \min_G \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 \\
+	\hat H &=  \arg \min_H \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2
+	\label{eq:4}
+\end{align*}
+
+Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagonal matrix, is involutive. This completes the proof.
 \end{proof}
+
+
 
 \newpage
 \subsection{Feature importance}
@@ -102,6 +145,16 @@ Y_{test} G_k)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 
 For the Backward Model, feature importance cannot be assessed because there is no prediction.
 
+\subsection{Binarizing $\hat{H}$ - the Sonquist-Morgan criterion}
+
+Back to back regression provides us with $Diag(\hat{H})$, a vector of real numbers that estimate the causal influence of features in $X$. In order to derive the true causal influence matrix $E$ , a binary matrix, we need to binarize  $\hat{H}$, i.e. test each feature for equality with zero. In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}. This test will not succeed here: $\hat{H}$ is obtained from a double regression with regularization, and will not follow the t-distribution.
+
+Instead, we treat the binarization of $\hat{H}$ as a clustering problem: separate the elements in the diagonal into a group of ``small values'', and a group of ``large values''. More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
+%
+Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{sonquist_morgan} \citep{kass75} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
+%
+To binarize $\hat{H}$, set to one all the $p$ diagonal entries belonging to the ``large values'' group in the decided split, and setting to zero the rest of the $d_x-p$ diagonal entries.
+
 
 \section{Additional Figures}
 
@@ -125,3 +178,5 @@ For the Backward Model, feature importance cannot be assessed because there is n
   \includegraphics[width=0.7\linewidth]{figures/duration}
   \caption{Wall-clock run-time for our method B2B and for the baselines. We see that B2B runs much faster than baselines. \label{fig:duration}}
 \end{figure}
+
+
