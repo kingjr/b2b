@@ -52,9 +52,9 @@ For B2B, feature importance is assessed as follows:
 $\Delta{R} \in \mathbb{D}^{d_x}$.} $H, G = \text{B2B}(X_{train}, Y_{train})$\;
 $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
 
-    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
-\text{LinearRegression}(X_{train} K, Y_{train} G_i)$\; $R_{k} =
-\text{corr}(X_{test} H_k, Y_{test} G_i)$\; $\Delta R_i = R_{full} - R_{k}$\; }
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\;
+    $R_{k} =
+\text{corr}(X_{test} K H, Y_{test} G_i)$\; $\Delta R_i = R_{full} - R_{k}$\; }
 \Return{$\Delta R$} \caption{B2B feature importance.} \label{algorithm:b2b_fi}
 \end{algorithm}
 
@@ -65,12 +65,13 @@ For the Forward Model, the feature importance is assessed as follows:
     \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
 \mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
 \in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
-$\Delta{R} \in \mathbb{D}^{d_x, d_y}$.} $H = \text{LinearRegression}(X_{train},
-Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test})$\;
+$\Delta{R} \in \mathbb{D}^{d_x, d_y}$.}
 
-    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k =
-\text{LinearRegression}(X_{train} K, Y_{train})$\; $R_{k} = \text{corr}(X_{test}
-{H_k}, Y_{test})$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
+$H = \text{LinearRegression}(X_{train}, Y_{train})\;
+R_{full} = \text{corr}(X_{test} K, Y_{test})$\;
+
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $R_{k} = \text{corr}(X_{test}
+K H, Y_{test})$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \caption{Forward feature importance.} \label{algorithm:fwd_fi} \end{algorithm}
 
 % \iffalse
@@ -94,9 +95,8 @@ For the CCA and PLS models, the feature importance is assessed as follows:
 $\Delta{R} \in \mathbb{D}^{d_x, d_z}$.} $H, G = \text{CCA}(X_{train},
 Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
 
-    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $H_k, G_k =
-\text{CCA}(X_{train} K, Y_{train})$\; $R_{k} = \text{corr}(X_{test} H_k,
-Y_{test} G_k)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
+    \For{$i = 1, \ldots, d_x$}{ $K = Id$\; $K[i] \leftarrow 0$\; $R_{k} = \text{corr}(X_{test} K H,
+Y_{test} G)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \caption{CCA and PLS feature importance.} \label{algorithm:cdp_fi}
 \end{algorithm}
 
@@ -106,22 +106,34 @@ For the Backward Model, feature importance cannot be assessed because there is n
 \section{Additional Figures}
 
 
-\begin{figure}[t!]
-  \centering
-  \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_supp.pdf}
-  \caption{Average $\Delta R$ for each $Y$ dimension (Forward model), canonical components (PLS and CCA) or feature (B2B) across subjects. Formally, Backward model cannot have a $\Delta R$ because it never unmixes the multiple $X$ features. In such cases, we thus simply report the decoding score.}
-  \label{fig:meg_supp}
-\end{figure}
+% \begin{figure}[t!]
+%   \centering
+%   \includegraphics[width=\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg_supp.pdf}
+%   \caption{Average $\Delta R$ for each $Y$ dimension (Forward model), canonical components (PLS and CCA) or feature (B2B) across subjects. Formally, Backward model cannot have a $\Delta R$ because it never unmixes the multiple $X$ features. In such cases, we thus simply report the decoding score.}
+%   \label{fig:meg_supp}
+% \end{figure}
 
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{figures/AUC_R.png}
-  \caption{Synthetic experiments. Distribution (over conditions) of differences in AUC (left) and Feature Importance $\Delta R$ (right) metrics between our method and the baselines. Mass under the dashed line corresponds to B2B outperforming the baseline. \label{fig:auc_plots}}
+  \includegraphics[width=\linewidth]{figures/delta_auc.pdf}
+  \caption{Synthetic experiments. Distribution (over conditions) of AUC (top) and Feature Importance $\Delta R$ (bottom) metrics between our method (y-axis) and the baselines (x-axis). Each dot is a distinct synthetic experiment. Dots below the diagonal indicates that B2B outperform the tested model. \label{fig:auc_plots}}
 \end{figure}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.7\linewidth]{figures/duration}
-  \caption{Wall-clock run-time for our method B2B and for the baselines. We see that B2B runs much faster than baselines. \label{fig:duration}}
+  \caption{Wall-clock run-time for our method B2B and for the baselines. Each dot is a distinct synthetic experiment. B2B runs much faster than cross-decomposition baselines. \label{fig:duration}}
+\end{figure}
+
+
+\subsection{Robustness on increasing number of factors}
+
+To test whether each of the methods robustly scale to an increasingly large number of potential causes $X$, we enhance the four ad-hoc features (word length, word frequency, word function, dummy variable) with another ten features. These additional features corresponds to the first dimensions of word embedding as provided by Spacy \citep{spacy2}. The results shown in Figure \ref{fig:embbeding}, show that the ad-hoc features remain unchanged (and are actually improved) in the B2B.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\linewidth]{figures/compare_embeddings.pdf}
+  \caption{Comparison of $\Delta R$ when the models are tested on four variables (top) and when the models are tested on an these four variables as well as another 10 word-embedding features (bottom). These results illustrate that, unlike Regularized CCA, B2B remains robust even when the number of tested factors increases.
+  \label{fig:embeddings}}
 \end{figure}
