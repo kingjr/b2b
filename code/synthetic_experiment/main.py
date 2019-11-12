@@ -22,47 +22,10 @@ models = {
 }
 
 
-def sonquist_morgan(x):
-    z = np.sort(x)
-    n = z.size
-    m1 = 0
-    m2 = np.sum(z)
-    mx = 0
-    best = -1
-    for i in range(n - 1):
-        m1 += z[i]
-        m2 -= z[i]
-        ind = (i + 1) * (n - i - 1) * (m1 / (i + 1) - m2 / (n - i - 1)) ** 2
-        if ind > mx:
-            mx = ind
-            best = z[i]
-    res = [0 for i in range(n)]
-    for i in range(n):
-        if x[i] > best:
-            res[i] = 1
-    return np.array(res)
-
-
 def nmse(y_pred, y_true):
     num = np.power(np.linalg.norm(y_pred - y_true), 2)
     den = np.power(np.linalg.norm(y_true), 2)
     return num / den
-
-
-def compute_false_positives(e_pred, e_true):
-    return np.mean(((e_pred == 1) * (e_true == 0) * 1.0))
-
-
-def compute_false_negatives(e_pred, e_true):
-    return np.mean(((e_pred == 0) * (e_true == 1) * 1.0))
-
-
-def response_at_active(e_pred, e_true):
-    return np.mean(e_pred[np.where(e_true == 1)[0]])
-
-
-def response_at_inactive(e_pred, e_true):
-    return np.mean(e_pred[np.where(e_true == 0)[0]])
 
 
 def run_experiment(args):
@@ -105,34 +68,12 @@ def run_experiment(args):
 
             # this is the binary mask E estimated by the model
             mask = model.solution()
-            binary_mask = sonquist_morgan(mask)
-
-            false_positives = compute_false_positives(binary_mask, mask_true)
-            false_negatives = compute_false_negatives(binary_mask, mask_true)
-
-            # fit a basic model on the selected causes
-            sel = np.nonzero(binary_mask)[0]
-
-            # end by fitting a model on the selected features
-            model = Ridge()
-            model.fit(x_tr[:, sel], y_tr)
-
-            error_in_mask = nmse(model.predict(x_te_in[:, sel]), y_te_in)
-            error_out_mask = nmse(model.predict(x_te_out[:, sel]), y_te_out)
-
+            
             result = dict(vars(args))
             result["model"] = m
             result["seed"] = seed
             result["result_error_in_all"] = error_in_all
             result["result_error_out_all"] = error_out_all
-            result["result_error_in_mask"] = error_in_mask
-            result["result_error_out_mask"] = error_out_mask
-            result["result_false_positives"] = false_positives
-            result["result_false_negatives"] = false_negatives
-            result["result_response_active"] = response_at_active(
-                mask, mask_true)
-            result["result_response_inactive"] = response_at_inactive(
-                mask, mask_true)
             result["result_auc"] = roc_auc_score(mask_true, mask)
             results.append(result)
 
