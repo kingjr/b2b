@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import linalg
+from copy import deepcopy
 from scipy.stats import pearsonr
 from sklearn.cross_decomposition import CCA as SkCCA
 from sklearn.cross_decomposition import PLSRegression as SkPLS
@@ -7,12 +8,18 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import ShuffleSplit
 from sklearn.metrics import r2_score
 from sklearn.base import BaseEstimator, RegressorMixin
+import warnings
+warnings.simplefilter("ignore")
+
+alphas = np.logspace(-4, 4, 20)
+components = np.linspace(0., 1., 20)
 
 
 def r_score(X, Y, multioutput='uniform_average'):
     """column-wise correlation coefficients"""
 
-    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
+    assert multioutput in ('raw', 'raw_values', 'uniform_average',
+                           'variance_weighted')
     if X.ndim == 1:
         X = X[:, None]
     if Y.ndim == 1:
@@ -34,7 +41,8 @@ def r_score(X, Y, multioutput='uniform_average'):
 
 def rn_score(X, Y, scoring='r', multioutput='uniform_average'):
     assert scoring in ('r', 'r2')
-    assert multioutput in ('raw', 'uniform_average', 'variance_weighted')
+    assert multioutput in ('raw', 'raw_values',
+                           'uniform_average', 'variance_weighted')
 
     if scoring == 'r':
         return r_score(X, Y, multioutput=multioutput)
@@ -44,11 +52,14 @@ def rn_score(X, Y, scoring='r', multioutput='uniform_average'):
 
 
 class B2B(BaseEstimator, RegressorMixin):
-    def __init__(self, alphas=np.logspace(-4, 4, 20),
-                 independent_alphas=True, ensemble=None):
+    def __init__(self, alphas=alphas,
+                 independent_alphas=True, ensemble=None,
+                 scoring='r'):
         self.alphas = alphas
         self.independent_alphas = independent_alphas
         self.ensemble = ensemble
+        self.scoring = scoring
+        self.__name__ = 'B2B'
 
     def fit(self, X, Y):
 
@@ -104,15 +115,16 @@ class B2B(BaseEstimator, RegressorMixin):
         self.E_ = np.diag(self.H_)
         return self
 
-    def score(self, X, Y, scoring='r', multioutput='raw'):
-        if multioutput != 'raw':
+    def score(self, X, Y, scoring=None, multioutput='raw_values'):
+        scoring = self.scoring if scoring is None else scoring
+        if multioutput != 'raw_values':
             raise NotImplementedError
         # Transform with decoder
         YG = Y @ self.G_.T
         # Make standard and knocked-out encoders predictions
         XH = X @ self.H_.T
         # Compute R for each column X
-        return rn_score(YG, XH, scoring=scoring, multioutput='raw')
+        return rn_score(YG, XH, scoring=scoring, multioutput='raw_values')
 
 
 def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
@@ -167,9 +179,13 @@ def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
 
 
 class Forward():
-    def __init__(self, alphas=np.logspace(-4, 4, 20), independent_alphas=True):
+    def __init__(self, alphas=alphas, independent_alphas=True,
+                 scoring='r', multioutput='uniform_average'):
         self.alphas = alphas
         self.independent_alphas = independent_alphas
+        self.scoring = scoring
+        self.multioutput = multioutput
+        self.__name__ = 'Forward'
 
     def fit(self, X, Y):
         # Fit encoder
@@ -179,7 +195,9 @@ class Forward():
         self.E_ = np.sum(self.H_**2, 0)
         return self
 
-    def score(self, X, Y, scoring='r', multioutput='raw'):
+    def score(self, X, Y, scoring=None, multioutput=None):
+        scoring = self.scoring if scoring is None else scoring
+        multioutput = self.multioutput if multioutput is None else multioutput
         # Make standard and knocked-out encoders predictions
         XH = X @ self.H_.T
         # Compute R for each column of Y
@@ -190,9 +208,12 @@ class Forward():
 
 
 class Backward():
-    def __init__(self, alphas=np.logspace(-4, 4, 20), independent_alphas=True):
+    def __init__(self, alphas=alphas, independent_alphas=True,
+                 scoring='r'):
         self.alphas = alphas
         self.independent_alphas = independent_alphas
+        self.scoring = scoring
+        self.__name__ = 'Backward'
 
     def fit(self, X, Y):
         # Fit encoder
@@ -202,7 +223,10 @@ class Backward():
         self.E_ = np.sum(self.H_**2, 1)
         return self
 
-    def score(self, X, Y, scoring='r', multioutput='raw'):
+    def score(self, X, Y, scoring=None, multioutput='raw_values'):
+        scoring = self.scoring if scoring is None else scoring
+        if multioutput != 'raw_values':
+            raise NotImplementedError
         # Make standard and knocked-out encoders predictions
         YH = Y @ self.H_.T
         # Compute R for each column of Y
@@ -242,17 +266,67 @@ def canonical_correlation(model, X, Y, scoring, multioutput):
     return rn_score(XA, YB, scoring=scoring, multioutput=multioutput)
 
 
-class CCA(SkCCA):
-    """overwrite scikit-learn CCA to get propper scoring function"""
+def validate_number_components(n, X, Y):
+    n_max = min(X.shape[1], Y.shape[1])
+    if n == -1:
+        n = n_max
+    elif n >= 0. and n < 1.:
+        n = int(np.floor(n_max * n))
+        n = 1 if n == 0 else n
 
-    def __init__(self, n_components=2,
+    assert n == int(n) and n > 0 and n <= n_max
+    return int(n)
+
+
+class GridPLS(BaseEstimator, RegressorMixin):
+    """Optimize n_components by minimizing Y_pred error"""
+    def __init__(self, n_components=components, cv=5,
                  scoring='r', multioutput='uniform_average', tol=1e-15):
+        self.n_components = n_components
+        self.cv = cv
         self.scoring = scoring
         self.multioutput = multioutput
-        super().__init__(n_components=n_components, tol=tol)
+        self.__name__ = 'GridPLS'
 
     def fit(self, X, Y):
-        super().fit(X, Y)
+
+        N = self.n_components
+        if not isinstance(N, (list, np.ndarray)):
+            N = [N, ]
+
+        components = np.unique([validate_number_components(n, X, Y)
+                                for n in N])
+        # Optimize n_components on Y prediction!
+        if len(components) > 1:
+            models = GridSearchCV(SkPLS(), dict(n_components=components))
+            best = models.fit(X, Y).best_estimator_
+            self.n_components_ = best.n_components
+
+            x_valid = range(X.shape[1])
+            y_valid = range(Y.shape[1])
+        else:
+            best = PLS(n_components=components[0],
+                       scoring=self.scoring,
+                       multioutput=self.multioutput)
+            best.fit(X, Y)
+            self.n_components_ = best.n_components_
+            x_valid = best.x_valid_
+            y_valid = best.y_valid_
+
+        self.x_mean_ = np.zeros(X.shape[1])
+        self.x_std_ = np.zeros(X.shape[1])
+        self.x_rotations_ = np.zeros((X.shape[1], self.n_components_))
+        self.y_mean_ = np.zeros(Y.shape[1])
+        self.y_std_ = np.zeros(Y.shape[1])
+        self.y_rotations_ = np.zeros((Y.shape[1], self.n_components_))
+
+        self.x_mean_[x_valid] = best.x_mean_
+        self.x_std_[x_valid] = best.x_std_
+        self.x_rotations_[x_valid, :] = best.x_rotations_
+        self.y_mean_[y_valid] = best.y_mean_
+        self.y_std_[y_valid] = best.y_std_
+        self.y_rotations_[y_valid, :] = best.y_rotations_
+
         self.E_ = np.sum(self.x_rotations_**2, 1)
         return self
 
@@ -263,21 +337,185 @@ class CCA(SkCCA):
                                      scoring, multioutput)
 
 
-class PLS(SkPLS):
-    """overwrite scikit-learn PLSRegression to get propper scoring function"""
-
-    def __init__(self, n_components=2,
+class GridCCA(BaseEstimator, RegressorMixin):
+    """Optimize n_components by minimizing Y_pred error"""
+    def __init__(self, n_components=components, cv=5,
                  scoring='r', multioutput='uniform_average', tol=1e-15):
+        self.n_components = n_components
+        self.cv = cv
         self.scoring = scoring
         self.multioutput = multioutput
-        super().__init__(n_components=n_components, tol=tol)
+        self.__name__ = 'GridCCA'
 
     def fit(self, X, Y):
-        super().fit(X, Y)
+
+        N = self.n_components
+        if not isinstance(N, (list, np.ndarray)):
+            N = [N, ]
+        components = np.unique([validate_number_components(n, X, Y)
+                                for n in N])
+        # Optimize n_components on Y prediction!
+        if len(components) > 1:
+            models = GridSearchCV(SkCCA(), dict(n_components=components))
+            best = models.fit(X, Y).best_estimator_
+            self.n_components_ = best.n_components
+            x_valid = range(X.shape[1])
+            y_valid = range(Y.shape[1])
+        else:
+            best = CCA(n_components=components[0],
+                       scoring=self.scoring,
+                       multioutput=self.multioutput)
+            best.fit(X, Y)
+            self.n_components_ = best.n_components_
+
+            x_valid = best.x_valid_
+            y_valid = best.y_valid_
+
+        self.x_mean_ = np.zeros(X.shape[1])
+        self.x_std_ = np.zeros(X.shape[1])
+        self.x_rotations_ = np.zeros((X.shape[1], self.n_components_))
+        self.y_mean_ = np.zeros(Y.shape[1])
+        self.y_std_ = np.zeros(Y.shape[1])
+        self.y_rotations_ = np.zeros((Y.shape[1], self.n_components_))
+
+        self.x_mean_[x_valid] = best.x_mean_
+        self.x_std_[x_valid] = best.x_std_
+        self.x_rotations_[x_valid, :] = best.x_rotations_
+        self.y_mean_[y_valid] = best.y_mean_
+        self.y_std_[y_valid] = best.y_std_
+        self.y_rotations_[y_valid, :] = best.y_rotations_
+
         self.E_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
+        scoring = self.scoring if scoring is None else scoring
+        multioutput = self.multioutput if multioutput is None else multioutput
+        return canonical_correlation(self, X, Y,
+                                     scoring, multioutput)
+
+
+class GridRegCCA(BaseEstimator, RegressorMixin):
+    def __init__(self, alphas=np.logspace(-4, 4., 20), cv=5,
+                 n_components=[-1, ],
+                 scoring='r', multioutput='uniform_average', tol=1e-15):
+        self.alphas = alphas
+        self.cv = cv
+        self.scoring = scoring
+        self.n_components = n_components
+        self.multioutput = multioutput
+        self.__name__ = 'GridRegCCA'
+
+    def fit(self, X, Y):
+
+        self.x_valid_ = np.where(X.std(0) > 0)[0]
+        self.y_valid_ = np.where(Y.std(0) > 0)[0]
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+
+        N = self.n_components
+        if not isinstance(N, (list, np.ndarray)):
+            N = [N, ]
+        components = np.unique([validate_number_components(n, X, Y)
+                                for n in N])
+        grid = {'alpha': self.alphas,
+                'n_components': components}
+
+        # Optimize n_components on Y prediction!
+        if np.prod(list(map(np.shape, grid.values()))) > 1:
+            models = GridSearchCV(RegCCA(scoring=self.scoring,
+                                         multioutput=self.multioutput),
+                                  grid)
+            best = models.fit(X, Y).best_estimator_
+        else:
+            best = RegCCA(alpha=grid['alpha'][0], n_components=components[0],
+                          scoring=self.scoring, multioutput=self.multioutput)
+            best.fit(X, Y)
+        self.n_components_ = best.n_components
+        self.alpha_ = best.alpha
+
+        self.x_mean_ = best.x_mean_
+        self.x_std_ = best.x_std_
+        self.x_rotations_ = best.x_rotations_
+        self.y_mean_ = best.y_mean_
+        self.y_std_ = best.y_std_
+        self.y_rotations_ = best.y_rotations_
+
+        self.E_ = np.sum(self.x_rotations_**2, 1)
+        return self
+
+    def score(self, X, Y, scoring=None, multioutput=None):
+
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+        scoring = self.scoring if scoring is None else scoring
+        multioutput = self.multioutput if multioutput is None else multioutput
+        return canonical_correlation(self, X, Y,
+                                     scoring, multioutput)
+
+
+class CCA(SkCCA):
+    """overwrite scikit-learn CCA to get scoring function in
+       canonical space"""
+
+    def __init__(self, n_components=-1,
+                 scoring='r', multioutput='uniform_average', tol=1e-15):
+        self.scoring = scoring
+        self.multioutput = multioutput
+        self.__name__ = 'CCA'
+        super().__init__(n_components=n_components, tol=tol)
+
+    def fit(self, X, Y):
+
+        self.x_valid_ = np.where(X.std(0) > 0)[0]
+        self.y_valid_ = np.where(Y.std(0) > 0)[0]
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+
+        N = self.n_components
+        self.n_components = validate_number_components(N, X, Y)
+        super().fit(X, Y)
+        self.n_components_ = self.n_components
+        self.n_components = N
+        self.E_ = np.sum(self.x_rotations_**2, 1)
+        return self
+
+    def score(self, X, Y, scoring=None, multioutput=None):
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+        scoring = self.scoring if scoring is None else scoring
+        multioutput = self.multioutput if multioutput is None else multioutput
+        return canonical_correlation(self, X, Y,
+                                     scoring, multioutput)
+
+
+class PLS(SkPLS):
+    """overwrite scikit-learn PLSRegression to get scoring function in
+       canonical space"""
+
+    def __init__(self, n_components=-1,
+                 scoring='r', multioutput='uniform_average', tol=1e-15):
+        self.scoring = scoring
+        self.multioutput = multioutput
+        self.__name__ = 'PLS'
+        super().__init__(n_components=n_components, tol=tol)
+
+    def fit(self, X, Y):
+        self.x_valid_ = np.where(X.std(0) > 0)[0]
+        self.y_valid_ = np.where(Y.std(0) > 0)[0]
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+        N = self.n_components
+        self.n_components = validate_number_components(N, X, Y)
+        super().fit(X, Y)
+        self.n_components_ = self.n_components
+        self.n_components = N
+        self.E_ = np.sum(self.x_rotations_**2, 1)
+        return self
+
+    def score(self, X, Y, scoring=None, multioutput=None):
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
         scoring = self.scoring if scoring is None else scoring
         multioutput = self.multioutput if multioutput is None else multioutput
         return canonical_correlation(self, X, Y,
@@ -295,8 +533,15 @@ class RegCCA(CCA):
         self.tol = tol
         self.scoring = scoring
         self.multioutput = multioutput
+        self.__name__ = 'RegCCA'
 
     def fit(self, X, Y):
+
+        self.x_valid_ = np.where(X.std(0) > 0)[0]
+        self.y_valid_ = np.where(Y.std(0) > 0)[0]
+        X = X[:, self.x_valid_]
+        Y = Y[:, self.y_valid_]
+
         # Set truncation
         dx, dy = X.shape[1], Y.shape[1]
         dz_max = min(dx, dy)
@@ -311,18 +556,17 @@ class RegCCA(CCA):
         self.y_std_ = Y.std(0)
         self.x_mean_ = X.mean(0)
         self.y_mean_ = Y.mean(0)
-        self.x_valid_ = self.x_std_ > 0
-        self.y_valid_ = self.y_std_ > 0
+
         X = (X - self.x_mean_) / self.x_std_
         Y = (Y - self.y_mean_) / self.y_std_
 
         # compute cca
-        comps = self._compute_kcca([X[:, self.x_valid_],
-                                    Y[:, self.y_valid_]],
+        comps = self._compute_kcca([X, Y],
                                    reg=self.alpha, numCC=dz)
-        self.x_rotations_[self.x_valid_] = comps[0]
-        self.y_rotations_[self.y_valid_] = comps[1]
+        self.x_rotations_ = comps[0]
+        self.y_rotations_ = comps[1]
         self.E_ = np.sum(self.x_rotations_**2, 1)
+
         return self
 
     def _compute_kcca(self, data, reg=0., numCC=None):
@@ -371,7 +615,12 @@ class RegCCA(CCA):
         RH = (RH + RH.T) / 2.
 
         maxCC = LH.shape[0]
-        r, Vs = linalg.eigh(LH, RH, eigvals=(maxCC - numCC, maxCC - 1))
+        try:
+            r, Vs = linalg.eigh(LH, RH, eigvals=(maxCC - numCC, maxCC - 1))
+        except linalg.LinAlgError:  # noqa
+            r = np.zeros(numCC)
+            Vs = np.zeros((sum(nFs), numCC))
+
         r[np.isnan(r)] = 0
         rindex = np.argsort(r)[::-1]
         comp = []
@@ -381,65 +630,128 @@ class RegCCA(CCA):
         return comp
 
 
+def score_knockout(model, X, Y, XY_train=None, scoring='r', fix_grid=True):
+    assert isinstance(model, (CCA, PLS, GridCCA, GridPLS, RegCCA,
+                              GridRegCCA, B2B, Forward, Backward))
+    assert len(X) == len(Y)
+    assert scoring in ('r', 'r2')
+    is_b2b = isinstance(model, B2B)
+    dim_x = X.shape[1]
+
+    # Compute standard scores
+    score_full = model.score(X, Y,
+                             scoring=scoring,
+                             multioutput='raw_values')
+    score_delta = np.zeros(dim_x)
+
+    # Compute knock out scores
+    for f in range(dim_x):
+
+        # Setup knockout matrix
+        knockout = np.eye(dim_x)
+        knockout[f] = 0
+
+        model_ = model
+        # refit the model
+        if XY_train is not None:
+            X_train, Y_train = XY_train
+            model_ = deepcopy(model)
+            if isinstance(model, (GridPLS, GridCCA, GridRegCCA)) and fix_grid:
+                n = model.n_components_
+                model_.n_components = -1 if n == X.shape[1] else n
+            if is_b2b:
+                model_.fit_H(X_train @ knockout, Y_train)
+            else:
+                model_.fit(X_train @ knockout, Y_train)
+
+        # Score
+        score_ko = model_.score(X @ knockout, Y,
+                                scoring=scoring,
+                                multioutput='raw_values')
+
+        # Aggregate predicted dimensions
+        if is_b2b:
+            score_delta[f] = score_full[f] - score_ko[f]
+        elif len(score_full) != len(score_ko):
+            print('Different dims!')
+            score_delta[f] = score_full.mean() - score_ko.mean()
+        else:
+            score_delta[f] = (score_full - score_ko).mean()
+
+    return score_delta
+
+
 if __name__ == '__main__':
 
+    X = np.zeros((10, 100))
+    Y = np.zeros((10, 200))
+    assert validate_number_components(0, X, Y) == 1
+    assert validate_number_components(1, X, Y) == 1
+    assert validate_number_components(.5, X, Y) == 50
+
     def make_data():
+        n = 1000
+        dx = 4
+        dy = 5
+        X = np.random.randn(n, dx)
+        E = np.eye(dx)
+        E[2:] = 0
+        N = np.random.randn(n, dx)
+        N2 = np.random.randn(n, dy) / 10.
+        F = np.random.randn(dx, dy)
+        Y = (X @ E + N) @ F + N2
 
-        # Initialize number of samples
-        n_samples = 1000
-
-        # Define two latent variables (number of samples x 1)
-        L1, L2 = np.random.randn(2, n_samples,)
-
-        # Define independent components for each dataset
-        # (number of observations x dataset dimensions)
-        indep1 = np.random.randn(n_samples, 4)
-        indep2 = np.random.randn(n_samples, 5)
-
-        # Create two datasets, with each dimension composed as
-        # a sum of 75% one of the latent variables and 25% independent comp
-        X = .25*indep1 + .75*np.vstack((L1, L2, L1, L2)).T
-        Y = .25*indep2 + .75*np.vstack((L1, L2, L1, L2, L1)).T
-
-        # Split each dataset into two halves: training set and test set
-        train = range(0, len(X), 2)
-        test = range(1, len(X), 2)
-
+        train, test = range(0, n, 2), range(1, n, 2)
         return X, Y, train, test
 
     X, Y, train, test = make_data()
 
+    models = (B2B, Forward, Backward, CCA, RegCCA, PLS,
+              GridCCA, GridPLS, GridRegCCA)
+    canonicals = (CCA, RegCCA, PLS, GridCCA, GridPLS, GridRegCCA)
+
     for scoring in ('r', 'r2'):
-        for mo in ('variance_weighted', 'uniform_average'):
+        for mo in ('uniform_average', 'variance_weighted'):
             params = dict(scoring=scoring, multioutput=mo)
-            models = dict(
-                cca2=CCA(2, **params), cca4=CCA(4, **params),
-                pls2=PLS(2, **params), pls4=PLS(4, **params),
-                regcca2=RegCCA(.001, n_components=2, **params),
-                regcca4=RegCCA(.001, n_components=4, **params),
-                regcca4_alpha1000=RegCCA(100., n_components=4, **params),
-                regcca2_alpha100=RegCCA(100., n_components=2, **params))
 
-            for name, model in models.items():
+            for model in models:
+                if model in (B2B, Backward):
+                    model = model(scoring=scoring)
+                else:
+                    model = model(scoring=scoring, multioutput=mo)
                 model.fit(X[train], Y[train])
-                print(scoring, mo, name, model.score(X[test], Y[test]))
+                assert len(model.E_) == X.shape[1]
+                score = model.score(X[test], Y[test], multioutput='raw_values')
 
-    # prepare grid search models
-    scoring, mo = 'r2', 'uniform_average'
-    scoring, mo = 'r', 'variance_weighted'
-    max_comp = min(X.shape[1], Y.shape[1])
-    comp_sweep = np.unique(np.floor(np.linspace(1, max_comp, 20)))
+                if isinstance(model, canonicals):
+                    assert len(score) == model.n_components_
+                elif isinstance(model, (B2B, Backward)):
+                    assert len(score) == X.shape[1]
+                elif isinstance(model, Forward):
+                    assert len(score) == Y.shape[1]
 
-    grid_cca = GridSearchCV(CCA(scoring=scoring, multioutput=mo),
-                            dict(n_components=comp_sweep.astype(int)),
-                            cv=5)
+                for fix_grid in (False, True):
+                    # assert np.mean(score) > .3
+                    score_delta = score_knockout(model, X[test], Y[test],
+                                                 scoring=scoring,
+                                                 fix_grid=fix_grid)
+                    assert len(score_delta) == X.shape[1]
+                    print(model.__name__, score_delta)
+                    score_delta = score_knockout(model, X[test], Y[test],
+                                                 (X[train], Y[train]),
+                                                 scoring=scoring,
+                                                 fix_grid=fix_grid)
+                    assert len(score_delta) == X.shape[1]
+                    print(model.__name__, score_delta)
 
-    grid_regcca = GridSearchCV(RegCCA(n_components=-1,
-                                      scoring=scoring, multioutput=mo),
-                               dict(alpha=np.logspace(-4, 4, 20)), cv=5)
-
-    models = dict(grid_cca=grid_cca, grid_regcca=grid_regcca)
-
-    for name, model in models.items():
-        model.fit(X[train], Y[train])
-        print(name, model.best_estimator_.score(X[test], Y[test]))
+    for model in canonicals:
+        for n_components in (-1, 1, 2):
+            if model in (CCA, RegCCA, PLS):
+                m = model(n_components)
+            else:
+                m = model([n_components, ])
+            m.fit(X[train], Y[train])
+            assert len(m.E_) == X.shape[1]
+            score = m.score(X[test], Y[test], multioutput='raw_values')
+            assert len(score) == m.n_components_
+            print(model.__name__, score_delta)
