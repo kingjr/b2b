@@ -284,7 +284,7 @@ In practical cases, non linearities and sampling error will add noise to the dia
 
 We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
 %
-We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the standard baselines \citep{sklearn}.
+We use scikit-learn's Partial Least Regression (PLS) and RidgeCV \citep{sklearn} as well as pyrcca' regularized canonical compnent analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
