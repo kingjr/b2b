@@ -6,31 +6,32 @@ prediction of independent and identically distributed data, as well as a method
 to recover causal factors.
 
 The data generating process for each experiment constructs $n=1000$ training examples
-according to the model $Y = (\text{snr} \cdot XE + N)F$, where $\text{snr}$ is a
+according to the model $Y = (\text{h} XE + N)F$, where $\text{h}$ is a
 scalar that modulates the signal-to-noise ratio.
 %
 Here,
 %\begin{itemize} \item $F \in \mathbb{R}^{d_x \times d_y}$ contains entries
-%drawn from $\mathcal{N}(0, d_x^{-1})$, \item $X \in \mathbb{R}^{n \times d_x}$
+%drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{n \times d_x}$
 %contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{n
 %\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $E \in
 %\mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
 %\item $\Sigma_X = AA^\top$, where $A \in \mathbb{R}^{d_x \times d_x}$ contains
-%entries drawn from $\mathcal{N}(0, d_x^{-1})$, \item $\Sigma_N = BB^\top$,
+%entries drawn from $\mathcal{N}(0, \sigma^2)$, \item $\Sigma_N = BB^\top$,
 %where $B \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from
-%$\mathcal{N}(0, d_x^{-1})$, \end{itemize}
+%$\mathcal{N}(0, \sigma^2)$, \end{itemize}
     $F \in \mathbb{R}^{d_x \times d_y}$ contains entries drawn from
-$\mathcal{N}(0, d_x^{-1})$, $X \in \mathbb{R}^{n \times d_x}$ contains rows
+$\mathcal{N}(0, \sigma^2)$ where $\sigma^2$ is inversely proportional to $d_x$,
+$X \in \mathbb{R}^{n \times d_x}$ contains rows
 drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{n \times d_x}$
 contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $E \in \mathbb{R}^{d_x
 \times d_x}$ is a binary diagonal matrix containing $n_c$ ones, $\Sigma_X =
 AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from
-$\mathcal{N}(0, d_x^{-1})$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
-\times d_x}$ contains entries drawn from $\mathcal{N}(0, d_x^{-1})$, and the
-factor $\text{snr} \in (0, \infty)$.
+$\mathcal{N}(0, \sigma^2)$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
+\times d_x}$ contains entries drawn from $\mathcal{N}(0, \sigma^2)$, and the
+factor $\text{h} \in \mathcal{R}_+$.
 
 To simulate a wide range of experimental conditions, we sample 10 values in log-space for $d_x, d_y \in \left[ 10, 100 \right]$, $n_c \in \left[ 3, 63 \right]$,
-$\text{snr} \in \left[ 0.001, 10 \right]$. We discard the cases where $n_c > d_x$, limit $d_x, d_y$ to 100 to keep the running time under 2 hours for each condition, and average over 5 random seeds.
+$\text{h} \in \left[ 0.001, 10 \right]$. We discard the cases where $n_c > d_x$, limit $d_x, d_y$ to 100 to keep the running time under 2 hours for each condition, and average over 5 random seeds.
 %
 % Each condition is simulated under $5$ different random seeds.
 
@@ -61,7 +62,7 @@ PLS finds $G\in\mathbb{R}^{d_z, d_y}$ and $H\in\mathbb{R}^{d_z, d_x}$
 s.t.
 $X$ and $Y$ are maximally covarying in a latent $Z$ space:
 % \begin{equation} maxcov(XH^T, YG^T) \end{equation}
-\begin{equation} G,H = \argmax_{G,H} cov(XH^T, YG^T) \end{equation}
+\begin{equation} G,H = \argmax_{G,H} \text{cov}(XH^T, YG^T) \end{equation}
 
 We employ $5$-fold cross-validation to select the optimal number of components
 for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regularization

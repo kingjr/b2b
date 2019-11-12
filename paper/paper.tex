@@ -81,7 +81,7 @@ word features respectively, are more reliably detected with B2B than with other 
     \newcommand\posX{3}
     \newcommand\posE{5}
     \newcommand\posN{7}
-    \newcommand\posF{9.5}
+    \newcommand\posF{10}
 
     \node[thick, draw=black, minimum height=3cm, minimum width=2cm, fill=yellow!10] (Y) at (\posY, 0){};
     \node[] (eq) at (1.5, 0){$=$};
@@ -102,7 +102,7 @@ word features respectively, are more reliably detected with B2B than with other 
 
     \node[] (plus) at (6, 0){$+$};
     \node[thick, draw=black, minimum height=3cm, minimum width=1cm, fill=blue!10] (N) at (\posN, 0){};
-    \node[thick, draw=black, minimum height=2cm, minimum width=1cm, fill=red!10] (F) at (\posF, 0){};
+    \node[thick, draw=black, minimum height=1cm, minimum width=2cm, fill=red!10] (F) at (\posF, 0){};
     \draw [thick] (2.25, -1.5) to [round left paren ] (2.25, 1.5);
     \draw [thick] (7.75, -1.5) to [round right paren ] (7.75, 1.5);
 
@@ -124,25 +124,26 @@ word features respectively, are more reliably detected with B2B than with other 
 
     \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
     \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
-    \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{Diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
+    \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
     \end{tikzpicture}
-    \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and ii) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
+    \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and 2) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
     \label{fig:b2b}
 \end{figure}
 
-We consider the measurement of multivariate signal $Y$, generated from a set of putative causes $X$, via some unknown linear apparatus $F$.
+We consider the measurement of multivariate signal $Y \in \mathbb{R}^{n \times d_y}$, generated from a set of putative causes $X \in \mathbb{R}^{n \times d_x}$, via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
 %
 Not all the variables in $X$ exert a causal influence on $Y$.
 %
-By considering a square binary diagonal matrix of \emph{causal influences} $E$, we denote by $XE$ the causal factors of $Y$.
+By considering a square binary diagonal matrix of \emph{causal influences} $E \in \mathbb{D}^{d_x \times d_x}$, we denote by $XE$ the causal factors of $Y$.
 %
 In summary, the problem can be formalized as:
 %
 \begin{equation}
-    Y = (XE + N)F,\label{eq:model}
+    y_i = (x_i E + n_i) F
+    \label{eq:model}
 \end{equation}
 %
-where $N$ is a centered, unobserved noise variable.
+where $i$ is a given sample, and $n$ is a centered, unobserved noise variable.
 %
 While the triplet of variables $X$ and $N$ are independent, we allow each of them to have any form of covariance.
 % what is a general covariance matrix?
@@ -153,7 +154,7 @@ This problem space, along with the sizes of all variables involved, is illustrat
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
-Note that the absence, in our model, of measurement noise over $Y$, is not restrictive, so long $F$ has full-rank (or over $Img(F)$, the subspace spanned by the columns of $F$). In fact, adding $M$ as measurement noise on $Y$, we have $$Y=(XE+N)F+M$$ On $Img(F)$, 
+Note that the absence, in our model, of measurement noise over $Y$, is not restrictive, so long $F$ has full-rank (or over $Img(F)$, the subspace spanned by the columns of $F$). In fact, adding $M$ as measurement noise on $Y$, we have $$Y=(XE+N)F+M$$ On $Img(F)$,
 rewriting $M = MF^{-1}F$, we have
 $$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
 
@@ -168,7 +169,7 @@ This backward regression recovers the correlations between $Y$ and each factor o
 %
 Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\hat X$.
 %
-The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{Diag}(\hat{H})$, is the desired estimate of the causal influence matrix $E$.
+The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{diag}(\hat{H})$, is the desired estimate of the causal influence matrix $E$.
 
 If using regularized least-squares, arguably the most commonly employed linear regression technique \citep{hoerl1959optimum, rifkin2007notes}, the solution of B2B has a closed form solution:
 \begin{align}
@@ -184,21 +185,21 @@ To avoid this issue, we split our sample $(X, Y)$ into two splits $(X_1, Y_1)$ a
 %
 Then, the first regression is performed using $(X_1, Y_1)$, and the second regression is performed using $(X_2, Y_2)$.
 %
-To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{efron1992bootstrap}.
+To compensate for the reduction in sample size caused by the split, B2B is repeated over many random splits, and the final estimate $\hat E$ of the causal influence matrix is the average over the estimates associated to each split \citep{breiman1996bagging}.
 %
 To accelerate this ensembling procedure, we implemented an efficient leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes} % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf
 , as follows:
 %
 
 \begin{equation}
-\hat{Y} = (\Sigma_X G Y - diag(\Sigma_X G) Y) \;/\; diag(I - \Sigma_X G) \qquad \text{(element-wise division)}
+\hat{Y} = (\Sigma_X G Y - \text{diag}(\Sigma_X G) Y) \;/\; \text{diag}(I - \Sigma_X G) \qquad \text{(element-wise division)}
 \end{equation}
 
 where $\Sigma_X$ is the $X$ kernel matrix and where $G$ is computed with an eigen decomposition of $X$:
 \begin{equation}
   \begin{aligned}
   \Sigma_X = Q V Q^T \\
-  G = Q (V + \lambda*I)^{-1} Q^T\\
+  G = Q (V + \lambda I)^{-1} Q^T\\
   \end{aligned}
 \end{equation}
 where $Q$, $V$ and $\lambda$ are the eigen vectors, eigen values and regularization, respectively.
@@ -222,7 +223,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
         $(X_1, Y_1), (X_2, Y_2) \leftarrow \text{SplitRowsInHalf}((X, Y))$\;
         $\hat{G} = \text{LinearRegression}(Y_1, X_1)$ \Comment*[r]{$\hat G = (Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1$}
         $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$ \Comment*[r]{$\hat H=(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2 \hat G$}
-        $\hat{E} \leftarrow \hat{E} + \text{Diag}(\hat{H})$\;
+        $\hat{E} \leftarrow \hat{E} + \text{diag}(\hat{H})$\;
     }
     $\hat{E} \leftarrow \hat{E} / m$\;
     $\hat{W} \leftarrow \text{LinearRegression}(X \hat{E}, Y)$\;
@@ -238,7 +239,7 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 
      Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centred and full rank noise.
      %
-     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimize
+     Let $Img(M)$ refers to the image of the matrix $M$. If $F$ and $X$ are full-rank on the $Img(E)$, then, the solution of B2B, $\hat H$, will minimize
      %
      $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
 \end{theorem}
@@ -253,7 +254,7 @@ Since  $E\hat H = \hat H$, we have
 \end{equation}
 % So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
-Assuming, without loss of generality, that the active features in $E$ are the $k$ first, and rewriting $X=(X_1,X_2)$ and $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have ($\Sigma_{A B}$ denoting the covariance of $A$ and $B$)
+Assuming, without loss of generality, that the active features in $E$ are the $k \in \mathbb{Z}: k \in [0, d_x]$ first features, and rewriting $X=(X_1,X_2)$ and $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have ($\Sigma_{A B}$ denoting the covariance of $A$ and $B$)
 
 % $$
 \begin{equation}
@@ -265,7 +266,7 @@ Assuming, without loss of generality, that the active features in $E$ are the $k
   \hat H = \left(\begin{array}{cc}(\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1} & (\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_2} \\0 & 0\end{array}\right),
 \end{equation}
 \begin{equation}
-  Diag_k (\hat H) = Diag((\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1}) = Diag((I+\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1})^{-1}).
+  \text{diag}_k (\hat H) = \text{diag}((\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1}) = \text{diag}((I+\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1})^{-1}).
 \end{equation}
 %
 % $$
@@ -273,11 +274,11 @@ Assuming, without loss of generality, that the active features in $E$ are the $k
 % $$
 % $$
 %
-In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $Diag_k(\hat H)=I$, and $$Diag(\hat H) = Diag(E)$$ 
-Otherwise the $k$ first diagonal elements of $\hat H$ are all positive (since we assume that $F$ has full rank over $Img(E)$, they cannot be zero), lower than $1$, and bounded by 
+In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(E)$$
+Otherwise the $k$ first diagonal elements of $\hat H$ are all positive (since we assume that $F$ has full rank over $Img(E)$, they cannot be zero), lower than $1$, and bounded by
 $$\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \text{ and }  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$.
 
-In practical cases, non linearities and sampling error will add noise to the diagonal elements of $\hat H$. To test diagonal elements for equality with zero, we note that the average value of the non-zero coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by $k$. Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means $\frac{Var(X)}{Var(X)+Var(N)}$ should provide a good estimate of $\frac{1}{k}Tr(\hat H)$. This can be used to test whether a feature of $X$ has causal influence. An alternative is the Sonquist-Morgan criterion presented in the appendix.
+In practical cases, non linearities and sampling error will add noise to the diagonal elements of $\hat H$. To test diagonal elements for equality with zero, we note that the average value of the non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$. Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means $\frac{Var(X)}{Var(X)+Var(N)}$ should provide a good estimate of $\frac{1}{k}Tr(\hat H)$. This can be used to test whether a feature of $X$ has causal influence. An alternative is the Sonquist-Morgan criterion presented in the appendix.
 
 \section{Experiments}
 
@@ -285,7 +286,7 @@ We perform two experiments to evaluate B2B: one on controlled synthetic data, an
 %
 We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the standard baselines \citep{sklearn}.
 
-\subsection{Synthetic data} 
+\subsection{Synthetic data}
 \label{sec:experiment_synthetic}
 
 \input{synthetic.tex}
@@ -303,7 +304,9 @@ A variety of other statistical methods applied to neuroimaging data have been pr
 
 Furthermore, B2B closely relates to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, B2B is not symmetric between $X$ and $Y$: it aims to identify specific causal features by first optimizing over the decoders $G$ and then over $H$. By contrast, CCA is symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they project $X$ and $Y$ on maximally correlated dimensions. Second, CCA is based an eigen decomposition of $XH$ and $YG$ - the corresponding canonical components are thus mixing the $X$ features in way that limit interpretability. Third, CCA does not typically optimize two distinct regularization parameters. Finally, CCA does not use different data splits to estimate $G$ and $H$. Together, these differences may explain why B2B reliably outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and \ref{fig:auc_plots}). Extensions of CCA have been explored in neuroimaging (see \citep{de2019multiway} for brief review), but typically do not address the issue of causal discovery.
 
-Finally, B2B is also related to, but different from causal discovery algorithms used outside the neuroimaging field. These methods are often nonlinear \citep{peters2017elements} and base their causal estimates on temporal delays \citep{granger1969investigating, janzing2013quantifying}. For example, B2B relates to tthe half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the extension of B2B to nonlinear time-series for future work.
+% I find a bit surprising to mention cauaslity literare in ML at the end. I would have expected this in the introduction to convince reviewer that know your stuff.
+
+Finally, B2B is also related to, but different from causal discovery algorithms used outside the neuroimaging field. These methods are often nonlinear \citep{peters2017elements} and base their causal estimates on temporal delays \citep{granger1969investigating, janzing2013quantifying}. For example, B2B relates to the half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the extension of B2B to nonlinear time-series for future work.
 
 
 \section{Conclusion}
