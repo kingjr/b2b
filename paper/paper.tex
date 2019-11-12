@@ -153,6 +153,10 @@ This problem space, along with the sizes of all variables involved, is illustrat
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
+Note that the absence, in our model, of measurement noise over $Y$, is not restrictive, so long $F$ has full-rank (or over $Img(F)$, the subspace spanned by the columns of $F$). In fact, adding $M$ as measurement noise on $Y$, we have $$Y=(XE+N)F+M$$ On $Img(F)$, 
+rewriting $M = MF^{-1}F$, we have
+$$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
+
 \subsection{Algorithm}
 
 
@@ -242,47 +246,26 @@ The rest of this section provides a theoretical guarantee on the correctness of 
 \begin{proof}
   See Appendix \ref{appendix:theorem_proof}.
 \end{proof}
-%
-% \begin{proof}
-%
-%  Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B, we have
-%  \begin{align*}
-%     \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2] &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2]\\
-% %                                                        &{}= \arg \min_G \mathbb{E}[\left \| X - XEFG\right\| ^2]  + \mathbb{E}[\left \| NFG\right \| ^2]\\
-%                                                         &{}= \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
-%      \label{eq:doublenorm}
-% \end{align*}
-% \begin{align*}
-%     \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
-%     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
-% %    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]\\
-%     &= EF \hat G
-% \end{align*}
-%
-% Let us prove that $EF\hat G = F\hat G$, that is, that the $d_x$ bottom rows of $F\hat G$ are zero. Let $Z=F^\dagger EF\hat G$. We have $FZ = FF^\dagger EF  \hat G= EF\hat G$ ($FF^\dagger E =E$ since $F$ is full rank on $Img(E)$). Since E is a contraction, we have $ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$. Therefore,
-%  $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
-%
-% But as $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, the above inequality is an equality, $Z=\hat G$ and $EF\hat G = F\Hat G$. Therefore, $\left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 = \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 = \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2$ is minimised by $\hat G$ and $\hat H$. Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$. This completes the proof.
-% \end{proof}
-%
+
+Since  $E\hat H = \hat H$, we have
 \begin{equation}
-  \text{So, }\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top.
+  \hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top.
 \end{equation}
 % So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
-Assuming, without loss of generality, that the active features are the $k$ first, we have
+Assuming, without loss of generality, that the active features in $E$ are the $k$ first, and rewriting $X=(X_1,X_2)$ and $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have ($\Sigma_{A B}$ denoting the covariance of $A$ and $B$)
 
 % $$
 \begin{equation}
-  X^\top X = \left(\begin{array}{lccl}\Sigma_{X1} & \Sigma_{X2} \\ \Sigma_{X2} & \Sigma_{X3}\end{array}\right),\qquad\qquad N^\top N = \left(\begin{array}{lccl}\Sigma_{N1} & \Sigma_{N2} \\ \Sigma_{N2} & \Sigma_{N3}\end{array}\right),
+  X^\top X = \left(\begin{array}{lccl}\Sigma_{X_1 X_1} & \Sigma_{X_1 X_2} \\ \Sigma_{X_1 X_2} & \Sigma_{X_2 X_2}\end{array}\right),\qquad\qquad N^\top N = \left(\begin{array}{lccl}\Sigma_{N_1 N_1} & \Sigma_{N_1 N_2} \\ \Sigma_{N_1 N_2} & \Sigma_{N_2 N_2}\end{array}\right),
 \end{equation}
 % $$
 % and
 \begin{equation}
-  \hat H = \left(\begin{array}{cc}(\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1} & (\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X2} \\0 & 0\end{array}\right),
+  \hat H = \left(\begin{array}{cc}(\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1} & (\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_2} \\0 & 0\end{array}\right),
 \end{equation}
 \begin{equation}
-  Diag_k (\hat H) = Diag((\Sigma_{X1}+\Sigma_{N1})^{-1}\Sigma_{X1}) = Diag((I+\Sigma_{X1}^{-1}\Sigma_{N1})^{-1}).
+  Diag_k (\hat H) = Diag((\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1}) = Diag((I+\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1})^{-1}).
 \end{equation}
 %
 % $$
@@ -290,9 +273,11 @@ Assuming, without loss of generality, that the active features are the $k$ first
 % $$
 % $$
 %
-In the absence of noise, we have $Diag(\hat H) = Diag(E)$. Otherwise the $k$ first diagonal elements of $\hat H$ are all positive, and bounded by $\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}}$ and $\frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$, where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X1}$ and $\Sigma_{N1}$.
+In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $Diag_k(\hat H)=I$, and $$Diag(\hat H) = Diag(E)$$ 
+Otherwise the $k$ first diagonal elements of $\hat H$ are all positive (since we assume that $F$ has full rank over $Img(E)$, they cannot be zero), lower than $1$, and bounded by 
+$$\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \text{ and }  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$.
 
-The average value of the coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by $k$. On average, since $X$ and $N$ are not correlated by definition, $\Sigma_{X1}^{-1}\Sigma_{N1}$ should have a low condition number, and $\frac{Var(X)}{Var(X)+Var(N)}$ provides a good estimate of $\frac{1}{k}Tr(\hat H)$.
+In practical cases, non linearities and sampling error will add noise to the diagonal elements of $\hat H$. To test diagonal elements for equality with zero, we note that the average value of the non-zero coefficients of $Diag(\hat H)$ is the trace of $\hat H$ divided by $k$. Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means $\frac{Var(X)}{Var(X)+Var(N)}$ should provide a good estimate of $\frac{1}{k}Tr(\hat H)$. This can be used to test whether a feature of $X$ has causal influence. An alternative is the Sonquist-Morgan criterion presented in the appendix.
 
 \section{Experiments}
 
@@ -300,7 +285,7 @@ We perform two experiments to evaluate B2B: one on controlled synthetic data, an
 %
 We use scikit-learn's CCA, PLS, and RidgeCV objects to compare B2B against the standard baselines \citep{sklearn}.
 
-\subsection{Synthetic data}
+\subsection{Synthetic data} 
 \label{sec:experiment_synthetic}
 
 \input{synthetic.tex}
