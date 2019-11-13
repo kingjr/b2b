@@ -149,7 +149,7 @@ For the Backward Model, feature importance cannot be assessed because there is n
 
 Back to back regression provides us with $Diag(\hat{H})$, a vector of real numbers that estimate the causal influence of features in $X$. In order to derive the true causal influence matrix $E$ , a binary matrix, we need to binarize  $\hat{H}$, i.e. test each feature for equality with zero. In regression analysis, the traditional approach to this problem employs a $t$-test to check whether the regression coefficients differ from zero \citep{student1908probable}. This test will not succeed here: $\hat{H}$ is obtained from a double regression with regularization, and will not follow the t-distribution.
 
-Instead, we treat the binarization of $\hat{H}$ as a clustering problem: separate the elements in the diagonal into a group of ``small values'', and a group of ``large values''. More specifically, we propose to maximize the ratio of inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
+Instead, we treat the binarization of $\hat{H}$ as a clustering problem: separate the elements in the diagonal into a group of ``small values'', and a group of ``large values''. More specifically, we propose to maximize the inter-group variance and to minimize the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
 %
 Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, we select the split maximizing the Sonquist-Morgan \citep{sonquist_morgan} \citep{kass75} criterion $\frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}$.
 %
