@@ -284,7 +284,7 @@ In practical cases, non linearities and sampling error will add noise to the dia
 
 We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
 %
-We use scikit-learn's Partial Least Regression (PLS) and RidgeCV \citep{sklearn} as well as pyrcca' regularized canonical compnent analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
+We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as pyrcca' regularized canonical compnent analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
@@ -305,8 +305,7 @@ A variety of other statistical methods applied to neuroimaging data have been pr
 Furthermore, B2B closely relates to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, B2B is not symmetric between $X$ and $Y$: it aims to identify specific causal features by first optimizing over the decoders $G$ and then over $H$. By contrast, CCA is symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they project $X$ and $Y$ on maximally correlated dimensions. Second, CCA is based an eigen decomposition of $XH$ and $YG$ - the corresponding canonical components are thus mixing the $X$ features in way that limit interpretability. Third, CCA does not typically optimize two distinct regularization parameters. Finally, CCA does not use different data splits to estimate $G$ and $H$. Together, these differences may explain why B2B reliably outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and \ref{fig:auc_plots}). Extensions of CCA have been explored in neuroimaging (see \citep{de2019multiway} for brief review), but typically do not address the issue of causal discovery.
 
 % I find a bit surprising to mention cauaslity literare in ML at the end. I would have expected this in the introduction to convince reviewer that know your stuff.
-
-Finally, B2B is also related to, but different from causal discovery algorithms used outside the neuroimaging field. These methods are often nonlinear \citep{peters2017elements} and base their causal estimates on temporal delays \citep{granger1969investigating, janzing2013quantifying}. For example, B2B relates to the half-sibling regression \citep{scholkopf2016modeling}, in the sense that we observe a large number of variables corrupted by the same source of noise; we leave the extension of B2B to nonlinear time-series for future work.
+CONCLUSION SENTENCE
 
 
 \section{Conclusion}
