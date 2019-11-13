@@ -82,6 +82,21 @@ Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagona
 
 
 \newpage
+\subsection{Modeling measurement noise}
+
+Equation \ref{eq:model} does not explicitly contain a measurement noise term. Yet, in moast experimental cases, the problem is best described as:
+\begin{equation}
+  Y = (XE+N)F+M
+  \label{eq:model_noisy_measure}
+\end{equation}
+  with $M\in \mathbb{R}^{n \times d_y}$.
+
+This equation is actually equivalent to Equation \ref{eq:model} given our hypotheses. Indeed, we can rewrite $M = MF^{-1}F$ over $Img(F)$, which leads to:
+$$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
+
+Consequently, assuming that $F$ is full rank on $Img(XE)$, B2B yields the same solutions to equations \ref{eq:model} and \ref{model_noisy_measure}.
+
+
 \subsection{Feature importance}
 \label{appendix:feature_importance}
 

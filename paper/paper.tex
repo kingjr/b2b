@@ -143,7 +143,7 @@ In summary, the problem can be formalized as:
     \label{eq:model}
 \end{equation}
 %
-where $i$ is a given sample, and $n$ is a centered, unobserved noise variable.
+where $i$ is a given sample, and $n_i$ is a sample-specific noise drawen from a centered distribution.
 %
 While the triplet of variables $X$ and $N$ are independent, we allow each of them to have any form of covariance.
 % what is a general covariance matrix?
@@ -153,11 +153,6 @@ In practice, we observe $n$ samples $(X, Y)$ from the model.
 This problem space, along with the sizes of all variables involved, is illustrated in Figure~\ref{fig:b2b}.
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
-
-Note that the absence, in our model, of measurement noise over $Y$, is not restrictive. Starting from a model with measurement noise $M$, $$Y=(XE+N)F+M$$ On $Img(F)$,
-we can rewrite $M = MF^{-1}F$, and we have
-$$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
-If $F$ has full rank, or in $Img(F)$, the two models are equivalent.
 
 \subsection{Algorithm}
 
@@ -278,14 +273,14 @@ Assuming, without loss of generality, that the active features in $E$ are the $k
 In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(E)$$
 Otherwise the $k$ first diagonal elements of $\hat H$ are all positive, since we assume that $F$ has full rank over $Img(E)$. In addition, they are bounded:
 $$\frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \leq \text{diag}_k(\hat{H})\leq  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$
-where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$. This allows us to recover $E$ by identifying the non-zero elements on the diagonal of $\hat{H}$. 
+where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$. This allows us to recover $E$ by identifying the non-zero elements on the diagonal of $\hat{H}$.
 
 In practical cases, non-linearities and sampling error will add noise to the diagonal elements of $\hat H$. We need to test whether diagonal elements are different from zero. The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$. $\mu$ can be estimated as follow :
 \begin{equation}
 $\mu = \frac{Var(X)}{Var(X)+Var(N)}$
 \end{equation}
 This provides a method to identify causal features
-%Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means  should provide a good estimate of $\frac{1}{k}Tr(\hat H)$. 
+%Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means  should provide a good estimate of $\frac{1}{k}Tr(\hat H)$.
 
 To test whether a feature of $X$ has causal influence. An alternative is the Sonquist-Morgan criterion presented in the appendix.
 
