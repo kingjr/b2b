@@ -273,13 +273,14 @@ Assuming, without loss of generality, that the active features in $E$ are the $k
 %
 In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(E)$$ Therefore, we recover $E$ from $\hat H$.
 
+
 Otherwise, with noise, the causal factors of $E$ correspond to the positive elements of $\test{diag}(\hatH)$. The methods to recover them are presented in Appendix XXXX$$$
 
 \section{Experiments}
 
 We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
 %
-We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as pyrcca' regularized canonical compnent analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
+We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as pyrcca's regularized canonical component analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
