@@ -282,7 +282,7 @@ where  $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote 
 
 In practical cases, non-linearities and sampling error will add noise to the diagonal elements of $\hat H$. We need to test whether diagonal elements are different from zero. The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$. $\mu$ can be estimated as follow :
 \begin{equation}
-$\mu = \frac{Var(X)}{Var(X)+Var(N)}$
+\mu = \frac{Var(X)}{Var(X)+Var(N)}
 \end{equation}
 This provides a method to identify causal features
 %Since $X$ and $N$ are not correlated, $\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1}$ should have a low condition number, which means  should provide a good estimate of $\frac{1}{k}Tr(\hat H)$. 
