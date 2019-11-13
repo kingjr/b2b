@@ -157,7 +157,7 @@ Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back 
 Note that the absence, in our model, of measurement noise over $Y$, is not restrictive. Starting from a model with measurement noise $M$, $$Y=(XE+N)F+M$$ On $Img(F)$,
 we can rewrite $M = MF^{-1}F$, and we have
 $$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
-If $F$ has full rank, or in $Img(F)$, the two models are equivalent. 
+If $F$ has full rank, or in $Img(F)$, the two models are equivalent.
 
 \subsection{Algorithm}
 
@@ -170,9 +170,9 @@ This backward regression recovers the correlations between $Y$ and each factor o
 %
 Second, we estimate the linear regression coefficients $\hat H$ from $X$ to $\hat X$.
 %
-The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{diag}(\hat{H})$, is the desired estimate of the causal influence matrix $E$.
+The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} = \text{diag}(\hat{H})$, is the desired estimate of the causal influence matrix $E$, as detailed in the \ref{appendix:theorem_proof}.
 
-If using regularized least-squares, arguably the most commonly employed linear regression technique \citep{hoerl1959optimum, rifkin2007notes}, the solution of B2B has a closed form solution:
+If using l2-regularized least-squares \citep{hoerl1959optimum, rifkin2007notes}, B2B has a closed form solution:
 \begin{align}
     \hat G &= (Y^\top Y + \Lambda_Y)^{-1} Y^\top X,\label{eq:solG}\\
     \hat H &=(X^\top X + \Lambda_X)^{-1} X^\top Y \hat G,\label{eq:solH}
