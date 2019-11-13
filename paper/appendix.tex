@@ -162,28 +162,30 @@ For the Backward Model, feature importance cannot be assessed because there is n
 
 \subsection{Recovering E}
 
-Three distinct thresholding rules can be used to binarize $\text{diag(\hat H)}$ and tbus explicitly recover causal features under noise. (In the MEG experiment, we implement the third one).
+In case of noise, B2B yields non binary $\hat E$. Three thresholding rules can be used to binarize its values thus explicitly recover causal features.
 
-First, given known signal-to-noise ratio, one can derive the bound above which a feature should considered to be causal. Indeed, Equation $\ref:diagk$ implies that the $k$ first diagonal elements of $\hat H$ are bounded:  % we assume that $F$ has full rank over $Img(E)$.
+First, given known signal-to-noise ratio,the threshold above which a feature should considered to be causal can be derived analytically. Indeed, Equation $\ref:diagk$ implies that the $k$ first diagonal elements of $\hat H$ are bounded:  % we assume that $F$ has full rank over $Img(E)$.
 
 $$0 \leq \frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \leq \text{diag}_k(\hat{H})\leq  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$
 where $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$.
 
-The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$. In practive $\mu$ can be estimated as :
+The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$, and can be computed as
 \begin{equation}
 \mu = \frac{Var(X)}{Var(X)+Var(N)}
 \end{equation}
 
-The decision threshold between causal and non-causal elements is thus a fraction $\mu$. This threshold is to be adjusted depending on the type I and type II risks.
+The decision threshold between causal and non-causal elements is thus a fraction $\mu$, whose proportion arbitrarily depends on the necessity to favor type I and type II errors. In practice, we cannot use this procedure for our MEG study, because signal-to-noise ratio is unknown.
 
-Second, $\text{diag{\hat H}}$ can be binarized with the Sonquist-Morgan criterion \citep{sonquist_morgan}, a clustering procedure separating small and large values. This procedure maximizes the ratio of inter-group variance ands minimizes the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values.
-%
-Letting $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, Sonquist-Morgan criterion maximizes \citep{sonquist_morgan} \citep{kass75}:
+Second, $\text{diag{\hat H}}$ can be binarized with the Sonquist-Morgan criterion \citep{sonquist_morgan}, a non-parametric clustering procedure separating small and large values in a given set. This procedure maximizes the ratio of inter-group variance while minimizing the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values. Let $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, Sonquist-Morgan criterion maximizes \citep{kass75}:
 \begin{equation}
   \frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}
 \end{equation}
+
+This procedure assumes that there exists at least one causal and at least one non-causal feature.
 %
-Finally, second-order statistics across multiple datasets can be used to identify the elements of $\text{diag}(\hat H)$ that are sgnificantly different from 0. This procedure is detailed in the methods.
+Third, second-order statistics across multiple datasets can be used to identify the elements of $\text{diag}(\hat H)$ that are sgnificantly different from 0. This procedure is detailed in the method section of our MEG experiment.
+
+Overall, these three procedure thus varies in their additional assumptions: i.e. (1) a known signal-to-noise ratio, (2) the existence of both causal and non-causal factors or (3) independent repetitions of the experiment.
 
 \section{Additional Figures}
 
