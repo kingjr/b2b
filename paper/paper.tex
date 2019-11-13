@@ -154,9 +154,10 @@ This problem space, along with the sizes of all variables involved, is illustrat
 %
 Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back Regression (B2B) is to estimate the matrix of causal influences $E$.
 
-Note that the absence, in our model, of measurement noise over $Y$, is not restrictive, so long $F$ has full-rank (or over $Img(F)$, the subspace spanned by the columns of $F$). In fact, adding $M$ as measurement noise on $Y$, we have $$Y=(XE+N)F+M$$ On $Img(F)$,
-rewriting $M = MF^{-1}F$, we have
+Note that the absence, in our model, of measurement noise over $Y$, is not restrictive. Starting from a model with measurement noise $M$, $$Y=(XE+N)F+M$$ On $Img(F)$,
+we can rewrite $M = MF^{-1}F$, and we have
 $$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
+If $F$ has full rank, the 
 
 \subsection{Algorithm}
 
@@ -305,7 +306,7 @@ A variety of other statistical methods applied to neuroimaging data have been pr
 Furthermore, B2B closely relates to CCA \citep{cca_hotelling}, but departs from it in four main aspects. First, B2B is not symmetric between $X$ and $Y$: it aims to identify specific causal features by first optimizing over the decoders $G$ and then over $H$. By contrast, CCA is symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they project $X$ and $Y$ on maximally correlated dimensions. Second, CCA is based an eigen decomposition of $XH$ and $YG$ - the corresponding canonical components are thus mixing the $X$ features in way that limit interpretability. Third, CCA does not typically optimize two distinct regularization parameters. Finally, CCA does not use different data splits to estimate $G$ and $H$. Together, these differences may explain why B2B reliably outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and \ref{fig:auc_plots}). Extensions of CCA have been explored in neuroimaging (see \citep{de2019multiway} for brief review), but typically do not address the issue of causal discovery.
 
 % I find a bit surprising to mention cauaslity literare in ML at the end. I would have expected this in the introduction to convince reviewer that know your stuff.
-CONCLUSION SENTENCE
+
 
 
 \section{Conclusion}
