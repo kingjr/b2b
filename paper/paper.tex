@@ -250,19 +250,20 @@ Since  $E\hat H = \hat H$, we have
 \end{equation}
 % So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
 
-Assuming, without loss of generality, that the active features in $E$ are the $k \in \mathbb{Z}: k \in [0, d_x]$ first features, and rewriting $X=(X_1,X_2)$ and $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have ($\Sigma_{A B}$ denoting the covariance of $A$ and $B$)
+Assuming, without loss of generality, that the active features in $E$ are the $k \in \mathbb{Z}: k \in [0, d_x]$ first features, and rewriting $X=(X_1,X_2)$ and $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have:
 
 % $$
 \begin{equation}
   X^\top X = \left(\begin{array}{lccl}\Sigma_{X_1 X_1} & \Sigma_{X_1 X_2} \\ \Sigma_{X_1 X_2} & \Sigma_{X_2 X_2}\end{array}\right),\qquad\qquad N^\top N = \left(\begin{array}{lccl}\Sigma_{N_1 N_1} & \Sigma_{N_1 N_2} \\ \Sigma_{N_1 N_2} & \Sigma_{N_2 N_2}\end{array}\right),
 \end{equation}
-% $$
+
+where $\Sigma_{A B}$ is the covariance of $A$ and $B$, and:
 % and
 \begin{equation}
-  \hat H = \left(\begin{array}{cc}(\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1} & (\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_2} \\0 & 0\end{array}\right),
+  \hat H = \left(\begin{array}{cc}(\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1} & (\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_2} \\0 & 0\end{array}\right)
 \end{equation}
 \begin{equation}
-  \text{diag}_k (\hat H) = \text{diag}((\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1}) = \text{diag}((I+\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1})^{-1}).
+  \text{diag}_k (\hat H) = \text{diag}((\Sigma_{X_1 X_1}+\Sigma_{N_1 N_1})^{-1}\Sigma_{X_1 X_1}) = \text{diag}((I+\Sigma_{X_1 X_1}^{-1}\Sigma_{N_1 N_1})^{-1})
   \label{eq:diagk}
 \end{equation}
 %
@@ -274,11 +275,11 @@ Assuming, without loss of generality, that the active features in $E$ are the $k
 In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so $\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(E)$$ Therefore, we recover $E$ from $\hat H$.
 
 
-Otherwise, with noise, the causal factors of $E$ correspond to the positive elements of $\test{diag}(\hatH)$. The methods to recover them are presented in Appendix XXXX$$$
+In the presence of noise, the causal factors of $E$ correspond to the positive elements of $\text{diag}(\hat H)$. The methods to recover them are presented in the Appendix \ref{recovering}.
 
 \section{Experiments}
 
-We perform two experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
+We perform two sets of experiments to evaluate B2B: one on controlled synthetic data, and a second one on a real, large-scale magneto-encephalography (MEG) dataset.
 %
 We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as pyrcca's regularized canonical component analysis (RegCCA, \citep{bilenko2016pyrcca}) objects to compare B2B against the standard baselines.
 
