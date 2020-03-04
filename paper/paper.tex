@@ -1,7 +1,7 @@
 \documentclass[preprint,12pt,3p]{elsarticle}
 
 \usepackage{lineno,hyperref}
-\modulolinenumbers[5]
+% \modulolinenumbers[5]
 
 \usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx, amsthm}
 \usepackage[ruled, linesnumbered]{algorithm2e}
@@ -41,7 +41,7 @@
 \begin{document}
 \begin{frontmatter}
 
-\title{Discriminating the Linear Influences of Collinear Factors \\from Multivariate Observations: the Back-to-Back Regression}
+\title{Discriminating the Influence of Correlated Factors \\from Multivariate Observations: the Back-to-Back Regression}
 
 \author[1,2]{Jean-Rémi King\corref{email}}
 \cortext[email]{corresponding author: jeanremi@fb.com}
@@ -55,23 +55,23 @@
 
 \begin{abstract}
 Identifying causes solely from observations can be particularly challenging when
-i) potential factors are difficult to manipulate individually and ii)
+i) potential factors are difficult to manipulate independently and ii)
 observations are multi-dimensional. To address this issue, we
 introduce ``Back-to-Back'' regression (B2B), a linear method designed to efficiently
-measure, from a set of collinear factors, those that most plausibly account for
+measure, from a set of correlated factors, those that most plausibly account for
 multidimensional observations. First, we prove the consistency of B2B, its links to
 other linear approaches, and show how it provides a robust, unbiased and
 interpretable scalar estimate for each factor.
 Second, we use a variety of simulated data to show that B2B outperforms
 least-squares regression and cross-decomposition techniques (e.g. canonical
 correlation analysis and partial least squares) on causal identification when
-both the factors and the observations are collinear.
+the factors and the observations are partially collinear.
 Finally, we apply B2B to magneto-encephalography of 102 subjects
 recorded during a reading task to test whether our method appropriately disentangles
-the respective contribution of word length and word frequency - two collinear
+the respective contribution of word length and word frequency - two correlated
 factors known to cause early and late brain responses respectively. The results
 show that these two factors are better disentangled with B2B than with
-other standard techniques. We finally discuss the limits of B2B.
+other standard techniques.
 \end{abstract}
 
 
@@ -308,7 +308,7 @@ objects to compare B2B against the standard baselines.
 \section{Related work}
 
 Forward and cross-decomposition models have been used to identify the causal
-contribution of collinear features onto multi-dimensional observations (e.g.
+contribution of correlated factors onto multi-dimensional observations (e.g.
 \citep{naselaris2011encoding}). These approaches typically lead to multiple
 coefficients for each features (i.e. one per dimension of $Y$ or one per
 component respectively). Furthermore, these coefficients can be difficult to
@@ -376,12 +376,16 @@ We obtained results consistent with prior work in neuroscience literature,
 confirming the reliability of B2B for real data analysis.
 %
 
-\clearpage
-\newpage
+\section{Acknowledgements}
+We are thankful to Gael Varoquaux and Alexandre Gramfort for the valuable
+feedback. This work was supported by ANR-17-EURE-0017 and the Fyssen Foundation
+to JRK.
+
 
 \bibliography{paper}
 
-
+\newpage
+\clearpage
 \section{Appendices}
 \input{appendix}
 

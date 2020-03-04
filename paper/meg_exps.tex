@@ -52,7 +52,7 @@ of the columns of $Y$ is normalized to have zero mean and unit variance.
 \subsubsection{Feature definition}
 
 We aim to identify the word features that cause a variation in brain responses.
-We consider four distinct but collinear features.
+We consider four distinct but linearly-correlated features.
 %
 First, 'Word Length' refers to the total number of letters. Word Length is
 expected to specifically cause a variation in the early evoked MEG responses
@@ -107,7 +107,7 @@ p-values are reported below.
 
 \subsubsection{Results}
 We compared the ability of Forward regression, Backward regression, CCA, PLS and
-B2B to estimate the causal contribution of four distinct but collinear features
+B2B to estimate the causal contribution of four distinct but linearly-correlated features
 on brain evoked responses to words.
 
 \begin{wrapfigure}{r}{.6\textwidth}
@@ -131,7 +131,7 @@ Length and Word Frequency, even though these features are known to specifically
 influence early and late MEG responses respectively \citep{kutas2011thirty}. In
 addition, the same decoding time course was observed for the dummy variable.
 These results illustrate that backward modeling cannot be used to estimate the
-causal contribution of collinear features.
+causal contribution of correlated features.
 
 We thus focus on the four remaining methods (i.e. Forward Regression, PLS, CCA,
 and B2B) and estimate their $\Delta R$ (i.e. the improvement of Y prediction

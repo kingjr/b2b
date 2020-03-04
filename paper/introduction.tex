@@ -2,7 +2,7 @@ Natural sciences are tasked to find, from a set of hypothetical factors, the
 minimal subset that suffices to reliably predict novel observations. This
 endeavor is impeded by two major challenges.
 
-First, causal and non-causal factors may be numerous and collinear.
+First, causal and non-causal factors may be numerous and partially correlated.
 % In physics,
 % for example, one may be challenged to identify whether fusion is caused by a
 % change in temperature or a change in pressure, as these two factors may, at
@@ -38,9 +38,9 @@ kriegeskorte2008representational}.
 
 Both \emph{forward} and \emph{backward} modeling have competing benefits and drawbacks.
 Specifically, forward modeling disentangles the independent contribution of
-collinear factors, but does not combine multidimensional observations. By
+correlated factors, but does not combine multidimensional observations. By
 contrast, backward modeling combines multiple observations, but does not
-disentangle collinear factors \citep{weichwald2015causal,
+disentangle factors that are linearly correlated \citep{weichwald2015causal,
 hebart2018deconstructing, king2018encoding}. To combine some of the benefits of forward
 and backward modeling, several authors have proposed to use cross-decomposition
 techniques such as Partial Least Squares (PLS) and Canonical Correlation
@@ -69,5 +69,5 @@ After detailing B2B method and proving its convergence
 state-of-the-art forward, backward and cross-decomposition techniques in
 disentangling causal factors (Section~\ref{sec:experiment_synthetic}). Finally,
 we apply B2B to a large neuroimaging dataset and reveal that distinct but
-collinear word features lead to distinguishable brain representations
+linearly-correlated word features lead to distinguishable brain representations
 (Section~\ref{sec:experiment_real}).

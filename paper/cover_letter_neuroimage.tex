@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper,roman]{moderncv}        % possible options include font size ('10pt', '11pt' and '12pt'), paper size ('a4paper', 'letterpaper', 'a5paper', 'legalpaper', 'executivepaper' and 'landscape') and font family ('sans' and 'roman')
+\usepackage[english,en-lcroman]{babel}
+
+% moderncv themes
+\moderncvstyle{classic}                            % style options are 'casual' (default), 'classic', 'oldstyle' and 'banking'
+\moderncvcolor{green}                              % color options 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+%\renewcommand{\familydefault}{\sfdefault}         % to set the default font; use '\sfdefault' for the default sans serif font, '\rmdefault' for the default roman one, or any tex font name
+%\nopagenumbers{}                                  % uncomment to suppress automatic page numbering for CVs longer than one page
+
+% character encoding
+\usepackage[utf8]{inputenc}                       % if you are not using xelatex ou lualatex, replace by the encoding you are using
+
+% adjust the page margins
+\usepackage[scale=0.75]{geometry}
+%\setlength{\hintscolumnwidth}{3cm}                % if you want to change the width of the column with the dates
+%\setlength{\makecvtitlenamewidth}{10cm}           % for the 'classic' style, if you want to force the width allocated to your name and avoid line breaks. be careful though, the length is normally calculated to avoid any overlap with your personal info; use this at your own typographical risks...
+
+% personal data
+\name{Jean-Rémi}{King}
+\extrainfo{École Normale Supérieure, PSL University}
+\extrainfo{Facebook AI}
+%\title{Resumé title}                               % optional, remove / comment the line if not wanted
+% \address{29 rue d'Ulm, 75005}{Paris}                % optional, remove / comment the line if not wanted; the "postcode city" and and "country" arguments can be omitted or provided empty
+% \phone[mobile]{+33 6 64 25 56 54}                   % optional, remove / comment the line if not wanted
+\email{jeanremi@fb.com}                               % optional, remove / comment the line if not wanted
+
+\begin{document}
+% \recipient{Destinatario}{Departamento, Empresa}
+\date{\today}
+\opening{Dear Editor,}
+\closing{Thank you for your consideration,}
+\makelettertitle
+
+I am pleased to submit our latest work entitled “Discriminating the Influence of
+Correlated Factors from Multivariate Observations: the Back-to-Back Regression”
+to \emph{Neuroimage}.
+
+The past years have been marked by an ongoing debate about the benefits and
+drawbacks of decoding and encoding methods in neuroimaging.
+
+\emph{Encoding} has been shown to disentangle the contribution of correlated factors
+onto brain activity (e.g. Weichwald et al Neuroimage 2015, Nasarelis et al Neuroimage 2011)
+and is thus the gold standard method for neuroscientific investigation.
+
+Nonetheless, \emph{decoding} has become increasingly popular since its introduction in
+the mid 2000s (e.g. Kamitani and Tong Nature Neuroscience 2005), even though it
+is not valid when the decoded features are correlated: e.g. one may decode the
+category of a stimulus because of its contrast, even if contrast but not
+category modulates brain activity.
+
+Why, then, is decoding so popular? Presumably because, unlike encoding, it
+efficiently combines multiple measurements (e.g. voxels of M/EEG sensors) and
+allows the detection of weak effects corrupted by strong but structured noise (e.g. movement,
+eye blinks etc).
+
+Here, we introduce “back-to-back” regression (B2B), a linear model that combines the
+benefits of decoding and encoding approaches. We show with i) a proof, ii)
+synthetic data and iii) magnetoencephalography data that our method reliably provides a single,
+unbiased, unidimensional coefficient for each factor. This coefficient fluctuates
+around 0 if the factor is not causal, and tends towards 1 if it is.
+
+An earlier version of this work was reviewed for ICLR on the
+OpenReview platform: https://openreview.net/forum?id=B1lKDlHtwS. As you can see
+there, the method was considered new and valid. However, the paper was
+ultimately rejected because its applicability was only demonstrated for
+neuroimaging.
+
+Overall, we thus believe that this method will help resolve the existing tension
+between encoding and decoding in neuroimaging and will provide a reliable means
+to discriminate causal from non-causal features.
+
+
+\vspace{0.5cm}
+
+
+\makeletterclosing
+
+\end{document}
