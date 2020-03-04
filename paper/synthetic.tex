@@ -64,7 +64,7 @@ $X$ and $Y$ are maximally covarying in a latent $Z$ space:
 % \begin{equation} maxcov(XH^T, YG^T) \end{equation}
 \begin{equation} G_{pls},H_{pls} = \argmax_{G,H} \text{cov}(XH^T, YG^T) \end{equation}
 
-We employ $5$-fold cross-validation to select the optimal number of components
+We employ five-fold cross-validation to select the optimal number of components
 for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regularization
 parameters fitted with the efficient leave-one-out procedure implemented in
 scikit-learn RidgeCV \citep{sklearn}.
@@ -110,7 +110,7 @@ improves the prediction of $Y$.
 %beyond what can be predicted from all other features $X_{-i}$.
 In our figures, $\Delta R$ is the average of $\Delta R_i$. A higher score means that for prediction, the model relies on individual features rather than combinations of features.
 
-We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as the $X$ colinearity is never taken into account.
+We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as the $X$ collinearity is never taken into account.
 
 % Feature importance can be computed similarly for the CCA, PLS and Forward baselines (see Appendix \ref{appendix:feature_importance}). For the Backward Model, feature importance cannot be assessed as there is no prediction.
 

@@ -1,12 +1,13 @@
-\documentclass{article}
+\documentclass[preprint,12pt,3p]{elsarticle}
 
-\usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx, hyperref, amsthm}
+\usepackage{lineno,hyperref}
+\modulolinenumbers[5]
+
+\usepackage{amsmath, amsfonts, microtype, xcolor, tikz, graphicx, amsthm}
 \usepackage[ruled, linesnumbered]{algorithm2e}
 \usepackage{times,wrapfig}
-\usepackage{authblk}
-\usepackage{apacite}
-\usepackage{natbib}
-\usepackage{biblatex}
+\usepackage{cleveref}
+
 
 \DeclareMathOperator*{\argmax}{argmax} % thin space, limits underneath in displays
 
@@ -31,55 +32,62 @@
 \tikzset{round left paren/.style={ncbar=0.5cm,out=110,in=-110}}
 \tikzset{round right paren/.style={ncbar=0.5cm,out=70,in=-70}}
 
-\title{Discriminating causes \\from multivariate observations:\\the back-to-back regression}
 
+\journal{Neuroimage}
 
-\author[1, 2]{Jean-Rémi King}
+% \bibliographystyle{elsarticle-num}
+\bibliographystyle{plain}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{Discriminating the Linear Influences of Collinear Factors \\from Multivariate Observations: the Back-to-Back Regression}
+
+\author[1,2]{Jean-Rémi King\corref{email}}
+\cortext[email]{corresponding author: jeanremi@fb.com}
+
 \author[2]{Fran\c{c}ois Charton}
 \author[2]{David Lopez-Paz}
 \author[2]{Maxime Oquab}
-\affil[1]{Laboratoire des systèmes perceptifs, PSL University, CNRS}
-\affil[2]{Facebook AI}
-\date{}
+\address[1]{Laboratoire des systèmes perceptifs, PSL University, CNRS}
+\address[2]{Facebook AI}
 
-% \author{%
-%   Jean-Rémi King\\
-%   CNRS\\
-%   \texttt{jeanremi.king@gmail.com} \\
-%   \And
-%   Fran\c{c}ois Charton\\
-%   Facebook AI\\
-%   \texttt{fcharton@fb.com}\\
-%   \And
-%   David Lopez-Paz\\
-%   Facebook AI\\
-%   \texttt{dlp@fb.com}
-%   \And
-%   Maxime Oquab\\
-%   Facebook AI\\
-%   \texttt{qas@fb.com}
-% }
-
-\begin{document}
-
-\maketitle
 
 \begin{abstract}
 Identifying causes solely from observations can be particularly challenging when
 i) potential factors are difficult to manipulate individually and ii)
-observations are complex and multi-dimensional. To address this issue, we
-introduce ``Back-to-Back'' regression (B2B), a method designed to efficiently
-measure, from a set of colinear factors, those that most plausibly account for
-multidimensional observations. After proving the consistency of B2B and its
-links to other linear approaches, we show that our method outperforms
+observations are multi-dimensional. To address this issue, we
+introduce ``Back-to-Back'' regression (B2B), a linear method designed to efficiently
+measure, from a set of collinear factors, those that most plausibly account for
+multidimensional observations. First, we prove the consistency of B2B, its links to
+other linear approaches, and show how it provides a robust, unbiased and
+interpretable scalar estimate for each factor.
+Second, we use a variety of simulated data to show that B2B outperforms
 least-squares regression and cross-decomposition techniques (e.g. canonical
-correlation analysis and partial least squares) on causal identification.
-Finally, we apply B2B to neuroimaging recordings of 102 subjects reading word
-sequences. The results show that the early and late brain representations,
-caused by low- and high-level word features respectively, are more reliably
-detected with B2B than with other standard techniques.
-
+correlation analysis and partial least squares) on causal identification when
+both the factors and the observations are collinear.
+Finally, we apply B2B to magneto-encephalography of 102 subjects
+recorded during a reading task to test whether our method appropriately disentangles
+the respective contribution of word length and word frequency - two collinear
+factors known to cause early and late brain responses respectively. The results
+show that these two factors are better disentangled with B2B than with
+other standard techniques. We finally discuss the limits of B2B.
 \end{abstract}
+
+
+\begin{keyword}
+  Cross-Decomposition \sep
+  Feature Discovery \sep
+  Magnetoencephalography \sep
+  Decoding \sep
+  Encoding \sep
+  Reading \sep
+  N400
+\end{keyword}
+
+\end{frontmatter}
+
+\linenumbers
 
 \section{Introduction}
 
@@ -88,11 +96,14 @@ detected with B2B than with other standard techniques.
 \section{Back-to-Back regression}
 \label{sec:algorithm}
 
-\include{fig_problem.tex}
+\begin{figure}[t!]
+  \include{fig_problem.tex}
+  \label{fig:b2b}
+\end{figure}
 
 We consider the measurement of multivariate signal $Y \in \mathbb{R}^{n \times
-d_y}$, generated from a set of putative causes $X \in \mathbb{R}^{n \times
-d_x}$, via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
+d_y}$ (the dependent variables), generated from a set of putative causes $X \in \mathbb{R}^{n \times
+d_x}$ (the independent variables), via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
 %
 Not all the variables in $X$ exert a causal influence on $Y$.
 %
@@ -106,7 +117,7 @@ In summary, the problem can be formalized as:
     \label{eq:model}
 \end{equation}
 %
-where $i$ is a given sample, and $n_i$ is a sample-specific noise drawen from a
+where $i$ is a given sample, and $n_i$ is a sample-specific noise drawn from a
 centered distribution.
 %
 While the triplet of variables $X$ and $N$ are independent, we allow each of
@@ -118,8 +129,9 @@ In practice, we observe $n$ samples $(X, Y)$ from the model.
 This problem space, along with the sizes of all variables involved, is
 illustrated in Figure~\ref{fig:b2b}.
 %
-Given the model in Equation~\eqref{eq:model}, \textbf{the goal} of Back-to-Back
-Regression (B2B) is to estimate the matrix of causal influences $E$.
+Given the model in Equation~\cref{eq:model}, the goal of Back-to-Back
+Regression (B2B) is to estimate the matrix of $E$, i.e. to identify the factors
+that most reliably account for the multivariate observations.
 
 \subsection{Algorithm}
 
@@ -166,8 +178,9 @@ influence matrix is the average over the estimates associated to each split
 \citep{breiman1996bagging}.
 %
 To accelerate this ensembling procedure, we implemented an efficient
-leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes} %
-http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf, as follows:
+leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes}
+% http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf,
+as follows:
 %
 
 \begin{equation}
@@ -219,7 +232,7 @@ B2B.
 
 \begin{theorem}[B2B consistency - general case]
 
-     Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centred and full
+     Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centered and full
      rank noise.
      %
      Let $Img(M)$ refers to the image of the matrix $M$. If $F$ and $X$ are
@@ -278,7 +291,7 @@ We perform two sets of experiments to evaluate B2B: one on controlled synthetic
 data, and a second one on a real, large-scale magneto-encephalography (MEG)
 dataset.
 %
-We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as pyrcca's
+We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as Pyrcca's
 regularized canonical component analysis (RegCCA, \citep{bilenko2016pyrcca})
 objects to compare B2B against the standard baselines.
 
@@ -338,25 +351,38 @@ estimate $G$ and $H$. Together, these differences may explain why B2B reliably
 outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and
 \ref{fig:auc_plots}).
 
-% I find a bit surprising to mention cauaslity literare in ML at the end. I would have expected this in the introduction to convince reviewer that know your stuff.
+% I find a bit surprising to mention causality literature in ML at the end. I
+% would have expected this in the introduction to convince reviewer that know
+% your stuff.
 
 
 
 \section{Conclusion}
-\input{conclusion}
+In this work, we proposed Back-to-Back (B2B) regression, a linear method to
+disentangle confounded factors from multidimensional observations.
+%
+B2B repeatedly performs two successive multidimensional regressions on
+independent subsets of the data: the first regression is applied on the output
+domain (as in backward decoding), whereas the second regression is applied on
+the input domain (as in forward encoding).
+%
+We provided a theoretical guarantee about the consistency of B2B, and compared
+it to several baselines in controlled synthetic experiments.
+%
+We also applied B2B to a recent brain imaging dataset, analyzing the timing of
+brain responses and their connection to word features.
+%
+We obtained results consistent with prior work in neuroscience literature,
+confirming the reliability of B2B for real data analysis.
+%
 
 \clearpage
 \newpage
 
-\bibliographystyle{iclr2020_conference}
 \bibliography{paper}
 
-% \input{supplementary.tex}
 
-%\section{Appendices}
-%
-%This should hold part of the tests, explanations on simulation, detailed results and stuff on meg data
-
+\section{Appendices}
 \input{appendix}
 
 \end{document}

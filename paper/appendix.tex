@@ -10,9 +10,11 @@ Proof of the theorem in \ref{sec:theorem}:
 
 \begin{theorem}[B2B consistency - general case]
 
-     Consider the B2B model from equation \ref{eq:model} $$Y = (XE + N)F$$ with $N$ centred and full rank noise.
+     Consider the B2B model from equation \ref{eq:model} $$Y = (XE + N)F$$ with
+     $N$ centered and full rank noise.
 
-     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$ minimizes
+     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat
+     H$ minimizes
 
      $$\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$$ and satisfies
 
@@ -20,7 +22,8 @@ Proof of the theorem in \ref{sec:theorem}:
 \end{theorem}
 \begin{proof}
 
- Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions of B2B.
+ Let $\hat G$ and $\hat H$ be the solutions of the first and second regressions
+ of B2B.
 
  Since $\hat G$ is the least square estimator of $X$ from $Y$
  \begin{align*}
@@ -36,7 +39,7 @@ Replacing $Y$ by its model definition $Y = (XE+N)F$, we have
      \label{eq:Gdoublenorm}
 \end{align}
 
-Samely, for $\hat H$, we have
+In the same way, for $\hat H$, we have
 \begin{align*}
     \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
     &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
@@ -50,11 +53,14 @@ Samely, for $\hat H$, we have
 
 Let us now prove that $EF\hat G = F\hat G$.
 
-Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger EF\hat G$, we have $FZ = FF^\dagger EF \hat G$
+Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger EF\hat G$, we
+have $FZ = FF^\dagger EF \hat G$
 
-Since $F$ is full rank on $Img(E)$, we have $FF^\dagger E =E$, and $FZ = EF\hat G$
+Since $F$ is full rank on $Img(E)$, we have $FF^\dagger E =E$, and $FZ = EF\hat
+G$
 
-As $E$ is a binary diagonal matrix, it is an orthogonal projection and therefore a contraction, thus
+As $E$ is a binary diagonal matrix, it is an orthogonal projection and therefore
+a contraction, thus
  $$ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$$ and
  $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
 
@@ -76,7 +82,8 @@ Replacing into $\eqref{eq:Gdoublenorm}$, and setting $H = EFG$, we have
 	\label{eq:4}
 \end{align*}
 
-Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagonal matrix, is involutive. This completes the proof.
+Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary
+diagonal matrix, is involutive. This completes the proof.
 \end{proof}
 
 
@@ -84,17 +91,20 @@ Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagona
 \newpage
 \subsection{Modeling measurement noise}
 
-Equation \ref{eq:model} does not explicitly contain a measurement noise term. Yet, in moast experimental cases, the problem is best described as:
+Equation \ref{eq:model} does not explicitly contain a measurement noise term.
+Yet, in most experimental cases, the problem is best described as:
 \begin{equation}
   Y = (XE+N)F+M
   \label{eq:model_noisy_measure}
 \end{equation}
   with $M\in \mathbb{R}^{n \times d_y}$.
 
-This equation is actually equivalent to Equation \ref{eq:model} given our hypotheses. Indeed, we can rewrite $M = MF^{-1}F$ over $Img(F)$, which leads to:
+This equation is actually equivalent to Equation \ref{eq:model} given our
+hypotheses. Indeed, we can rewrite $M = MF^{-1}F$ over $Img(F)$, which leads to:
 $$Y = (XE+N)F+M = (XE+N+MF^{-1})F = (XE+N')F$$
 
-Consequently, assuming that $F$ is full rank on $Img(XE)$, B2B yields the same solutions to equations \ref{eq:model} and \ref{eq:model_noisy_measure}.
+Consequently, assuming that $F$ is full rank on $Img(XE)$, B2B yields the same
+solutions to equations \ref{eq:model} and \ref{eq:model_noisy_measure}.
 
 
 \subsection{Feature importance}
@@ -158,35 +168,59 @@ Y_{test} G)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \caption{CCA and PLS feature importance.} \label{algorithm:cdp_fi}
 \end{algorithm}
 
-For the Backward Model, feature importance cannot be assessed because there is no prediction.
+For the Backward Model, feature importance cannot be assessed because there is
+no prediction.
 
 \subsection{Recovering E}
 \label{recovering}
 
-In case of noise, B2B yields non binary $\hat E$. Three thresholding rules can be used to binarize its values thus explicitly recover causal features.
+In case of noise, B2B yields non binary $\hat E$. Three thresholding rules can
+be used to binarize its values thus explicitly recover "causal" features.
 
-First, given known signal-to-noise ratio,the threshold above which a feature should considered to be causal can be derived analytically. Indeed, Equation $\ref{eq:diagk}$ implies that the $k$ first diagonal elements of $\hat H$ are bounded:  % we assume that $F$ has full rank over $Img(E)$.
+First, given known signal-to-noise ratio, the threshold above which a feature
+should considered to be "causal" can be derived analytically. Indeed, Equation
+$\ref{eq:diagk}$ implies that the $k$ first diagonal elements of $\hat H$ are
+bounded:  % we assume that $F$ has full rank over $Img(E)$.
 
-$$0 \leq \frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \leq \text{diag}_k(\hat{H})\leq  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$
-where $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1 N_1}$.
+$$0 \leq \frac{\sigma_{X_k}}{\sigma_{X_k} +\sigma_{N_1}} \leq
+\text{diag}_k(\hat{H})\leq  \frac{\sigma_{X_1}}{\sigma_{X_1} +\sigma_{N_k}}$$
+where $\sigma_{X_1}$, $\sigma_{X_k}$, $\sigma_{N_1}$ and $\sigma_{N_k}$ denote
+the largest and smallest eigenvalues of $\Sigma_{X_1 X_1}$ and $\Sigma_{N_1
+N_1}$.
 
-The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the trace of $\hat H$ divided by $k$, and can be computed as
+The average value $\mu$ of non-zero coefficients of $\text{diag}(\hat H)$ is the
+trace of $\hat H$ divided by $k$, and can be computed as
 \begin{equation}
 \mu = \frac{Var(X)}{Var(X)+Var(N)}
 \end{equation}
 
-The decision threshold between causal and non-causal elements is thus a fraction $\mu$, whose proportion arbitrarily depends on the necessity to favor type I and type II errors. In practice, we cannot use this procedure for our MEG study, because signal-to-noise ratio is unknown.
+The decision threshold between "causal" and "non-causal" elements is thus a fraction
+$\mu$, whose proportion arbitrarily depends on the necessity to favor type I and
+type II errors. In practice, we cannot use this procedure for our MEG study,
+because signal-to-noise ratio is unknown.
 
-Second, $\text{diag}(\hat H)$ can be binarized with the Sonquist-Morgan criterion \citep{sonquist_morgan}, a non-parametric clustering procedure separating small and large values in a given set. This procedure maximizes the ratio of inter-group variance while minimizing the intra-group variance, over all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest values. Let $m_0$ and $m_1$ be the average values of the two clusters, $p$ and $d_x-p$ their size, and $v$ the total variance of the sample, Sonquist-Morgan criterion maximizes \citep{kass75}:
+Second, $\text{diag}(\hat H)$ can be binarized with the Sonquist-Morgan
+criterion \citep{sonquist_morgan}, a non-parametric clustering procedure
+separating small and large values in a given set. This procedure maximizes the
+ratio of inter-group variance while minimizing the intra-group variance, over
+all possible splits of the diagonal into $p$ largest values and $d_x-p$ smallest
+values. Let $m_0$ and $m_1$ be the average values of the two clusters, $p$ and
+$d_x-p$ their size, and $v$ the total variance of the sample, Sonquist-Morgan
+criterion maximizes \citep{kass75}:
 \begin{equation}
   \frac{p(d_x-p)}{d_x} \frac{(m_1 - m_0)^2}{v}
 \end{equation}
 
-This procedure assumes that there exists at least one causal and at least one non-causal feature.
+This procedure assumes that there exists at least one causal and at least one
+non-causal feature.
 %
-Third, second-order statistics across multiple datasets can be used to identify the elements of $\text{diag}(\hat H)$ that are sgnificantly different from 0. This procedure is detailed in the method section of our MEG experiment.
+Third, second-order statistics across multiple datasets can be used to identify
+the elements of $\text{diag}(\hat H)$ that are significantly different from 0.
+This procedure is detailed in the method section of our MEG experiment.
 
-Overall, these three procedure thus varies in their additional assumptions: i.e. (1) a known signal-to-noise ratio, (2) the existence of both causal and non-causal factors or (3) independent repetitions of the experiment.
+Overall, these three procedures thus vary in their additional assumptions: i.e.
+(1) a known signal-to-noise ratio, (2) the existence of both causal and
+non-causal factors or (3) independent repetitions of the experiment.
 
 \section{Additional Figures}
 
@@ -202,23 +236,38 @@ Overall, these three procedure thus varies in their additional assumptions: i.e.
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{figures/delta_auc.pdf}
-  \caption{Synthetic experiments. Distribution (over conditions) of AUC (top) and Feature Importance $\Delta R$ (bottom) metrics between our method (y-axis) and the baselines (x-axis). Each dot is a distinct synthetic experiment. Dots below the diagonal indicates that B2B outperform the tested model. \label{fig:auc_plots}}
+  \caption{Synthetic experiments. Distribution (over conditions) of AUC (top) and Feature
+  Importance $\Delta R$ (bottom) metrics between our method (y-axis) and the baselines
+  (x-axis). Each dot is a distinct synthetic experiment. Dots below the diagonal indicates
+  that B2B outperform the tested model. \label{fig:auc_plots}}
 \end{figure}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.7\linewidth]{figures/duration}
-  \caption{Wall-clock run-time for our method B2B and for the baselines. Each dot is a distinct synthetic experiment. B2B runs much faster than cross-decomposition baselines. \label{fig:duration}}
+  \caption{Wall-clock run-time for our method B2B and for the baselines. Each dot is a
+  distinct synthetic experiment. B2B runs much faster than cross-decomposition baselines.
+  \label{fig:duration}}
 \end{figure}
 
 
 \subsection{Robustness to increasing number of factors}
 
-To test whether each of the methods robustly scales to an increasingly large number of potential causes $X$, we enhanced the four ad-hoc features (word length, word frequency, word function, dummy variable) with another ten features. These additional features corresponds to the first dimensions of word embedding as provided by Spacy \citep{spacy2}. The results shown in Figure \ref{fig:embeddings}, show that the feature importance of ad-hoc features as derived by B2B remain unchanged and are actually improved.
+To test whether each of the methods robustly scales to an increasingly
+large number of potential causes $X$, we enhanced the four ad-hoc features
+(word length, word frequency, word function, dummy variable) with another
+ten features. These additional features corresponds to the first dimensions
+of word embedding as provided by Spacy \citep{spacy2}. The results shown
+in Figure \ref{fig:embeddings}, show that the feature importance of ad-hoc
+features as derived by B2B remain unchanged and are actually improved.
 
 \begin{figure}
   \centering
   \includegraphics[width=0.5\linewidth]{figures/compare_embeddings.pdf}
-  \caption{Comparison of $\Delta R$ when the models are tested on four variables (top) and when the models are tested on an these four variables as well as another 10 word-embedding features (bottom). These results illustrate that, unlike Regularized CCA, B2B remains robust even when the number of tested factors increases.
+  \caption{Comparison of $\Delta R$ when the models are tested on four
+  variables (top) and when the models are tested on an these four variables
+  as well as another 10 word-embedding features (bottom). These results
+  illustrate that, unlike Regularized CCA, B2B remains robust even when
+  the number of tested factors increases.
   \label{fig:embeddings}}
 \end{figure}

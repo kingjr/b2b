@@ -1,15 +1,73 @@
-Natural sciences are tasked to find, from a set of hypothetical factors, the minimal subset that suffices to reliably predict novel observations. This endeavor is impeded by two major challenges.
+Natural sciences are tasked to find, from a set of hypothetical factors, the
+minimal subset that suffices to reliably predict novel observations. This
+endeavor is impeded by two major challenges.
 
-First, causal and non-causal factors may be numerous and collinear. %In physics, for example, one may be challenged to identify whether fusion is caused by a change in temperature or a change in pressure, as these two factors may, at first, be difficult to manipulate independently.
-This issue becomes increasingly pronounced as the number of potential factors increases. In neuroscience, for example, identifying whether the frequency of a word presented on a subject's retina modulates brain activity can be surprisingly difficult. Indeed, the frequency of words in natural language covaries with other factors such as their length (short words are more frequent than long words), their categories (determinants are more frequent than adverbs) and so forth \citep{kutas2011thirty,pegado2014timing}. Instead of selecting a set of words that control for all of these factors simultaneously, it is thus common to use forward modeling, i.e. to train a model to predict observations (e.g. brain activity) from a minimal combination of competing factors (e.g. word length, word frequency, e.g. \citep{huth2016natural}), and investigate, in the model, the estimated contribution of each factor \citep{friston1994statistical}.
+First, causal and non-causal factors may be numerous and collinear.
+% In physics,
+% for example, one may be challenged to identify whether fusion is caused by a
+% change in temperature or a change in pressure, as these two factors may, at
+% first, be difficult to manipulate independently. This issue becomes increasingly
+% pronounced as the number of potential factors increases.
+In neuroscience, for
+example, it can be challenging to identify whether word frequency modulates
+brain activity during reading. Indeed, the
+frequency of words in natural language covaries with other factors such as their
+length (short words are more frequent than long words) and their categories
+(determinants are more frequent than adverbs)
+\citep{kutas2011thirty,pegado2014timing}. Instead of selecting a set of words
+that controls for all of these factors simultaneously, it is thus common to use
+a \emph{forward} "encoding model", i.e. to fit a linear regression to predict observations
+(e.g. brain activity) from a minimal combination of competing factors (e.g.
+word length, word frequency), and analytically investigate,
+the estimated contribution of each factor from the model's coefficients
+\citep{friston1994statistical,naselaris2011encoding,weichwald2015causal,
+king2018encoding,huth2016natural}.
 
-The second challenge to measuring causal influence is that observations can be large and complex. The relationship between causes and effects is thus often considered in a backward manner, by training models to maximally predict causes from multidimensional observations. For example, brain activity is often recorded with hundreds or thousands of sensors simultaneously. As multiple sensors may be affected by common noise sources, it is common to use backward regression, by, for example, fitting a support vector machine across multiple sensors to decode the category of a stimulus \citep{cichy2014resolving,  kriegeskorte2008representational, norman2006beyond}.
+The second challenge to measuring causal influence is that observations can be
+multidimensional. The relationship between causes and effects is thus often
+considered in a \emph{backward} manner, by training models to maximally predict causes
+from multidimensional observations. For example, brain activity is often
+recorded with hundreds or thousands of simultaneous measurements via functional
+Magnetic Resonance Imaging, magneto-encephalography (MEG) or multiple electro-
+physiological probes \citep{friston1994statistical,steinmetz2018challenges}.
+As simultaneous measurements may be affected by common noise sources, it is
+common to use backward
+modeling, by, for example, fitting a support vector machine across multiple
+sensors to decode the category of a stimulus \citep{norman2006beyond,cichy2014resolving,
+kriegeskorte2008representational}.
 
-Both forward and backward modeling have competing benefits and drawbacks. Specifically, forward modeling disentangles the independent contribution of collinear factors, but does not combine multidimensional observations. By contrast, backward modeling combines multiple observations, but does not disentangle collinear factors \citep{weichwald2015causal, hebart2018deconstructing, king2018encoding}. To combine the benefits of forward and backward modeling, several authors have proposed to use cross-decomposition techniques such as Partial Least Squares (PLS) and Canonical Correlation Analysis (CCA) \citep{de2019multiway}.
-CCA and PLS aim to find, from two sets of data $X$ and $Y$, the components $H$ and $G$ were $XH$ and $YG$ are maximially correlated or maximally covarying respectively. Because CCA and PLS are based on a generalized eigen decomposition, their resulting coefficients are mixing the features of $X$ and $Y$ in a way that makes them notoriously difficult to interpret \citep{lebart1995statistique}.
+Both \emph{forward} and \emph{backward} modeling have competing benefits and drawbacks.
+Specifically, forward modeling disentangles the independent contribution of
+collinear factors, but does not combine multidimensional observations. By
+contrast, backward modeling combines multiple observations, but does not
+disentangle collinear factors \citep{weichwald2015causal,
+hebart2018deconstructing, king2018encoding}. To combine some of the benefits of forward
+and backward modeling, several authors have proposed to use cross-decomposition
+techniques such as Partial Least Squares (PLS) and Canonical Correlation
+Analysis (CCA) \citep{de2019multiway}. CCA and PLS aim to find, from two sets of
+data $X$ and $Y$, the components $H$ and $G$ were $XH$ and $YG$ are maximally
+correlated or maximally covarying respectively. Because CCA and PLS are based on
+a generalized eigen decomposition, their resulting coefficients are mixing the
+features of $X$ and $Y$ in a way that makes them notoriously difficult to
+interpret \citep{lebart1995statistique}.
 
-Here, we introduce the `back-to-back regression' (B2B), which not only combines the benefits of forward and backward modeling (Section~\ref{sec:algorithm}), but also provide robust, interpretable and unidimensional causal coefficients for each tested factor.
+Here, we introduce the `back-to-back regression' (B2B), which not only combines
+the benefits of forward and backward modeling (Section~\ref{sec:algorithm}), but
+also provides robust, interpretable, unidimensional and unbiased coefficients for
+each of tested factor.
 
-The present paper focuses on the restricted issue of disentangling the causal influence of linearly correlated predictors ($X$) onto noisy multivariate observations ($Y$). The present approach thus differs from other causal discovery algorithms based on temporal-delays and/or nonlinear interactions in systems where the directionality of causation (from X to Y or vice versa) is unknown (e.g. \citep{peters2017elements, granger1969investigating, janzing2013quantifying, scholkopf2016modeling}.
+The present paper focuses on the restricted issue of disentangling the
+influence of linearly correlated predictors ($X$) onto noisy multivariate
+observations ($Y$). The present approach thus differs from other causal
+discovery algorithms based on temporal-delays and/or nonlinear interactions in
+systems where the directionality of causation (from X to Y or vice versa) is
+unknown (e.g. \citep{peters2017elements, granger1969investigating,
+janzing2013quantifying, scholkopf2016modeling}.
 
-After detailing B2B method and proving its convergence (Section~\ref{sec:theorem}), we show with synthetic data that it outperforms state-of-the-art forward, backward and cross-decomposition techniques in identifying causal influence (Section~\ref{sec:experiment_synthetic}). Finally, we apply B2B to a large neuroimaging dataset and reveal that distinct but collinear word features lead to distinguishable brain representations (Section~\ref{sec:experiment_real}).
+After detailing B2B method and proving its convergence
+(Section~\ref{sec:theorem}), we show with synthetic data that it outperforms
+state-of-the-art forward, backward and cross-decomposition techniques in
+disentangling causal factors (Section~\ref{sec:experiment_synthetic}). Finally,
+we apply B2B to a large neuroimaging dataset and reveal that distinct but
+collinear word features lead to distinguishable brain representations
+(Section~\ref{sec:experiment_real}).

@@ -1,5 +1,4 @@
 
-\begin{figure}[t!]
     \centering
     \begin{tikzpicture}
     \newcommand\posY{0}
@@ -52,5 +51,3 @@
     \node[] (reg1) at (5.5,-3.25) {$\hat{E} = \text{diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
     \end{tikzpicture}
     \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and 2) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
-    \label{fig:b2b}
-\end{figure}
