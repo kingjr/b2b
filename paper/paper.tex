@@ -66,10 +66,10 @@ Second, we use a variety of simulated data to show that B2B outperforms
 least-squares regression and cross-decomposition techniques (e.g. canonical
 correlation analysis and partial least squares) on causal identification when
 the factors and the observations are partially collinear.
-Finally, we apply B2B to magneto-encephalography of 102 subjects
-recorded during a reading task to test whether our method appropriately disentangles
+Finally, we apply B2B to magneto-encephalography and fMRI of 102 subjects
+recorded during a one hour long reading task to test whether our method appropriately disentangles
 the respective contribution of word length and word frequency - two correlated
-factors known to cause early and late brain responses respectively. The results
+factors known to cause early visual and late associative cortical responses respectively. The results
 show that these two factors are better disentangled with B2B than with
 other standard techniques.
 \end{abstract}
@@ -79,10 +79,10 @@ other standard techniques.
   Cross-Decomposition \sep
   Feature Discovery \sep
   Magnetoencephalography \sep
+  fMRI \sep
   Decoding \sep
   Encoding \sep
   Reading \sep
-  N400
 \end{keyword}
 
 \end{frontmatter}
@@ -348,12 +348,15 @@ objects to compare B2B against the standard baselines.
 
 \subsection{Synthetic data}
 \label{sec:experiment_synthetic}
-
 \input{synthetic.tex}
-\input{meg_exps.tex}
 
-\subsection{Magnetoencephalography data}
+\subsection{functional Magnetic Resonance Imaging}
+\label{sec:experiment_fmri}
+\input{fmri_exps.tex}
+
+\subsection{Magnetoencephalography}
 \label{sec:experiment_real}
+\input{meg_exps.tex}
 
 \section{Related work}
 

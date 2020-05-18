@@ -1,18 +1,6 @@
 %\newpage
 %\subsection{Dataset}
 
-Next, we apply our method to brain imaging data from the anonymized multimodal
-neuroimaging ``Mother Of all Unification Studies'' (MOUS) dataset
-\citep{schoffelen2019204}. The dataset contains magneto-encephalography (MEG)
-recordings of 102 healthy native-Dutch adults who participated in a reading
-task. Twelve subjects were excluded from the analysis because of corrupted file headers.
-%
-Subjects were exposed to a rapid serial visual presentation of Dutch words. The
-word lists consisted of 120 sentences, and scrambled lists of the same words.
-Each word was presented on the computer screen for 351ms on average (min: 300ms,
-max: 1400ms). Successive words were separated by a blank screen for 300ms, and
-successive sentences were separated by an empty screen for a few (3-4) seconds.
-
 \subsubsection{MEG preprocessing}
 
 The raw MEG data was bandpass-filtered between 0.1 and 40Hz using MNE-Python
@@ -29,6 +17,16 @@ For each subject and each time sample relative to word onset, we
 build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 2,700 words
 by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
+
+We use the same features as for the fMRI experiments, except that the features
+were not convolved by an hemodynamic response function. This yields an $X \in \mathbb{R}^{n \times d_x}$
+matrix of $n\approx$ 2,700 words by $d_x=4$ features for each subject. Each of
+the columns of $X$ is normalized to have a mean and a standard deviation of 0
+and 1 respectively.
+
+We compare B2B against other methods following the same procedure as for the
+fMRI experiments, except that the search light is applied across time samples.
+
 
 \begin{figure}[t!]
   \begin{minipage}[c]{0.6\textwidth}
@@ -49,65 +47,11 @@ of the columns of $Y$ is normalized to have zero mean and unit variance.
 \end{figure}
 
 
-\subsubsection{Feature definition}
-
-We aim to identify the word features that cause a variation in brain responses.
-We consider four distinct but linearly-correlated features.
-%
-First, 'Word Length' refers to the total number of letters. Word Length is
-expected to specifically cause a variation in the early evoked MEG responses
-(i.e. from 100 ms after stimulus onset) elicited by the retinotopically-tuned
-visual cortices (e.g. \citep{pegado2014timing}.).
-%
-Second, 'Word Frequency' indexes how frequently each word appears in Dutch and
-was derived with the the Zipf logarithmic scale of \citep{van2014subtlex}
-provided by the WordFreq package \citep{speerwordfreq}. Word Frequency is
-expected to specifically cause a variation in the late evoked MEG responses
-(i.e. from 400 ms), because it variably engages semantic processes in the
-temporal cortices \citep{kutas2011thirty}.
-%
-Third, 'Word Function' indicates whether each word is a content word (i.e. a
-noun, a verb, an adjective or an adverb) or a function word (i.e. a preposition,
-a conjunction, a determinant, a pronoun or a numeral), and was derived from
-Spacy's part of speech tagger \citep{spacy2}. To our knowledge, this feature has
-not been thoroughly investigated with MEG. Its causal contribution to reading
-processes in the brain thus remains unclear.
-%
-Finally, to verify that B2B and other methods would not inadequately identify
-non-causal features, we added a dummy feature, constructed from a noisy
-combination of Word Length and Word Frequency: $dummy = z(length) + z(frequency)
-+ \mathcal{N}$, where $z$ normalizes features and $\mathcal{N}$ is a random
-vector sampling Gaussian distribution (all terms thus have a zero-mean and a
-unit-variance). This procedure yields an $X \in \mathbb{R}^{n \times d_x}$
-matrix of $n\approx$ 2,700 words by $d_x=4$ features for each subject. Each of
-the columns of $X$ is normalized to have a mean and a standard deviation of 0
-and 1 respectively.
-
-\subsubsection{Models and statistics}
-
-We compare B2B to four standard methods: Forward regression, Backward
-regression, CCA and PLS, as implemented in scikit-learn \citep{sklearn} and
-\citep{bilenko2016pyrcca}, and optimized with nested cross-validation over
-twenty $l2$ regularization parameters logarithmically spaced between $10^{-4}$
-and $10^4$ (for regression and CCA methods) or 1 to 4 canonical components (for
-PLS).
-
-We used the feature importance described in Algorithm \ref{algorithm:b2b_fi} to
-assess the extent to which each feature $X_i$ specifically improves the
-prediction of held-out $Y$ data, using a five-fold cross-validation (with shuffled
-trials to homogeneize the distributions between the training and testing
-splits).
-
-Each model was implemented for each subject and each time sample independently.
-Pairwise comparison between models were performed using a two-sided Wilcoxon
-test across subjects (n=90) using the average $\Delta R$ across time.
-Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and
-p-values are reported below.
-
-\begin{wrapfigure}{r}{.6\textwidth}
+\begin{figure}
   %\vspace{-12ex}
   \begin{center}
-    \includegraphics[width=0.6\textwidth, trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg.pdf}
+    \includegraphics[width=0.6\textwidth,
+                     trim=0cm 0cm 0cm 0cm, clip=True]{figures/meg.pdf}
   \end{center}
   %\vspace{-5ex}
   \caption{Multiple models (color-coded) are compared on their ability to
@@ -118,7 +62,7 @@ p-values are reported below.
   horizontal lines indicate when B2B significantly outperforms other methods
   (red) and vice versa. \label{fig:meg_results}
 }
-\end{wrapfigure}
+\end{figure}
 
 
 \subsubsection{Results}
