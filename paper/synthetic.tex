@@ -2,8 +2,8 @@ We evaluate the performance of B2B throughout a series of experiments on
 controlled synthetic data.
 %
 The purpose of these experiments is to evaluate the ability of B2B on its
-ability to 1) accurately predict independent and identically distributed data,
-and 2) recover causal factors when the ground truth is known.
+ability to 1) recover causal factors when the ground truth is known and 2)
+accurately predict independent and identically distributed data otherwise.
 
 The data generating process for each experiment constructs $n=1000$ training examples
 according to the model $Y = (\text{h} XE + N)F$, where $\text{h}$ is a
@@ -39,9 +39,9 @@ We compare the performance of B2B against four baseline methods.
 %
 % To be updated
 
-\subsection{Baseline models}
+\subsubsection{Baseline models}
 
-All baseline method were based on the implementations of scikit-learn \citep{sklearn} and pyrcca
+All baseline methods were based on the implementations of scikit-learn \citep{sklearn} and pyrcca
 \citep{bilenko2016pyrcca}. For pedagogical purposes, we briefly summarize them below.
 
 Forward regression consists of an $l2$-regularized "ridge" regression from the
@@ -71,24 +71,24 @@ for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regulariz
 parameters fitted with the efficient leave-one-out procedure implemented in
 scikit-learn RidgeCV \citep{sklearn}.
 
-\subsection{Evaluating Causal Discovery from models' coefficients}
+\subsubsection{Evaluating Causal Discovery from models' coefficients}
 
 %
 B2B leads to \emph{scalar} coefficients for non-causal
 features. The diagonal of this matrix, $\hat E$, can thus be directly used
-as a causal contribution estimate. Note that is estimate is unbiased (i.e.
-zeros-centered) if the second regression $H$ is not regularized.
+as a causal contribution estimate. Note that this estimate is unbiased (i.e.
+zeros-centered) only if the second regression $H$ is not regularized.
 
 In contrast, the Forward, Backward, CCA and PLS models lead to a
-loading \emph{vector} for each feature: each vector indicates how to it
-relates to each dimension of the observations (for forward or backward
-models) or each canonical projection of the observations
-To an estimated causal contribution, we must thus transform such vector into a
+loading \emph{vector} for each feature: each vector indicates how to a feature
+relates to each dimension of the observations (for Forward or Backward
+models) or each canonical projection of the observations.
+To estimate causal contribution, we must thus transform such vector into a
 scalar, by e.g. taking the sum of square coefficients:
 % \begin{equation}
   $\hat E_i = \sum_j {H^j_i}^2 $
 % \end{equation}
-Note that in such B2B cases, the estimates are necessarily biased: i.e. positive.
+Note that in such B2B cases, the estimates are  thus necessarily positive and thus biased.
 
 Finally, to estimate whether each model accurately identifies causal factors independently of
 their potential biases, we compute the
@@ -96,9 +96,7 @@ area-under-the-curve (AUC) across factors $AUC(E, \hat E)$.
 %\begin{equation} AUC = 1 - \sum_1^n (E_k - E_{k-1}) ( \hat{E}_k +
 %\hat{E}_{k-1}) / 2 \end{equation}
 By definition, this AUC evaluation can only be done when ground truth labels are available, as is the case in
-this synthetic setup.
-
-We report AUC results in Figures~\ref{fig:percondition}~(top) and ~\ref{fig:auc_plots}~(left, in Appendix), and compare favorably to all baselines.
+this synthetic setup, but not in the neuroimaging experiments below.
 
 \begin{figure}[t]
   \centering
@@ -112,9 +110,9 @@ We report AUC results in Figures~\ref{fig:percondition}~(top) and ~\ref{fig:auc_
 \end{figure}
 
 
-\subsection{Evaluating Causal Discovery with held-out prediction reliability}
+\subsubsection{Evaluating Causal Discovery with held-out prediction reliability}
 
-In most cases, $E$ is not known. The above AUC can thus not be estimated.
+In most real-world cases, $E$ is not known. Consequently, the above AUC evaluation can not be estimated.
 To address this issue, we assess the ability of each model to reliably predict
 independent and identically distributed data from $Y$, given all of the $X$
 features versus all-but-one feature $X_{-i}$ (i.e. 'knock-out X'). This
@@ -129,11 +127,12 @@ feature importance for each model. For the Backward Model, feature importance
 cannot be assessed as the $X$ collinearity is never
 taken into account.
 
-\subsection{Results of the synthetic experiment}
+\subsubsection{Results of the synthetic experiment}
 
 Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in
 Appendix) show the results of our synthetic experiment. Note that the figure
-does not display each feature $i$ separately, as they are
-randomly generated. $\Delta R$ represents the average of $\Delta R_i$.
+does not display each feature separately, as they are
+randomly generated. $\Delta R$ represents the average of $\Delta R_i$ across
+features $i$.
 Overall both the AUC and the held-out prediction reliability evaluations
-show that B2B outperforms baseline models.
+show that B2B compares favorably to the baseline models.
