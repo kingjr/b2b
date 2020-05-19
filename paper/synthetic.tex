@@ -129,10 +129,12 @@ feature importance for each model. For the Backward Model, feature importance
 cannot be assessed as the $X$ collinearity is never
 taken into account.
 
-In our synthetic figures, we do report each feature $i$ separately, as they are
-randomly generated. $\Delta R$ thus represents the average of $\Delta R_i$. A
-higher score means that for prediction, the model relies on individual features
-rather than combinations of features.
+\subsection{Results of the synthetic experiment}
 
 Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in
-Appendix) show that B2B outperforms baseline models.
+Appendix) show the results of our synthetic experiment. Note that the figure
+does not display each feature $i$ separately, as they are
+randomly generated. $\Delta R$ represents the average of $\Delta R_i$. A
+higher score means that for prediction, the model relies on individual features
+rather than combinations of features. Overall both the AUC and the held-out
+prediction reliability evaluations show that B2B outperforms baseline models.
