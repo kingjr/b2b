@@ -154,6 +154,8 @@ other standard techniques.
 \label{fig:b2b}
 \end{figure}
 
+\subsection{Problem setup}
+
 We consider the measurement of multivariate signal $Y \in \mathbb{R}^{n \times
 d_y}$ (the dependent variables), generated from a set of putative causes $X \in \mathbb{R}^{n \times
 d_x}$ (the independent variables), via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
@@ -183,11 +185,10 @@ This problem space, along with the sizes of all variables involved, is
 illustrated in Figure~\ref{fig:b2b}.
 %
 Given the model in Equation~\cref{eq:model}, the goal of Back-to-Back
-Regression (B2B) is to estimate the matrix of $E$, i.e. to identify the factors
+Regression (B2B) is to estimate the matrix $E$, i.e. to identify the factors
 that most reliably account for the multivariate observations.
 
 \subsection{Algorithm}
-
 
 Back-to-Back Regression (B2B) consists of two steps.
 %
@@ -222,15 +223,16 @@ leveraged by the second one.
 To avoid this issue, we split our sample $(X, Y)$ into two splits $(X_1, Y_1)$
 and $(X_2, Y_2)$.
 %
-Then, the first regression is performed using $(X_1, Y_1)$, and the second
+The first regression is performed using $(X_1, Y_1)$, and the second
 regression is performed using $(X_2, Y_2)$.
 %
-To compensate for the reduction in sample size caused by the split, B2B is
+To compensate for the reduction in sample size caused by the split, the two
+successive regressions are
 repeated over many random splits, and the final estimate $\hat E$ of the causal
 influence matrix is the average over the estimates associated to each split
 \citep{breiman1996bagging}.
 %
-To accelerate this ensembling procedure, we implemented an efficient
+To accelerate this ensembling procedure, we use an efficient
 leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes}
 % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf,
 as follows:
@@ -336,7 +338,7 @@ Therefore, we recover $E$ from $\hat H$.
 
 In the presence of noise, the causal factors of $E$ correspond to the positive
 elements of $\text{diag}(\hat H)$. The methods to recover them are presented in
-the Appendix \ref{recovering}.
+the Appendix (\ref{recovering}).
 
 \section{Experiments}
 
@@ -356,89 +358,62 @@ objects to compare B2B against the standard baselines.
 \label{sec:experiment_fmri}
 \input{fmri_exps.tex}
 
-\subsection{Magnetoencephalography}
+\subsection{Magneto-encephalography}
 \label{sec:experiment_real}
 \input{meg_exps.tex}
 
 \section{Related work}
 
-Forward and cross-decomposition models have been used to identify the causal
-contribution of correlated factors onto multi-dimensional observations (e.g.
-\citep{naselaris2011encoding}). These approaches typically lead to multiple
-coefficients for each features (i.e. one per dimension of $Y$ or one per
-component respectively). Furthermore, these coefficients can be difficult to
-summarize into a single causal estimate. By contrast, B2B quickly (Fig.
-\ref{fig:duration}) leads to a single unbiased scalar values $\hat E$ tending
-towards 1 and 0 for causal and non-causal features respectively.
+% Forward and cross-decomposition models have been used to identify the causal
+% contribution of correlated factors onto multi-dimensional observations (e.g.
+% \citep{naselaris2011encoding}). These approaches typically lead to multiple
+% coefficients for each features (i.e. one per dimension of $Y$ or one per
+% component respectively). Furthermore, these coefficients can be difficult to
+% summarize into a single causal estimate. By contrast, B2B quickly (Fig.
+% \ref{fig:duration}) leads to a single unbiased scalar values $\hat E$ tending
+% towards 1 and 0 for causal and non-causal features respectively.
 
-A variety of other statistical methods applied to neuroimaging data have been
+A variety of statistical methods applied to neuroimaging have been
 proposed to clarify what is being represented in brain responses - i.e. what
-feature causes specific brain activity. One of the popular linear method is
-Representational Similarity Analysis (RSA)
-\citep{kriegeskorte2008representational}, and consists in analyzing the
-similarity of brain responses associated with specific categorical conditions
-(e.g. distinct images), by (1) fitting one-against-all classifiers on each
-condition and (2) testing whether these classifiers can discriminate all other
-conditions. The resulting confusion matrix is then analyzed in an unsupervised
-manner to reveal which conditions lead to similar brain activity patterns. B2B
-differs from RSA in that (1) it uses regressions instead of classifications, and
-can thus generalize to new items and new contexts and (2) it is fully
-supervised.
-
-
-% Here, we focus on the restricted issue of disentangling the
-% influence of linearly correlated predictors ($X$) onto noisy multivariate
-% observations ($Y$). The present approach thus differs from other causal
-% discovery algorithms based on temporal-delays and/or nonlinear interactions in
-% systems where the directionality of causation (from X to Y or vice versa) is
-% unknown (e.g. \citep{peters2017elements, granger1969investigating,
-% janzing2013quantifying, scholkopf2016modeling}.
-
-Finally, CCA has been used in neuroimaging for a variety of purposes such as
+feature causes specific brain activity. For example, CCA and PLS have been used in
+neuroimaging for a variety of purposes such as
 denoising and subject alignment \citep{cca_hotelling, de2019multiway}. While CCA
-relates to B2B, these two methods diverge in several ways. First, CCA and B2B
-have different objectives: CCA aims to find the potentially numerous and poorly
-interpretable components where X and Y are maximally correlated, whereas B2B
+and PLS relates to B2B, these methods diverge in several ways. First, they have different objectives: CCA aims to find the potentially numerous and poorly
+interpretable components where $X$ and $Y$ are maximally correlated, whereas B2B
 aims to recover the causal factors from X to Y. Second, B2B is not symmetric
 between $X$ and $Y$: it aims to identify specific causal features by first
-optimizing over the decoders $G$ and then over $H$. By contrast, CCA is
+optimizing over the decoders $G$ and then over $H$. By contrast, CCA and PLS are
 symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they
 project $X$ and $Y$ on maximally correlated dimensions. Third, CCA is based an
 eigen decomposition of $XH$ and $YG$ - the corresponding canonical components
 are thus mixing the $X$ features in way that limit interpretability and
 potentially dilute the impact of each feature onto multiple components. In
 contrast B2B assesses each feature $X^j$ on a single $Y$ component specifically
-selected to maximize signal-to-noise ratio of that feature $j$. Fourth, and
-unlike B2B, CCA does not separately optimize two distinct regularization
-parameters for $G$ and $H$. Finally, CCA does not use different data splits to
+selected to maximize signal-to-noise ratio of that feature $j$. Fourth CCA does
+not separately optimize two distinct regularization
+parameters for $G$ and $H$, where B2B does. Finally, CCA does not use different data splits to
 estimate $G$ and $H$. Together, these differences may explain why B2B reliably
 outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and
 \ref{fig:auc_plots}).
 
-% I find a bit surprising to mention causality literature in ML at the end. I
-% would have expected this in the introduction to convince reviewer that know
-% your stuff.
+One popular multivariate analysis of brain activity is
+Representational Similarity Analysis (RSA)
+\citep{kriegeskorte2008representational}, and consists in analyzing the
+similarity of brain responses associated with specific categorical conditions
+(e.g. distinct images), by (1) fitting one-against-all classifiers on each
+condition and (2) testing whether these classifiers can discriminate all other
+conditions. The resulting confusion matrix is then analyzed, generally in an unsupervised
+manner, to reveal which conditions lead to similar brain activity patterns. B2B
+differs from RSA in that it uses regressions instead of one-hot classifications.
+Consequently, and unlike RSA, B2B (1) is fully supervised (2) provides
+interpretable coefficients and (3) can generalize to new items and new contexts.
+In practice, these elements allow B2B to apply to event-related paradigms and
+latent variable analyses.
 
+The present empirical results, together with their theoretical foundations,
+suggest that B2B may come as a tool of choice for causal discovery when
+feature-wise intervention is limited.
 
-
-\section{Conclusion}
-In this work, we proposed Back-to-Back (B2B) regression, a linear method to
-disentangle confounded factors from multidimensional observations.
-%
-B2B repeatedly performs two successive multidimensional regressions on
-independent subsets of the data: the first regression is applied on the output
-domain (as in backward decoding), whereas the second regression is applied on
-the input domain (as in forward encoding).
-%
-We provided a theoretical guarantee about the consistency of B2B, and compared
-it to several baselines in controlled synthetic experiments.
-%
-We also applied B2B to a recent brain imaging dataset, analyzing the timing of
-brain responses and their connection to word features.
-%
-We obtained results consistent with prior work in neuroscience literature,
-confirming the reliability of B2B for real data analysis.
-%
 
 \section{Acknowledgements}
 We are thankful to Gael Varoquaux and Alexandre Gramfort for the valuable

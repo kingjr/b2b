@@ -74,7 +74,7 @@ As expected, the Backward model reveals a similar decoding time course for Word
 Length and Word Frequency, even though these features are known to specifically
 influence early and late MEG responses respectively \citep{kutas2011thirty}. In
 addition, the same decoding time course was observed for the dummy variable.
-These results illustrate that backward modeling cannot be used to estimate the
+Once again, these results illustrate that Backward modeling cannot be used to estimate the
 causal contribution of correlated features.
 
 We thus focus on the four remaining methods (i.e. Forward Regression, PLS, CCA,
@@ -93,13 +93,12 @@ course associated with Word Length and Word Frequency rose from $\approx$ 100 ms
 and from $\approx$ 400 ms respectively. Furthermore, Word Function improved the
 prediction performance of all models (all $p < 0.0002$) except for
 PLS~($p=0.7989$). Overall, these results confirm that Word Length, Word
-Frequency and Word Function causally influence specific periods of brain
-responses to words.
+Frequency and Word Function specifically improve the prediction of specific periods of brain
+responses to words, and thus form plausible independent causal contributors.
 
 To assess which model would be most sensitive to these causal discoveries, we
 compared B2B to other models across subjects (Figure \ref{fig:meg_results}
-right). For Word Length B2B outperforms all models (all $p < 0.00001$) but CCA
+right). For Word Length, B2B outperforms all models (all $p < 0.00001$) but CCA
 ($p=0.0678$). For Word Frequency, B2B outperforms all models (all $p < 0.0006$).
 For "Word Function", B2B outperforms all models (all $p < 0.0015$). Overall,
-these results show that B2B reliably outperforms standard methods, especially
-when the effects are difficult to detect.
+these results show that B2B favorably compares against baseline models.
