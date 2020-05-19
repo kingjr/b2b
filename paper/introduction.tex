@@ -18,23 +18,26 @@ length (short words are more frequent than long words) and their categories
 that controls for all of these factors simultaneously, it is thus common to use
 a \emph{forward} "encoding model", i.e. to fit a linear regression to predict observations
 (e.g. brain activity) from a minimal combination of competing factors (e.g.
-word length, word frequency), and analytically investigate,
+word length, word frequency), and analytically investigate
 the estimated contribution of each factor from the model's coefficients
 \citep{friston1994statistical,naselaris2011encoding,weichwald2015causal,
 king2018encoding,huth2016natural}.
 
 The second challenge to measuring causal influence is that observations can be
-multidimensional. The relationship between causes and effects is thus often
-considered in a \emph{backward} manner, by training models to maximally predict causes
-from multidimensional observations. For example, brain activity is often
+multidimensional.
+For example, brain activity is often
 recorded with hundreds or thousands of simultaneous measurements via functional
 Magnetic Resonance Imaging, magneto-encephalography (MEG) or multiple electro-
 physiological probes \citep{friston1994statistical,steinmetz2018challenges}.
-As simultaneous measurements may be affected by common noise sources, it is
-common to use backward
-modeling, by, for example, fitting a support vector machine across multiple
-sensors to decode the category of a stimulus \citep{norman2006beyond,cichy2014resolving,
-kriegeskorte2008representational}.
+The relationship between putative causes and observations is thus often
+done by training models in a \emph{backward}
+fashion: i.e. from observations to putative causal factors. For example, it is
+common to fit a support vector machine across multiple
+brain voxels or multiple electrodes to detect the
+category of a stimulus independently of common noise sources (e.g. head
+movements, eye blink)
+\citep{norman2006beyond,cichy2014resolving,
+kriegeskorte2008representational, king2018encoding}.
 
 Both \emph{forward} and \emph{backward} modeling have competing benefits and drawbacks.
 Specifically, forward modeling disentangles the independent contribution of
@@ -44,30 +47,28 @@ disentangle factors that are linearly correlated \citep{weichwald2015causal,
 hebart2018deconstructing, king2018encoding}. To combine some of the benefits of forward
 and backward modeling, several authors have proposed to use cross-decomposition
 techniques such as Partial Least Squares (PLS) and Canonical Correlation
-Analysis (CCA) \citep{de2019multiway}. CCA and PLS aim to find, from two sets of
-data $X$ and $Y$, the components $H$ and $G$ were $XH$ and $YG$ are maximally
-correlated or maximally covarying respectively. Because CCA and PLS are based on
-a generalized eigen decomposition, their resulting coefficients are mixing the
-features of $X$ and $Y$ in a way that makes them notoriously difficult to
+Analysis (CCA) \citep{de2019multiway, bilenko2016pyrcca}. CCA and PLS aim to find, from two sets of
+data $X$ and $Y$, the components $H$ and $G$ such that $XH$ and $YG$ are maximally
+correlated or maximally covarying respectively.
+
+While CCA and PLS can make use
+of multidimensional features and observations, they are not designed
+for feature discovery. First, these methods are not not directional: observations
+and factors can be assigned to either $X$ or $Y$. Second, these method project $X$
+and $Y$ onto a reduced but nonetheless multidimensional space. Third, because
+CCA and PLS are based on a generalized eigen decomposition, their resulting
+coefficients mix the features of $X$ and $Y$ in a way that makes them notoriously difficult to
 interpret \citep{lebart1995statistique}.
 
 Here, we introduce the `back-to-back regression' (B2B), which not only combines
 the benefits of forward and backward modeling (Section~\ref{sec:algorithm}), but
-also provides robust, interpretable, unidimensional and unbiased coefficients for
-each of tested factor.
+can also provide robust, interpretable, unidimensional and unbiased coefficients for
+each factor.
 
-The present paper focuses on the restricted issue of disentangling the
-influence of linearly correlated predictors ($X$) onto noisy multivariate
-observations ($Y$). The present approach thus differs from other causal
-discovery algorithms based on temporal-delays and/or nonlinear interactions in
-systems where the directionality of causation (from X to Y or vice versa) is
-unknown (e.g. \citep{peters2017elements, granger1969investigating,
-janzing2013quantifying, scholkopf2016modeling}.
-
-After detailing B2B method and proving its convergence
+After detailing B2B and proving its convergence
 (Section~\ref{sec:theorem}), we show with synthetic data that it outperforms
 state-of-the-art forward, backward and cross-decomposition techniques in
 disentangling causal factors (Section~\ref{sec:experiment_synthetic}). Finally,
-we apply B2B to a large neuroimaging dataset and reveal that distinct but
+we apply B2B to large neuroimaging datasets and reveal that distinct but
 linearly-correlated word features lead to distinguishable brain representations
 (Section~\ref{sec:experiment_real}).
