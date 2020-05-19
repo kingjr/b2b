@@ -6,14 +6,14 @@ ability to 1) recover causal factors when the ground truth is known and 2)
 accurately predict independent and identically distributed data otherwise.
 
 The data generating process for each experiment constructs $n=1000$ training examples
-according to the model $Y = (\text{h} XE + N)F$, where $\text{h}$ is a
+according to the model $Y = (\text{h} XS + N)F$, where $\text{h}$ is a
 scalar that modulates the signal-to-noise ratio.
 %
 Here,
 %\begin{itemize} \item $F \in \mathbb{R}^{d_x \times d_y}$ contains entries
 %drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{n \times d_x}$
 %contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{n
-%\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $E \in
+%\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $S \in
 %\mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
 %\item $\Sigma_X = AA^\top$, where $A \in \mathbb{R}^{d_x \times d_x}$ contains
 %entries drawn from $\mathcal{N}(0, \sigma^2)$, \item $\Sigma_N = BB^\top$,
@@ -23,7 +23,7 @@ Here,
 $\mathcal{N}(0, \sigma^2)$ where $\sigma^2$ is inversely proportional to $d_x$,
 $X \in \mathbb{R}^{n \times d_x}$ contains rows
 drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{n \times d_x}$
-contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $E \in \mathbb{R}^{d_x
+contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $S \in \mathbb{R}^{d_x
 \times d_x}$ is a binary diagonal matrix containing $n_c$ ones, $\Sigma_X =
 AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from
 $\mathcal{N}(0, \sigma^2)$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
@@ -75,7 +75,7 @@ scikit-learn RidgeCV \citep{sklearn}.
 
 %
 B2B leads to \emph{scalar} coefficients for non-causal
-features. The diagonal of this matrix, $\hat E$, can thus be directly used
+features. The diagonal of this matrix, $\hat S$, can thus be directly used
 as a causal contribution estimate. Note that this estimate is unbiased (i.e.
 zeros-centered) only if the second regression $H$ is not regularized.
 
@@ -86,15 +86,15 @@ models) or each canonical projection of the observations.
 To estimate causal contribution, we must thus transform such vector into a
 scalar, by e.g. taking the sum of square coefficients:
 % \begin{equation}
-  $\hat E_i = \sum_j {H^j_i}^2 $
+  $\hat S_i = \sum_j {H^j_i}^2 $
 % \end{equation}
 Note that in such B2B cases, the estimates are  thus necessarily positive and thus biased.
 
 Finally, to estimate whether each model accurately identifies causal factors independently of
 their potential biases, we compute the
-area-under-the-curve (AUC) across factors $AUC(E, \hat E)$.
-%\begin{equation} AUC = 1 - \sum_1^n (E_k - E_{k-1}) ( \hat{E}_k +
-%\hat{E}_{k-1}) / 2 \end{equation}
+area-under-the-curve (AUC) across factors $AUC(S, \hat S)$.
+%\begin{equation} AUC = 1 - \sum_1^n (S_k - S_{k-1}) ( \hat{S}_k +
+%\hat{S}_{k-1}) / 2 \end{equation}
 By definition, this AUC evaluation can only be done when ground truth labels are available, as is the case in
 this synthetic setup, but not in the neuroimaging experiments below.
 
@@ -112,7 +112,7 @@ this synthetic setup, but not in the neuroimaging experiments below.
 
 \subsubsection{Evaluating Causal Discovery with held-out prediction reliability}
 
-In most real-world cases, $E$ is not known. Consequently, the above AUC evaluation can not be estimated.
+In most real-world cases, $S$ is not known. Consequently, the above AUC evaluation can not be estimated.
 To address this issue, we assess the ability of each model to reliably predict
 independent and identically distributed data from $Y$, given all of the $X$
 features versus all-but-one feature $X_{-i}$ (i.e. 'knock-out X'). This

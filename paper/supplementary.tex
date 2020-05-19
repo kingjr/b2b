@@ -20,13 +20,13 @@
 
 \begin{theorem}[B2B consistency - general case]
 
-     Consider the B2B model from Equation $$Y = (XE + N)F$$ $N$ centered and full rank noise.
+     Consider the B2B model from Equation $$Y = (XS + N)F$$ $N$ centered and full rank noise.
 
-     If $F$ and $X$ are full-rank on $Img(E)$, then, the solution of B2B, $\hat H$, will minimize
+     If $F$ and $X$ are full-rank on $Img(S)$, then, the solution of B2B, $\hat H$, will minimize
 
      $$\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$$ and satisfy
 
-     $$E\hat H = \hat H$$
+     $$S\hat H = \hat H$$
 \end{theorem}
 \begin{proof}
 
@@ -34,59 +34,59 @@
 
  Since $\hat G$ is the least square estimator of $X$ from $Y$
  \begin{align*}
-    \hat G = \arg \min_G \mathbb{E}[\left \| YG - X \right \|^2]
+    \hat G = \arg \min_G \mathbb{S}[\left \| YG - X \right \|^2]
 \end{align*}
-Replacing $Y$ by its model definition $Y = (XE+N)F$, we have
+Replacing $Y$ by its model definition $Y = (XS+N)F$, we have
  \begin{align*}
-    \hat G &=   \arg \min_G \mathbb{E}[\left \| X - (XE + N)FG \right\|^2] =\arg \min_G \mathbb{E}[\left \| X - XEFG + NFG \right\|^2]
+    \hat G &=   \arg \min_G \mathbb{S}[\left \| X - (XS + N)FG \right\|^2] =\arg \min_G \mathbb{S}[\left \| X - XSFG + NFG \right\|^2]
   \end{align*}
   Since $N$ is centered and independent of $X$, we have
   \begin{align}
-    	  \hat G &=  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2
+    	  \hat G &=  \arg \min_G \left \| X - XSFG\right\| ^2  + \left \| NFG\right \| ^2
      \label{eq:Gdoublenorm}
 \end{align}
 
 Samely, for $\hat H$, we have
 \begin{align*}
-    \hat H = \arg \min_H \mathbb{E}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{E}[\| XH - (XE + N)F \hat G \|^2] \\
-    &=\arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2] + \mathbb{E}[\| NF\hat G \| ^2]\\
-    &= \arg \min_H \mathbb{E}[\| X(H - EF \hat G) \| ^2]
+    \hat H = \arg \min_H \mathbb{S}[\| XH - Y \hat{G} \|^2] &=\arg  \min_H \mathbb{S}[\| XH - (XS + N)F \hat G \|^2] \\
+    &=\arg \min_H \mathbb{S}[\| X(H - SF \hat G) \| ^2] + \mathbb{S}[\| NF\hat G \| ^2]\\
+    &= \arg \min_H \mathbb{S}[\| X(H - SF \hat G) \| ^2]
  \end{align*}
  a positive quantity which reaches a minimum (zero) for
  \begin{align}
-    \hat H = EF \hat G
+    \hat H = SF \hat G
     \label{eq:Hdoublenom}
 \end{align}
 
-Let us now prove that $EF\hat G = F\hat G$.
+Let us now prove that $SF\hat G = F\hat G$.
 
-Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger EF\hat G$, we have $FZ = FF^\dagger EF \hat G$
+Let $F^\dagger$ be the pseudo inverse of $F$, and $Z=F^\dagger SF\hat G$, we have $FZ = FF^\dagger SF \hat G$
 
-Since $F$ is full rank on $Img(E)$, we have $FF^\dagger E =E$, and $FZ = EF\hat G$
+Since $F$ is full rank on $Img(S)$, we have $FF^\dagger S =S$, and $FZ = SF\hat G$
 
-As $E$ is a binary diagonal matrix, it is an orthogonal projection and therefore a contraction, thus
- $$ \| NEF\hat G\|^2 \leq \| NF\hat G \|^2$$ and
- $$\left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
+As $S$ is a binary diagonal matrix, it is an orthogonal projection and therefore a contraction, thus
+ $$ \| NSF\hat G\|^2 \leq \| NF\hat G \|^2$$ and
+ $$\left \| X - XSFZ\right \| ^2  + \left \| NFZ\right \| ^2 = \| X - XSF\hat G \| ^2  + \| NSF\hat G \| ^2 \leq \| X - XSF\hat G \| ^2  + \| NF\hat G \| ^2$$
 
-But since $\hat G =  \arg \min_G \left \| X - XEFG\right\| ^2  + \left \| NFG\right \| ^2$, we also have
-$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \left \| X - XEFZ\right \| ^2  + \left \| NFZ\right \| ^2$$
+But since $\hat G =  \arg \min_G \left \| X - XSFG\right\| ^2  + \left \| NFG\right \| ^2$, we also have
+$$\left \| X - XSF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \left \| X - XSFZ\right \| ^2  + \left \| NFZ\right \| ^2$$
 
 Summarizing the above,
-$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2 \leq \| X - XEF\hat G \| ^2  + \| NF\hat G \| ^2$$
-$$\left \| X - XEF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 = \| X - XEF\hat G \| ^2  + \| NEF\hat G \| ^2$$
-$$\left \| NF\hat G\right \| ^2 =  \| NEF\hat G \| ^2$$
+$$\left \| X - XSF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 \leq \| X - XSF\hat G \| ^2  + \| NSF\hat G \| ^2 \leq \| X - XSF\hat G \| ^2  + \| NF\hat G \| ^2$$
+$$\left \| X - XSF\hat G\right\| ^2  + \left \| NF\hat G\right \| ^2 = \| X - XSF\hat G \| ^2  + \| NSF\hat G \| ^2$$
+$$\left \| NF\hat G\right \| ^2 =  \| NSF\hat G \| ^2$$
 
-$N$ being full rank, this yields $EF\hat G = F\Hat G$.
+$N$ being full rank, this yields $SF\hat G = F\Hat G$.
 
-Replacing into $\eqref{eq:Gdoublenorm}$, and setting $H = EFG$, we have
+Replacing into $\eqref{eq:Gdoublenorm}$, and setting $H = SFG$, we have
 \begin{align*}
-	\hat G &=  \arg \min_G  \left \| X - XEFG\right \| ^2  + \left \| NFG\right \| ^2 \\
-	&=   \arg \min_G \left \| X - XEFG\right \| ^2  + \left \| NEFG\right \| ^2 \\
+	\hat G &=  \arg \min_G  \left \| X - XSFG\right \| ^2  + \left \| NFG\right \| ^2 \\
+	&=   \arg \min_G \left \| X - XSFG\right \| ^2  + \left \| NSFG\right \| ^2 \\
 	\hat H &=  \arg \min_H \left \| X - XH\right \| ^2  + \left \| NH\right \| ^2
 	\label{eq:4}
 \end{align*}
 
-Finally, $E\hat H = E EF\hat G = EF\hat G = \hat H$, since $E$, a binary diagonal matrix, is involutive. This completes the proof.
+Finally, $S\hat H = S SF\hat G = SF\hat G = \hat H$, since $S$, a binary diagonal matrix, is involutive. This completes the proof.
 \end{proof}
 
 
