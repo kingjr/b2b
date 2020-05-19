@@ -5,14 +5,14 @@ The purpose of these experiments is to evaluate the ability of B2B on its
 ability to 1) recover causal factors when the ground truth is known and 2)
 accurately predict independent and identically distributed data otherwise.
 
-The data generating process for each experiment constructs $n=1000$ training examples
+The data generating process for each experiment constructs $m=1000$ training examples
 according to the model $Y = (\text{h} XS + N)F$, where $\text{h}$ is a
 scalar that modulates the signal-to-noise ratio.
 %
 Here,
 %\begin{itemize} \item $F \in \mathbb{R}^{d_x \times d_y}$ contains entries
-%drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{n \times d_x}$
-%contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{n
+%drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{m \times d_x}$
+%contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{m
 %\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $S \in
 %\mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
 %\item $\Sigma_X = AA^\top$, where $A \in \mathbb{R}^{d_x \times d_x}$ contains
@@ -21,8 +21,8 @@ Here,
 %$\mathcal{N}(0, \sigma^2)$, \end{itemize}
     $F \in \mathbb{R}^{d_x \times d_y}$ contains entries drawn from
 $\mathcal{N}(0, \sigma^2)$ where $\sigma^2$ is inversely proportional to $d_x$,
-$X \in \mathbb{R}^{n \times d_x}$ contains rows
-drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{n \times d_x}$
+$X \in \mathbb{R}^{m \times d_x}$ contains rows
+drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{m \times d_x}$
 contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $S \in \mathbb{R}^{d_x
 \times d_x}$ is a binary diagonal matrix containing $n_c$ ones, $\Sigma_X =
 AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from
@@ -93,7 +93,7 @@ Note that in such B2B cases, the estimates are  thus necessarily positive and th
 Finally, to estimate whether each model accurately identifies causal factors independently of
 their potential biases, we compute the
 area-under-the-curve (AUC) across factors $AUC(S, \hat S)$.
-%\begin{equation} AUC = 1 - \sum_1^n (S_k - S_{k-1}) ( \hat{S}_k +
+%\begin{equation} AUC = 1 - \sum_1^m (S_k - S_{k-1}) ( \hat{S}_k +
 %\hat{S}_{k-1}) / 2 \end{equation}
 By definition, this AUC evaluation can only be done when ground truth labels are available, as is the case in
 this synthetic setup, but not in the neuroimaging experiments below.

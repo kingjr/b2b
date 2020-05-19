@@ -97,7 +97,7 @@ Yet, in most experimental cases, the problem is best described as:
   Y = (XS+N)F+M
   \label{eq:model_noisy_measure}
 \end{equation}
-  with $M\in \mathbb{R}^{n \times d_y}$.
+  with $M\in \mathbb{R}^{m \times d_y}$.
 
 This equation is actually equivalent to Equation \ref{eq:model} given our
 hypotheses. Indeed, we can rewrite $M = MF^{-1}F$ over $Img(F)$, which leads to:
@@ -114,9 +114,9 @@ For B2B, feature importance is assessed as follows:
 
 \begin{algorithm}[H]
     %\SetAlgoLined
-    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
-\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
-\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+    \KwIn{$X_{train} \in \mathbb{R}^{m \times d_x}$, $X_{test} \in
+\mathbb{R}^{m' \times d_x}$, $Y_{train} \in \mathbb{R}^{m\times d_y}$, $Y_{test}
+\in \mathbb{R}^{m'\times d_y}$, } \KwOut{estimate of prediction improvement
 $\Delta{R} \in \mathbb{D}^{d_x}$.} $H, G = \text{B2B}(X_{train}, Y_{train})$\;
 $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
 
@@ -130,9 +130,9 @@ For the Forward Model, the feature importance is assessed as follows:
 
 \begin{algorithm}[H]
     %\SetAlgoLined
-    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
-\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
-\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+    \KwIn{$X_{train} \in \mathbb{R}^{m \times d_x}$, $X_{test} \in
+\mathbb{R}^{m' \times d_x}$, $Y_{train} \in \mathbb{R}^{m\times d_y}$, $Y_{test}
+\in \mathbb{R}^{m'\times d_y}$, } \KwOut{estimate of prediction improvement
 $\Delta{R} \in \mathbb{D}^{d_x, d_y}$.}
 
 $H = \text{LinearRegression}(X_{train}, Y_{train})\;
@@ -157,9 +157,9 @@ For the CCA and PLS models, the feature importance is assessed as follows:
 
 \begin{algorithm}[H]
     %\SetAlgoLined
-    \KwIn{$X_{train} \in \mathbb{R}^{n \times d_x}$, $X_{test} \in
-\mathbb{R}^{n' \times d_x}$, $Y_{train} \in \mathbb{R}^{n\times d_y}$, $Y_{test}
-\in \mathbb{R}^{n'\times d_y}$, } \KwOut{estimate of prediction improvement
+    \KwIn{$X_{train} \in \mathbb{R}^{m \times d_x}$, $X_{test} \in
+\mathbb{R}^{m' \times d_x}$, $Y_{train} \in \mathbb{R}^{m\times d_y}$, $Y_{test}
+\in \mathbb{R}^{m'\times d_y}$, } \KwOut{estimate of prediction improvement
 $\Delta{R} \in \mathbb{D}^{d_x, d_z}$.} $H, G = \text{CCA}(X_{train},
 Y_{train})$\; $R_{full} = \text{corr}(X_{test} H, Y_{test} G)$\;
 

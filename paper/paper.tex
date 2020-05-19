@@ -132,10 +132,10 @@ other standard techniques.
 
   \node[] (times2) at (8.5, 0){$\times$};
 
-  \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times d_y}$}};
-  \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d_x}$}};
+  \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{m \times d_y}$}};
+  \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{m \times d_x}$}};
   \node[] (annS) at (\posS, -1.8){\scalebox{0.85}{$S \in \mathbb{D}^{d_x \times d_x}$}};
-  \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d_x}$}};
+  \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{m \times d_x}$}};
   \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d_x \times d_y}$}};
 
   \node[] (labY) at (\posY, 2){Observations};
@@ -156,8 +156,8 @@ other standard techniques.
 
 \subsection{Problem setup}
 
-We consider the measurement of multivariate signal $Y \in \mathbb{R}^{n \times
-d_y}$ (the dependent variables), generated from a set of putative causes $X \in \mathbb{R}^{n \times
+We consider the measurement of multivariate signal $Y \in \mathbb{R}^{m \times
+d_y}$ (the dependent variables), generated from a set of putative causes $X \in \mathbb{R}^{m \times
 d_x}$ (the independent variables), via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
 %
 Not all the variables in $X$ exert a causal influence on $Y$.
@@ -172,14 +172,14 @@ In summary, the problem can be formalized as:
     \label{eq:model}
 \end{equation}
 %
-where $i$ is a given sample, and $n_i$ is a sample-specific noise drawn from a
+where $i$ is a given sample, and $n_i$ is a sample-specific additive noise drawn from a
 centered distribution.
 %
 While the triplet of variables $X$ and $N$ are independent, we allow each of
 them to have any form of covariance.
 % what is a general covariance matrix?
 %
-In practice, we observe $n$ samples $(X, Y)$ from the model.
+In practice, we observe $m$ samples $(X, Y)$ from the model.
 %
 This problem space, along with the sizes of all variables involved, is
 illustrated in Figure~\ref{fig:b2b}.
@@ -265,7 +265,7 @@ B2B.
 % JR: shall we update algorithm with LOO trick?
 \begin{algorithm}[H]
     %\SetAlgoLined
-    \KwIn{input data $X \in \mathbb{R}^{n \times d_x}$, output data $Y \in \mathbb{R}^{n\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
+    \KwIn{input data $X \in \mathbb{R}^{m \times d_x}$, output data $Y \in \mathbb{R}^{m\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
     \KwOut{estimate of causal influences $\hat{S} \in \mathbb{D}^{d_x \times d_x}$.}
     $\hat{S} \leftarrow 0$\;
     \For{$i = 1, \ldots, m$}{
@@ -336,7 +336,7 @@ $\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(S)$$
 Therefore, we recover $S$ from $\hat H$.
 
 
-In the presence of noise, the causal factors of $S$ correspond to the positive
+In the presence of additive noise, the causal factors of $S$ correspond to the positive
 elements of $\text{diag}(\hat H)$. The methods to recover them are presented in
 the Appendix (\ref{recovering}).
 

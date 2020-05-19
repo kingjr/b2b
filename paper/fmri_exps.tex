@@ -141,7 +141,7 @@ The preprocessed volumetric fMRI data was linearly projected to its closest surf
 using nilearn \texttt{vol\_to\_surf} function with a 3 mm radius. A surface searchlight
 analysis was then implemented by concatenating the surface
 fMRI data within a 8mm radius of each vertex. For each subject and vertex, we
-thus build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 1400 words
+thus build an observation matrix $Y \in \mathbb{R}^{m \times d_y}$ of $m\approx$ 1400 words
 by $d_y\approx40$ vertices per searchlight sphere. Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
@@ -177,7 +177,7 @@ To account for the delay of blood oxygenation level dependent responses, the
 features were convolved using the Glover hemodynamic response function
 of nilearn's \texttt{compute\_regressor} function an oversampling of 16 and default parameters \citep{nilearn}.
 
-This procedure yields an $X \in \mathbb{R}^{n \times d_x}$ matrix of $n\approx$
+This procedure yields an $X \in \mathbb{R}^{m \times d_x}$ matrix of $m\approx$
 840 TR (Repetition Time: 2 sec.) by
 $d_x=4$ features for each subject. Each of the columns of $X$ is normalized to
 have a zero-mean and a unit variance.
@@ -194,7 +194,7 @@ methods).
 
 We used the feature importance described in Algorithm \ref{algorithm:b2b_fi} to assess the extent to which each feature $X_i$ specifically improves the prediction of held-out $Y$ data, using a 5-fold cross-validation (with shuffled trials to homogeneize the distributions between the training and testing splits).
 
-Each model was implemented for each subject and each time sample independently. Pairwise comparison between models were performed using a two-sided Wilcoxon test across subjects (n=90) using the average $\Delta R$ across time. Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and p-values are reported below.
+Each model was implemented for each subject and each time sample independently. Pairwise comparison between models were performed using a two-sided Wilcoxon test across subjects (m=90) using the average $\Delta R$ across time. Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and p-values are reported below.
 
 
 \begin{figure}

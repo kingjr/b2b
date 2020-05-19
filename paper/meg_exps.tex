@@ -14,13 +14,13 @@ segment was baseline-corrected between -100ms and 0ms, and decimated by 5 and
 thus led a sampling frequency of 240Hz. The average responses across words is
 displayed in Figure \ref{fig:meg_evoked}.
 For each subject and each time sample relative to word onset, we
-build an observation matrix $Y \in \mathbb{R}^{n \times d_y}$ of $n\approx$ 2,700 words
+build an observation matrix $Y \in \mathbb{R}^{m \times d_y}$ of $m\approx$ 2,700 words
 by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
 of the columns of $Y$ is normalized to have zero mean and unit variance.
 
 We use the same features as for the fMRI experiments, except that the features
-were not convolved by an hemodynamic response function. This yields an $X \in \mathbb{R}^{n \times d_x}$
-matrix of $n\approx$ 2,700 words by $d_x=4$ features for each subject. Each of
+were not convolved by an hemodynamic response function. This yields an $X \in \mathbb{R}^{m \times d_x}$
+matrix of $m\approx$ 2,700 words by $d_x=4$ features for each subject. Each of
 the columns of $X$ is normalized to have a mean and a standard deviation of 0
 and 1 respectively.
 
