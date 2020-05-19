@@ -66,11 +66,13 @@ Second, we use a variety of simulated data to show that B2B outperforms
 least-squares regression and cross-decomposition techniques (e.g. canonical
 correlation analysis and partial least squares) on causal identification when
 the factors and the observations are partially collinear.
-Finally, we apply B2B to magneto-encephalography and fMRI of 102 subjects
+Finally, we apply B2B to magneto-encephalography and functional Magnetic
+Resonance Imaging of 102 subjects
 recorded during a one hour long reading task to test whether our method appropriately disentangles
-the respective contribution of word length and word frequency - two correlated
-factors known to cause early visual and late associative cortical responses respectively. The results
-show that these two factors are better disentangled with B2B than with
+the respective contribution of collinear factors such as word length, word
+frequency respectively known to cause early visual and late associative cortical
+responses. The results
+show that these factors are better disentangled with B2B than with
 other standard techniques.
 \end{abstract}
 
@@ -78,7 +80,7 @@ other standard techniques.
 \begin{keyword}
   Cross-Decomposition \sep
   Feature Discovery \sep
-  Magnetoencephalography \sep
+  MEG \sep
   fMRI \sep
   Decoding \sep
   Encoding \sep
@@ -382,6 +384,15 @@ manner to reveal which conditions lead to similar brain activity patterns. B2B
 differs from RSA in that (1) it uses regressions instead of classifications, and
 can thus generalize to new items and new contexts and (2) it is fully
 supervised.
+
+
+% Here, we focus on the restricted issue of disentangling the
+% influence of linearly correlated predictors ($X$) onto noisy multivariate
+% observations ($Y$). The present approach thus differs from other causal
+% discovery algorithms based on temporal-delays and/or nonlinear interactions in
+% systems where the directionality of causation (from X to Y or vice versa) is
+% unknown (e.g. \citep{peters2017elements, granger1969investigating,
+% janzing2013quantifying, scholkopf2016modeling}.
 
 Finally, CCA has been used in neuroimaging for a variety of purposes such as
 denoising and subject alignment \citep{cca_hotelling, de2019multiway}. While CCA
