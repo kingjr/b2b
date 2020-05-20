@@ -3,7 +3,8 @@
 
 \subsubsection{MEG preprocessing}
 
-The raw MEG data was bandpass-filtered between 0.1 and 40Hz using MNE-Python
+One hundred and two subjects performed a similar reading task to the one
+described above in the MEG scanner. The raw MEG data was bandpass-filtered between 0.1 and 40Hz using MNE-Python
 default parameters \citep{gramfort2013meg, gramfort2014mne}. Specifically, we
 used a zero-phase finite impulse
 response filter (FIR) with a Hamming window and with transition bands of 0.1Hz
@@ -12,7 +13,7 @@ segmented 100ms before word onset and 1s after
 word onset ($t=0$ms corresponds to word onset). Finally, each resulting
 segment was baseline-corrected between -100ms and 0ms, and decimated by 5 and
 thus led a sampling frequency of 240Hz. The average responses across words is
-displayed in Figure \ref{fig:meg_evoked}.
+displayed in Fig.~\ref{fig:meg_evoked}.
 For each subject and each time sample relative to word onset, we
 build an observation matrix $Y \in \mathbb{R}^{m \times d_y}$ of $m\approx$ 2,700 words
 by $d_y=301$ MEG channels (273 magnetometers and 28 compensation channels). Each
@@ -25,7 +26,8 @@ the columns of $X$ is normalized to have a mean and a standard deviation of 0
 and 1 respectively.
 
 We compare B2B against other methods following the same procedure as for the
-fMRI experiments, except that the search light is applied across time samples.
+fMRI experiments, except that the searchlight swipes across time samples, and
+is trained across all MEG channels.
 
 
 \begin{figure}[t!]
@@ -84,7 +86,7 @@ Algorithm \ref{algorithm:b2b_fi}). Contrary to the Backward Model, none of the
 models predicted the Dummy Variable to improve the $Y$ prediction: all $\Delta R
 < 0$ (all $p > .089$).
 
-Figure \ref{fig:meg_results} shows, for each model, the effects obtained across
+Figure~\ref{fig:meg_results} shows, for each model, the effects obtained across
 time (left) and subjects (right).
 
 Word Length and Word Frequency improved the prediction performance of all
@@ -96,9 +98,7 @@ PLS~($p=0.7989$). Overall, these results confirm that Word Length, Word
 Frequency and Word Function specifically improve the prediction of specific periods of brain
 responses to words, and thus form plausible independent causal contributors.
 
-To assess which model would be most sensitive to these causal discoveries, we
-compared B2B to other models across subjects (Figure \ref{fig:meg_results}
-right). For Word Length, B2B outperforms all models (all $p < 0.00001$) but CCA
-($p=0.0678$). For Word Frequency, B2B outperforms all models (all $p < 0.0006$).
-For "Word Function", B2B outperforms all models (all $p < 0.0015$). Overall,
-these results show that B2B favorably compares against baseline models.
+We compare B2B to other models across subjects (Fig.~\ref{fig:meg_results}
+right). For both Word Length and Word Frequency, B2B outperforms all models (all $p < 0.0001$).
+For "Word Function", B2B outperforms all models (all $p < 0.0001$) but CCA ($p<0.0001$).
+Overall, these results show that B2B generally compares favorably against baseline models.

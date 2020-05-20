@@ -2,11 +2,11 @@
 %\subsection{Dataset}
 
 Next, we apply our method to brain imaging data from the anonymized multimodal
-neuroimaging ``Mother Of all Unification Studies'' (MOUS) dataset
+neuroimaging ``Mother Of all Unification Studies'' (MOUS) study
 \citep{schoffelen2019204}. The dataset contains functional Magnetic Resonance
 Imaging (fMRI) and magneto-encephalography (MEG)
-recordings of each 102 healthy Dutch adults who performed a reading
-task in the scanner. Thirteen subjects were excluded from the analysis (12 MEG and 1 fMRI)
+recordings of 102 healthy Dutch adults who performed a reading
+task in the scanner. Ten subjects were excluded from the analysis (9/102 MEG and 1/102 fMRI)
 because of technical difficulties reading the files.
 %
 Subjects were exposed to a rapid serial visual presentation of Dutch words. The
@@ -127,7 +127,7 @@ runs were produced after such smoothing.
 \end{description}
 
 Many internal operations of \emph{fMRIPrep} use \emph{Nilearn} 0.6.2
-\citep[RRID:SCR\_001362]{nilearn}, mostly within the functional
+\citep[RRID:SCR\_001362]{Nilearn}, mostly within the functional
 processing workflow. For more details of the pipeline, see
 \href{https://fmriprep.readthedocs.io/en/latest/workflows.html}{the
 section corresponding to workflows in \emph{fMRIPrep}'s documentation}.
@@ -138,12 +138,12 @@ section corresponding to workflows in \emph{fMRIPrep}'s documentation}.
 % \href{https://creativecommons.org/publicdomain/zero/1.0/}{CC0} license.
 
 The preprocessed volumetric fMRI data was linearly projected to its closest surface
-using nilearn \texttt{vol\_to\_surf} function with a 3 mm radius. A surface searchlight
+using Nilearn \texttt{vol\_to\_surf} function with a 3 mm radius and the
+Freesurfer 'fsaverage5' surface. A surface searchlight
 analysis was then implemented by concatenating the surface
 fMRI data within a 8mm radius of each vertex. For each subject and vertex, we
 thus build an observation matrix $Y \in \mathbb{R}^{m \times d_y}$ of $m\approx$ 1400 words
-by $d_y\approx40$ vertices per searchlight sphere. Each
-of the columns of $Y$ is normalized to have zero mean and unit variance.
+by $d_y\approx40$ vertices per searchlight sphere. Each of the columns of $Y$ is normalized to have zero mean and unit variance.
 
 These multidimensional brain observations were to be accounted for (or decoded by) four features.
 
@@ -151,18 +151,22 @@ These multidimensional brain observations were to be accounted for (or decoded b
 
 We aim to identify the word features that cause a variation in brain responses. We consider four distinct but collinear features.
 %
-First, 'Word Length' refers to the total number of letters. Word Length is expected to primarily cause a variation in the early evoked MEG responses (i.e. from 100 ms after stimulus onset) elicited by the retinotopically-tuned visual cortices (e.g. \citep{pegado2014timing}.).
+First, 'Word Length' refers to the total number of letters. Word Length is
+expected to primarily cause a variation in the early evoked MEG responses
+(i.e. from 100 ms after stimulus onset) primarily elicited by the
+retinotopically-tuned visual cortices (e.g. \citep{pegado2014timing}.) but
+expected across the full visual hierarchy (e.g. \citep{hagler2006spatial}).
 %
 Second, 'Word Frequency' indexes how frequently each word appears in Dutch and
-was derived with the the Zipf logarithmic scale of \citep{van2014subtlex}
+here derives from the Zipf logarithmic scale of \citep{van2014subtlex}
 provided by the WordFreq package \citep{speerwordfreq}. Word Frequency is
 expected to primarily cause a variation in the late evoked MEG responses (i.e.
-from 400 ms) in the left frontal, temporal and parietal cortices
+from 400 ms) in the left frontal, temporal and parietal
 cortices \citep{kutas2011thirty,mccandliss2003visual}.
 %
 Third, 'Word Function' indicates whether each word is a content word (i.e. a
 noun, a verb, an adjective or an adverb) or a function word (i.e. a preposition,
-a conjunction, a determinant, a pronoun or a numeral), and was derived from
+a conjunction, a determinant, a pronoun or a numeral), and here derives from
 Spacy's part of speech tagger \citep{spacy2}. To our knowledge, this feature has
 not been thoroughly investigated with fMRI and MEG. While its causal contribution to
 reading processes in the brain thus remains unclear, this lexical feature can
@@ -173,31 +177,30 @@ $dummy = z(length) + z(frequency) + \mathcal{N}$, where $z$ normalizes features
 and $\mathcal{N}$ is a random vector sampling Gaussian distribution (all terms
 thus have a zero-mean and a unit-variance).
 
-To account for the delay of blood oxygenation level dependent responses, the
+To account for the delay of blood oxygenation level dependent responses, these four
 features were convolved using the Glover hemodynamic response function
-of nilearn's \texttt{compute\_regressor} function an oversampling of 16 and default parameters \citep{nilearn}.
+of Nilearn's \texttt{compute\_regressor} function an oversampling of 16 and default parameters \citep{Nilearn}.
 
 This procedure yields an $X \in \mathbb{R}^{m \times d_x}$ matrix of $m\approx$
-840 TR (Repetition Time: 2 sec.) by
-$d_x=4$ features for each subject. Each of the columns of $X$ is normalized to
-have a zero-mean and a unit variance.
+840 TR (Repetition Time: 2 sec.) by $d_x=4$ factors for each subject.
+Each of the columns of $X$ is normalized to have a zero-mean and a unit variance.
 
 
 \subsubsection{Models and statistics}
 
 We compare B2B to four standard methods: Forward regression, Backward
 regression, Regularized CCA and PLS, as implemented in scikit-learn
-\citep{sklearn} and pyrcca \citep{bilenko2016pyrcca}, and optimized with nested cross-validation over twenty $l2$
+\citep{sklearn} and Pyrcca \citep{bilenko2016Pyrcca}, and optimized with nested cross-validation over twenty $l2$
 regularization parameters logarithmically spaced between $10^{-4}$ and $10^4$
 (for regression methods) or 1 to 4 canonical components (for cross-decomposition
 methods).
 
-We used the feature importance described in Algorithm \ref{algorithm:b2b_fi} to assess the extent to which each feature $X_i$ specifically improves the prediction of held-out $Y$ data, using a 5-fold cross-validation (with shuffled trials to homogeneize the distributions between the training and testing splits).
+We used the feature importance described in Algorithm \ref{algorithm:b2b_fi} to assess the extent to which each feature $X_i$ specifically improves the prediction of held-out $Y$ data, using a 5-fold cross-validation (with shuffled trials to homogenize the distributions between the training and testing splits).
 
 Each model was implemented for each subject and each time sample independently.
 Pairwise comparison between models were performed using a two-sided Wilcoxon
-signed-rank test across subjects (m=90) using the average $\Delta R$ across time.
-Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and
+signed-rank test across subjects using the average $\Delta R$ across time.
+Corresponding effect sizes are shown in Fig.~\ref{fig:meg_results}, and
 p-values are reported below.
 
 
@@ -231,47 +234,47 @@ We compared the ability of Forward regression, Backward regression, CCA, PLS
 and B2B to estimate the causal contribution of four distinct but collinear
 features on brain responses to words.
 
-Supplementary Figure \ref{fig:fmri_supp} shows that the Backward model decodes
+Supplementary Fig.~\ref{fig:fmri_supp} shows that the Backward model decodes
 the dummy variable well above chance level. In addition, it decodes both Word
 Length and Word Frequency across large sections of the cortex, even though
 these features are known to primarily influence early visual cortex and
-associative cortices respectively. These results illustrate that while Backward
-modeling achieve high sensitivity, it is not valid to estimate the specific
+associative cortices respectively. In consequence, while Backward
+modeling achieves high sensitivity, it is not valid to estimate the specific
 causal contribution of collinear features.
 
 On the contrary, the $H$
 coefficients of the Forward model reveals the expected spatial specificity of
-Word Length and Word Frequency, peaking the visual and temporal cortices
-respectively. However such Forward coefficients may be variable across
+Word Length and Word Frequency, peaking in the visual and temporal cortices
+respectively. However, such Forward coefficients may be variable across
 subjects, and could thus underestimate the significance of each factor at each
 vertex, as evaluated with a  signed-rank tests across subjects. In principle, such
 inter-subject variability could be less impactful with
-multivariate observations methods such as CCA and PLS \citep{bilenko2016pyrcca,
+multivariate observations methods such as CCA and PLS \citep{bilenko2016Pyrcca,
 king2018encoding}, but they fail to provide a single and interpretable coefficient
 for each feature at each vertex.
 
 In contrast, the $\hat S$ of an unbiased B2B (i.e. a B2B where $H$ is not
 regularized) reaches higher levels of significance at each vertex
-than the Forward $H$ \ref{fig:fmri_supp}. (Note that a direct
+than the Forward $H$ (Supplementary Fig.~\ref{fig:fmri_supp}). (Note that a direct
 comparison between the Forward coefficients $H$ and those of B2B ($\hat S$)
-is not feasible, as these two do not have the same units.)
+is challenging, because these two metrics do not have the same units.)
 
 To fairly compare the Forward, CCA, PLS and B2B methods on a common and robust
-evaluation metric, robust to coefficient biases, we thus compare them on their ability to improve $Y$
+evaluation metrics, robust to coefficient biases, we thus compare them on their ability to improve $Y$
 predictions of out-of-sample data when one factor is introduced into the model.
-This analysis leads to a $\Delta R$ as described in Algorithm
-\ref{algorithm:b2b_fi}). As expected, the Forward, CCA, PLS
+This analysis leads to a $\Delta R$ as described in the synthetic experiment.
+As expected, the Forward, CCA, PLS
 and B2B method predicted that the Dummy Variable does not improve the $Y$
 prediction. This confirms that these methods accurately rule out the known
 non-causal factor.
 
 The average $\Delta R$ across subjects is displayed for each model and each
-feature in \ref{fig:fmri_delta_r}. Overall, B2B favorably compares to baseline models.
+feature in~\ref{fig:fmri_delta_r}. Overall, B2B favorably compares to baseline models.
 To quantify this assessment, we compare for each subject separately
 the average $\Delta R$ across vertices obtained between B2B and each
 baseline model. To limit the inclusion of uninformative brain regions in this
 summary, we restrict the analysis to vertices which can be reliably accounted
 for by the Forward model ($p<.001$, not corrected across vertices)
-\ref{fig:fmri_delta_r}. The results show that B2B significantly outperforms all
-baseline models on all factors (all $p<0.0001$) but the dummy variable
-(min $p=0.0852$).
+The results, displayed in Fig.~\ref{fig:fmri_delta_r}, show that B2B
+is significantly better than baseline models on all factors (all $p<0.0001$)
+but the dummy variable (min $p=0.0852$).
