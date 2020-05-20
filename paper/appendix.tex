@@ -250,22 +250,54 @@ non-causal factors or (3) independent repetitions of the experiment.
   \label{fig:duration}}
 \end{figure}
 
+\subsection{Supplementary comparison of models' coefficients}
+
+Following the recommendations of one of our reviewers, we also implemented a
+multivariate variant of the forward model, i.e. a MANOVA, using the statsmodels
+implementation \citep{seabold2010statsmodels}. MANOVA is primarily used as a
+inferential statistics, and does not trivially convert to a predicting method.
+Consequently, we did not find a way to compare MANOVA against B2B with the
+$\Delta R$ evaluation. However, the effects of MANOVA comes with its own effect
+size statistics: the Wilk's Lambda. For each searchlight, we thus use the $F-values$ of the
+Wilk's Lambda statistics as proxy for $\hat S$ and feeds it to a second-level
+Wilcoxon signed-rank tests across subjects, like we did for the other models.
+
+The results show that all factors, including the Dummy variable, are
+systematically above chance level in all recorded brain regions \ref{fig:fmri_supp}. This result
+can be explained by the large dimensionality of $Y$. Indeed, limiting the
+searchlight to a 1mm radius did not lead to these spurious effects but provided
+results similar to the Forward model.
+
+Nonetheless, MANOVA does appear to capture some plausible effects. Indeed, the
+$F-values$ obtained for both Word Length and Word Frequency were weakly but
+significantly higher than those obtained with the Dummy variable in the
+occipital and temporal brain areas \ref{fig:fmri_supp}.
+
+Overall, this suggests that MANOVA (1) can lead to positively biased estimates of
+$\hat S$ (2) appears weaker than B2B in terms of second-level analysis across
+subjects (3) misses the effect of Word Function detected with the Forward model,
+and (4) does not trivially translate into a prediction tool. Together these
+elements thus suggest that MANOVA is less suitable to the present objective than
+B2B.
+
+
 \begin{figure}
   \begin{center}
     \includegraphics[width=0.7\textwidth,
                      trim=0cm 0cm 0cm 0cm,
-                     clip=True]{figures/fmri_decod.pdf}
-    \includegraphics[width=0.7\textwidth,
-                     trim=0cm 0cm 0cm 0cm,
-                     clip=True]{figures/fmri_betas.pdf}
+                     clip=True]{figures/fmri_controls.pdf}
 
     \label{fig:fmri_supp}
   \end{center}
-  \caption{Top. P-values across subjects derived from a Backward decoding of
-  each feature (columns). Bottom. P-values across subjects derived from
-  the $\beta$ coefficients of a Forward Model and the $\hat S$ of an unbiased
-  B2B (i.e. B2B where $H$ is not regularized). Each cell displays the left
-  hemisphere view laterally (top) or ventrally (bottom)}
+  \caption{Top rows. Pearson $R$ correlation obtained for a Backward decoding model and
+  a Forward encoding model trained with one factor at a time. These models can
+  not take into account the factor covariance, and thus lead to spurious effects
+  (e.g. visual cortex effect for the dummy variable). Bottom rows. Second-
+  level p-values across subjects for a Forward, a B2B and a Manova trained with
+  all factors. The B2B achieves better p-values, without leading to spurious effects for
+  the Dummy variable. The Manova leads to biased estimates due to its inability
+  to deal with overfitting. The last row shows where the Manova F-values of each factor differs
+  significantly from the F-values of the Dummy variable.}
 \end{figure}
 
 \subsection{Robustness to increasing number of factors}

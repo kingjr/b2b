@@ -194,7 +194,11 @@ methods).
 
 We used the feature importance described in Algorithm \ref{algorithm:b2b_fi} to assess the extent to which each feature $X_i$ specifically improves the prediction of held-out $Y$ data, using a 5-fold cross-validation (with shuffled trials to homogeneize the distributions between the training and testing splits).
 
-Each model was implemented for each subject and each time sample independently. Pairwise comparison between models were performed using a two-sided Wilcoxon test across subjects (m=90) using the average $\Delta R$ across time. Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and p-values are reported below.
+Each model was implemented for each subject and each time sample independently.
+Pairwise comparison between models were performed using a two-sided Wilcoxon
+signed-rank test across subjects (m=90) using the average $\Delta R$ across time.
+Corresponding effect sizes are shown in Figure~\ref{fig:meg_results}, and
+p-values are reported below.
 
 
 \begin{figure}
@@ -215,7 +219,7 @@ Each model was implemented for each subject and each time sample independently. 
   (top) or ventrally (bottom). Bottom left. Region
   of Interest (ROI), defined by the cortex vertices that were reliably
   predicted for by the gold standard Forward Model using all features and
-  thresholded with a Wilcoxon at $p<0.001$ (uncorrected) across subjects. Bottom
+  thresholded with a Wilcoxon signed-rank test at $p<0.001$ (uncorrected) across subjects. Bottom
   Right. Average $\Delta R$ within the ROI for each subject
   (dot); top horizontal lines indicate when B2B significantly outperforms
   other methods across subjects.}
@@ -235,12 +239,12 @@ associative cortices respectively. These results illustrate that while Backward
 modeling achieve high sensitivity, it is not valid to estimate the specific
 causal contribution of collinear features.
 
-On the contrary, the $\beta$
+On the contrary, the $H$
 coefficients of the Forward model reveals the expected spatial specificity of
 Word Length and Word Frequency, peaking the visual and temporal cortices
 respectively. However such Forward coefficients may be variable across
 subjects, and could thus underestimate the significance of each factor at each
-vertex, as evaluated with a Wilcoxon tests across subjects. In principle, such
+vertex, as evaluated with a  signed-rank tests across subjects. In principle, such
 inter-subject variability could be less impactful with
 multivariate observations methods such as CCA and PLS \citep{bilenko2016pyrcca,
 king2018encoding}, but they fail to provide a single and interpretable coefficient
@@ -248,12 +252,12 @@ for each feature at each vertex.
 
 In contrast, the $\hat S$ of an unbiased B2B (i.e. a B2B where $H$ is not
 regularized) reaches higher levels of significance at each vertex
-than the Forward $\beta$ \ref{fig:fmri_supp}. (Note that a direct
-comparison between the Forward coefficients $\beta$ and those of B2B ($\hat S$)
+than the Forward $H$ \ref{fig:fmri_supp}. (Note that a direct
+comparison between the Forward coefficients $H$ and those of B2B ($\hat S$)
 is not feasible, as these two do not have the same units.)
 
 To fairly compare the Forward, CCA, PLS and B2B methods on a common and robust
-evaluation metric we compare them on their ability to improve $Y$
+evaluation metric, robust to coefficient biases, we thus compare them on their ability to improve $Y$
 predictions of out-of-sample data when one factor is introduced into the model.
 This analysis leads to a $\Delta R$ as described in Algorithm
 \ref{algorithm:b2b_fi}). As expected, the Forward, CCA, PLS
