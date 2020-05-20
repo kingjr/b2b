@@ -52,20 +52,20 @@ implementation \citep{seabold2010statsmodels}. MANOVA is primarily used as a
 inferential statistics, and does not trivially convert to a predicting method.
 Consequently, we did not find a way to compare MANOVA against B2B with the
 $\Delta R$ evaluation. However, the effects of MANOVA comes with its own effect
-size statistics: the Wilk's Lambda. For each searchlight, we thus use the $F-values$ of the
+size statistics: the Wilk's Lambda. For each searchlight, we thus use the $F$-values of the
 Wilk's Lambda statistics as proxy for $\hat S$ and feeds it to a second-level
 Wilcoxon tests across subjects, like we did for the other models.
 
 The results show that all factors, including the Dummy variable, are
-systematically above chance level in all recorded brain regions \ref{fig:fmri_supp}. This result
+systematically above chance level in all recorded brain regions (Supplementary Fig.~\ref{fig:fmri_supp}). This result
 can be explained by the large dimensionality of $Y$. Indeed, limiting the
 searchlight to a 1mm radius did not lead to these spurious effects but provided
 results similar to the Forward model.
 
 Nonetheless, MANOVA does appear to capture some plausible effects. Indeed, the
-$F-values$ obtained for both Word Length and Word Frequency were weakly but
+$F$-values obtained for both Word Length and Word Frequency were weakly but
 significantly higher than those obtained with the Dummy variable in the
-occipital and temporal brain areas \ref{fig:fmri_supp}.
+occipital and temporal brain areas~\ref{fig:fmri_supp}.
 
 Overall, this suggests that MANOVA (1) can lead to positively biased estimates of
 $\hat S$ (2) appears weaker than B2B in terms of second-level analysis across
@@ -106,9 +106,9 @@ coefficients compare favorably to the Forward H_hat coefficient and the MANOVA c
 
 We agree with this remark. We now clarify the meaning and implication of the bias.
 
-Note that $\S hat$ is unbiased, in the sense that it is centered around zero when there is no
+Note that $\hat S$ is unbiased, in the sense that it is centered around zero when there is no
 effect, only if the second regression $H$ is not regularized. Second-level
-statistics testing whether $\S hat$ is superior to 0 are thus only valid if $H$
+statistics testing whether $\hat S$ is superior to 0 are thus only valid if $H$
 is not regularized.
 
 - The results of backward regression are not shown in Figure 4, but it would be
