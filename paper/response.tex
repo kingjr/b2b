@@ -1,15 +1,7 @@
 
 Reviewers' comments:
 
-Reviewer #1: The authors introduce a novel machine learning approach for the
-    prediction of word length and word frequency in MEG time series data. The
-    authors begin with an introduction to the problem, their solution, and a
-    simulation demonstrating their approach is effective relative to other methods
-    focused on the same problem. They demonstrate their approach using a real-world
-    example. In short, I have relatively few remarks on their execution, which is
-    satisfactory for my tastes. Overall, I think that many researchers in
-    neuroimaging will find this technique useful.
-
+Reviewer #1:
     There is one major limitation for the broader application of this approach and
     that's demonstrating its effectiveness in fMRI data. The majority of
     neuroimaging studies are done using fMRI (and I do not say this to discount the
@@ -22,21 +14,18 @@ Reviewer #1: The authors introduce a novel machine learning approach for the
     the approach comes off as useful but speculative for fMRI data, which
     drastically limits its impact potential.
 
-We thank Reviewer #1 for this remark. We now applied the same set of analyses to
+We thank Reviewer #1 for this remark. We now apply the same analyses to
 fMRI recordings of 100 subjects performing a reading experiment similar to the
-MEG study described in the paper. We kept the exact same methods and parameters, and
-used the fmriprep package to perform the preprocessing, so as to minimize the
-risk of p-hacking.
+MEG study described in original manuscript. We kept the exact same methods and parameters, and
+used the fmriprep package to perform the preprocessing.
 
 Overall, the results consistently show that B2B compares favorably to other methods.
-Furthermore, these novel analyses complements the temporal results obtained with MEG in
-that the effects of Word Length are predominantly observed over the early visual
-cortices, and the Word Frequency are predominantly observed over the
-fronto-temporal areas.
+Furthermore, these novel analyses complements the temporal results obtained with
+MEG. Specifically, the effects of Word Length are predominantly observed over the early visual
+cortices, and the Word Frequency are predominantly observed over the fronto-temporal areas.
 
-# Reviewer 2
-
-First, the authors justify their approach of using backward modeling by the
+# Reviewer 2:
+    First, the authors justify their approach of using backward modeling by the
     ability to estimate common noise sources. However, this would also be possible
     using multivariate forward modeling. For that reason, I'm wondering how
     multivariate forward modeling would fare under these circumstances. I would find
@@ -44,20 +33,22 @@ First, the authors justify their approach of using backward modeling by the
     to the analyses and results.
 
 We thank Reviewer 2 for this remark. The multivariate GLM / MANOVA is indeed
-a relevant analysis. We now indicate in supplementary analyses:
+a relevant analysis. We now indicate in supplementary materials the following analyses:
 
-Following the recommendations of one of our reviewers, we also implemented a
+"
+Following the recommendations of one of our reviewers, we implemented a
 multivariate variant of the forward model, i.e. a MANOVA, using the statsmodels
 implementation \citep{seabold2010statsmodels}. MANOVA is primarily used as a
 inferential statistics, and does not trivially convert to a predicting method.
 Consequently, we did not find a way to compare MANOVA against B2B with the
-$\Delta R$ evaluation. However, the effects of MANOVA comes with its own effect
-size statistics: the Wilk's Lambda. For each searchlight, we thus use the $F$-values of the
+$\Delta R$ evaluation. However, the effects of MANOVA are generally summarized
+with the Wilk's Lambda stastistics or its transformation into an $F$-value.
+For each searchlight, we thus use the $F$-values of the
 Wilk's Lambda statistics as proxy for $\hat S$ and feeds it to a second-level
-Wilcoxon tests across subjects, like we did for the other models.
+Wilcoxon signed-rank tests across subjects, like we did for the other models.
 
 The results show that all factors, including the Dummy variable, are
-systematically above chance level in all recorded brain regions (Supplementary Fig.~\ref{fig:fmri_supp}). This result
+systematically above chance level in all recorded brain regions (Fig.~\ref{fig:fmri_supp}). This result
 can be explained by the large dimensionality of $Y$. Indeed, limiting the
 searchlight to a 1mm radius did not lead to these spurious effects but provided
 results similar to the Forward model.
@@ -65,7 +56,9 @@ results similar to the Forward model.
 Nonetheless, MANOVA does appear to capture some plausible effects. Indeed, the
 $F$-values obtained for both Word Length and Word Frequency were weakly but
 significantly higher than those obtained with the Dummy variable in the
-occipital and temporal brain areas~\ref{fig:fmri_supp}.
+occipital and temporal brain areas (Fig.~\ref{fig:fmri_supp}). This results
+suggests that the effect size of the MANOVA can be biased and, thus, is not
+valid for second-level statistics.
 
 Overall, this suggests that MANOVA (1) can lead to positively biased estimates of
 $\hat S$ (2) appears weaker than B2B in terms of second-level analysis across
@@ -73,7 +66,7 @@ subjects (3) misses the effect of Word Function detected with the Forward model,
 and (4) does not trivially translate into a prediction tool. Together these
 elements thus suggest that MANOVA is less suitable to the present objective than
 B2B.
-
+"
 
 > Likewise, while I applaud the authors efforts in conducting these analyses,
     I am wondering whether the impact of this method could not be made even
@@ -81,8 +74,8 @@ B2B.
     available datasets that could be used to demonstrate the ability to
     disentangle known factors?
 
-As indicated to Reviewer 1, we now successfully apply the same analyses to the fMRI
-recordings of 100 subjects reading word sequences.
+We agree with Reviewer 2. As indicated to Reviewer 1, we now successfully apply
+the same analyses to the fMRI recordings of 100 subjects reading word sequences.
 
 Other comments:
 
@@ -90,12 +83,16 @@ Other comments:
     report the parameter estimate E_hat at each time point? What would be the
     downside of this?
 
-It is possible to report E_hat (now relabelled S_hat). We now added a Supplementary Figure
-to that effect. Note, however, that E_hat statistics are not in the same unit as the forward H_hat
+It is possible to report $\hat E$ (now relabelled $\hat S$), however they are
+interpretable only if the second regression $H$ is not regularized.
+We now added a Supplementary Figure to that effect.
+
+Note, however, that E_hat statistics are not in the same unit as the forward H_hat
 coefficients (a.k.a betas values in GLM). Consequently, it is not straightforward to
 compare these two metrics directly. As a proxy, we thus report their respective
-second-level p-values across subjects. This figure shows show that B2B S_hat
-coefficients compare favorably to the Forward H_hat coefficient and the MANOVA coefficients.
+second-level p-values across subjects. The associated figure shows that B2B's $\hat S$
+coefficients compare favorably to the Forward H_hat coefficient and the MANOVA
+coefficients.
 
 - The authors describe their method as unbiased but then introduce two
     regularization parameters, which will bias the estimated coefficients towards
@@ -104,18 +101,22 @@ coefficients compare favorably to the Forward H_hat coefficient and the MANOVA c
     coefficients, the variance will also be biased. I think these are important
     criteria to consider.
 
-We agree with this remark. We now clarify the meaning and implication of the bias.
+We agree with this remark. We now clarify the meaning and implication of the
+bias in the problem statement:
 
-Note that $\hat S$ is unbiased, in the sense that it is centered around zero when there is no
+"Note that $\hat S$ is unbiased, in the sense that it is centered around zero when there is no
 effect, only if the second regression $H$ is not regularized. Second-level
 statistics testing whether $\hat S$ is superior to 0 are thus only valid if $H$
-is not regularized.
+is not regularized."
 
 - The results of backward regression are not shown in Figure 4, but it would be
     nice to see those results. Is there a possibility to add them to Figure 4 in a
     separate panel?
 
-We now added the decoding performance to a supplementary figure.
+We now added the decoding performance to a supplementary figure. The latter show
+that approximately the same cortical network can be used to decode Word Length
+and Word Frequency. It also shows that the Dummy Variable can be decoded from
+various brain areas, and from the visual cortex in particular.
 
 - I think the authors could better explain the dimensions of the data (dy
     referring to the number of measurement channels, and dx to the number of
@@ -125,8 +126,7 @@ We now added the decoding performance to a supplementary figure.
     taking the error covariance between Ys into account or not). This might be
     obvious to them, but is not necessarily obvious to the reader.
 
-We corrected the text to clarify this issue. However, we did not find an elegant way to
-modify the figures.
+We amended the text in multiple places to clarify this issue.
 
 - I find the choice of the letter E for one of the causal factors unfortunate
     since it is typically reserved for the true error component of a multivariate
@@ -138,7 +138,7 @@ We now changed $E$ into $S$ for Selection matrix. We also changed the number of
 samples into $m$, and keep $N$ as the Noise matrix. Thank you for these suggestions
 
 - Typo line 28: "were" should read "where"?
-Corrected.
+Yes this is now corrected.
 
 - Line 181: do the authors refer to the Wilcoxon signed-rank test?
-Yes, corrected
+Yes, this is now corrected.

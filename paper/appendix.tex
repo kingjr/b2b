@@ -169,7 +169,7 @@ Y_{test} G)$\; $\Delta R_i = R_{full} - R_{k}$\; } \Return{$\Delta R$}
 \end{algorithm}
 
 For the Backward Model, feature importance cannot be assessed because there is
-no prediction.
+no prediction combining multiple factors.
 
 \subsection{Recovering S}
 \label{recovering}
@@ -196,7 +196,7 @@ trace of $\hat H$ divided by $k$, and can be computed as
 
 The decision threshold between "causal" and "non-causal" elements is thus a fraction
 $\mu$, whose proportion arbitrarily depends on the necessity to favor type I and
-type II errors. In practice, we cannot use this procedure for our MEG study,
+type II errors. In practice, we cannot use this procedure for our fMRI and MEG experiments,
 because signal-to-noise ratio is unknown.
 
 Second, $\text{diag}(\hat H)$ can be binarized with the Sonquist-Morgan
@@ -252,26 +252,29 @@ non-causal factors or (3) independent repetitions of the experiment.
 
 \subsection{Supplementary comparison of models' coefficients}
 
-Following the recommendations of one of our reviewers, we also implemented a
+Following the recommendations of one of our reviewers, we implemented a
 multivariate variant of the forward model, i.e. a MANOVA, using the statsmodels
 implementation \citep{seabold2010statsmodels}. MANOVA is primarily used as a
 inferential statistics, and does not trivially convert to a predicting method.
 Consequently, we did not find a way to compare MANOVA against B2B with the
-$\Delta R$ evaluation. However, the effects of MANOVA comes with its own effect
-size statistics: the Wilk's Lambda. For each searchlight, we thus use the $F-values$ of the
+$\Delta R$ evaluation. However, the effects of MANOVA are generally summarized
+with the Wilk's Lambda stastistics or its transformation into an $F$-value.
+For each searchlight, we thus use the $F$-values of the
 Wilk's Lambda statistics as proxy for $\hat S$ and feeds it to a second-level
 Wilcoxon signed-rank tests across subjects, like we did for the other models.
 
 The results show that all factors, including the Dummy variable, are
-systematically above chance level in all recorded brain regions \ref{fig:fmri_supp}. This result
+systematically above chance level in all recorded brain regions (Fig.~\ref{fig:fmri_supp}). This result
 can be explained by the large dimensionality of $Y$. Indeed, limiting the
 searchlight to a 1mm radius did not lead to these spurious effects but provided
 results similar to the Forward model.
 
 Nonetheless, MANOVA does appear to capture some plausible effects. Indeed, the
-$F-values$ obtained for both Word Length and Word Frequency were weakly but
+$F$-values obtained for both Word Length and Word Frequency were weakly but
 significantly higher than those obtained with the Dummy variable in the
-occipital and temporal brain areas \ref{fig:fmri_supp}.
+occipital and temporal brain areas (Fig.~\ref{fig:fmri_supp}). This results
+suggests that the effect size of the MANOVA can be biased and, thus, is not
+valid for second-level statistics.
 
 Overall, this suggests that MANOVA (1) can lead to positively biased estimates of
 $\hat S$ (2) appears weaker than B2B in terms of second-level analysis across
@@ -289,15 +292,16 @@ B2B.
 
     \label{fig:fmri_supp}
   \end{center}
-  \caption{Top rows. Pearson $R$ correlation obtained for a Backward decoding model and
+  \caption{Top two rows. Pearson $R$ correlation obtained for a Backward decoding model and
   a Forward encoding model trained with one factor at a time. These models can
   not take into account the factor covariance, and thus lead to spurious effects
-  (e.g. visual cortex effect for the dummy variable). Bottom rows. Second-
-  level p-values across subjects for a Forward, a B2B and a Manova trained with
-  all factors. The B2B achieves better p-values, without leading to spurious effects for
+  (e.g. visual cortex effect for the dummy variable). Bottom five rows. Second-
+  level p-values across subjects for the coefficients of the Forward, a B2B and a Manova trained with
+  all factors, as well as for the $\Delta R$ of the B2B, for comparison.
+  B2B achieves better p-values, without leading to spurious effects for
   the Dummy variable. The Manova leads to biased estimates due to its inability
-  to deal with overfitting. The last row shows where the Manova F-values of each factor differs
-  significantly from the F-values of the Dummy variable.}
+  to deal with overfitting. The last row shows where the Manova's $F$-values of each factor differs
+  significantly from the $F$-values estimated for the Dummy variable.}
 \end{figure}
 
 \subsection{Robustness to increasing number of factors}
@@ -306,8 +310,8 @@ To test whether each of the methods robustly scales to an increasingly
 large number of potential causes $X$, we enhanced the four ad-hoc features
 (word length, word frequency, word function, dummy variable) with another
 ten features. These additional features corresponds to the first dimensions
-of word embedding as provided by Spacy \citep{spacy2}. The results shown
-in Figure \ref{fig:embeddings}, show that the feature importance of ad-hoc
+of word embedding as provided by Spacy \citep{spacy2}. The MEG results shown
+in Fig.~\ref{fig:embeddings}, show that the feature importance of ad-hoc
 features as derived by B2B remain unchanged and are actually improved.
 
 \begin{figure}

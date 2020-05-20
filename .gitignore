@@ -9,4 +9,5 @@
 *.dvi
 *.pyc
 *.gz
+*.spl
 *.ipynb_checkpoints
