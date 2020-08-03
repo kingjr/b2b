@@ -54,14 +54,19 @@ def rn_score(X, Y, scoring='r', multioutput='uniform_average'):
 class B2B(BaseEstimator, RegressorMixin):
     def __init__(self, alphas=alphas,
                  independent_alphas=True, ensemble=None,
+                 G='ridge_cv',
+                 H='ridge_cv',
                  scoring='r'):
         self.alphas = alphas
         self.independent_alphas = independent_alphas
         self.ensemble = ensemble
         self.scoring = scoring
         self.__name__ = 'B2B'
+        self.G = G
+        self.H = H
 
     def fit(self, X, Y):
+        import copy
 
         self.G_ = list()
         self.H_ = list()
@@ -80,24 +85,40 @@ class B2B(BaseEstimator, RegressorMixin):
         for train, test in ensemble:
 
             # Fit decoder
-            G, G_alpha, YG = ridge_cv(Y[train], X[train],
-                                      self.alphas,
-                                      self.independent_alphas)
+            if self.G == 'ridge_cv':
+                G, G_alpha, YG = ridge_cv(Y[train], X[train],
+                                          self.alphas,
+                                          self.independent_alphas)
+                if len(X[train]) != len(X):
+                    YG = Y @ G.T
+            else:
+                G = copy.deepcopy(self.G).fit(Y[train], X[train])
+                YG = np.empty((len(Y), X.shape[1]))
+                YG[test] = G.predict(Y[test])
+
             self.G_.append(G)
 
-            if len(X[train]) != len(X):
-                YG = Y @ G.T
-
             # Fit encoder
-            H, H_alpha, _ = ridge_cv(X[test], YG[test],
-                                     self.alphas,
-                                     self.independent_alphas)
+            if self.H == 'ridge_cv':
+                H, H_alpha, _ = ridge_cv(X[test], YG[test],
+                                         self.alphas,
+                                         self.independent_alphas)
+            else:
+                H = copy.deepcopy(self.H).fit(X[test], YG[test])
             self.H_.append(H)
 
         # Aggregate ensembling
-        self.G_ = np.mean(self.G_, 0)
-        self.H_ = np.mean(self.H_, 0)
-        self.E_ = np.diag(self.H_)
+        if self.G == 'ridge_cv':
+            self.G_ = np.mean(self.G_, 0)
+        if self.H == 'ridge_cv':
+            self.H_ = np.mean(self.H_, 0)
+            self.S_ = np.diag(self.H_)
+        else:
+            if hasattr(self.H_[0], 'coef_'):
+                self.H_ = np.mean([h.coef_ for h in self.H_], 0)
+                self.S_ = np.diag(self.H_)
+            else:
+                self.S_ = None
 
         return self
 
@@ -107,24 +128,35 @@ class B2B(BaseEstimator, RegressorMixin):
 
         YG = Y @ self.G_.T
         # Fit encoder
-        self.H_, H_alpha, _ = ridge_cv(X, YG,
-                                       self.alphas,
-                                       self.independent_alphas)
+        if self.H == 'ridge_cv':
+            self.H_, H_alpha, _ = ridge_cv(X, YG,
+                                           self.alphas,
+                                           self.independent_alphas)
+        else:
+            raise NotImplementedError
 
         # Aggregate ensembling
-        self.E_ = np.diag(self.H_)
+        self.S_ = np.diag(self.H_)
         return self
 
     def score(self, X, Y, scoring=None, multioutput='raw_values'):
         scoring = self.scoring if scoring is None else scoring
         if multioutput != 'raw_values':
             raise NotImplementedError
-        # Transform with decoder
-        YG = Y @ self.G_.T
+        if self.G == 'ridge_cv':
+            # Transform with decoder
+            YG = Y @ self.G_.T
+        else:
+            YG = np.mean([G.predict(Y) for G in self.G_], 0)
+
         # Make standard and knocked-out encoders predictions
-        XH = X @ self.H_.T
+        if self.H == 'ridge_cv':
+            XH = X @ self.H_.T
+        else:
+            XH = np.mean([H.predict(X) for H in self.H_], 0)
         # Compute R for each column X
-        return rn_score(YG, XH, scoring=scoring, multioutput='raw_values')
+        return rn_score(YG, XH,
+                        scoring=scoring, multioutput='raw_values')
 
 
 def ridge_cv(X, Y, alphas, independent_alphas=False, Uv=None):
@@ -192,7 +224,7 @@ class Forward():
         self.H_, H_alpha, _ = ridge_cv(X, Y, self.alphas,
                                        self.independent_alphas)
 
-        self.E_ = np.sum(self.H_**2, 0)
+        self.S_ = np.sum(self.H_**2, 0)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -220,7 +252,7 @@ class Backward():
         self.H_, H_alpha, _ = ridge_cv(Y, X, self.alphas,
                                        self.independent_alphas)
 
-        self.E_ = np.sum(self.H_**2, 1)
+        self.S_ = np.sum(self.H_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput='raw_values'):
@@ -280,6 +312,7 @@ def validate_number_components(n, X, Y):
 
 class GridPLS(BaseEstimator, RegressorMixin):
     """Optimize n_components by minimizing Y_pred error"""
+
     def __init__(self, n_components=components, cv=5,
                  scoring='r', multioutput='uniform_average', tol=1e-15):
         self.n_components = n_components
@@ -327,7 +360,7 @@ class GridPLS(BaseEstimator, RegressorMixin):
         self.y_std_[y_valid] = best.y_std_
         self.y_rotations_[y_valid, :] = best.y_rotations_
 
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -336,9 +369,16 @@ class GridPLS(BaseEstimator, RegressorMixin):
         return canonical_correlation(self, X, Y,
                                      scoring, multioutput)
 
+    def transform(self, X):
+        return self.best.transform(X[:, self.x_valid_])
+
+    def fit_transform(self, X, Y):
+        return self.fit(X, Y).best.transform(X)
+
 
 class GridCCA(BaseEstimator, RegressorMixin):
     """Optimize n_components by minimizing Y_pred error"""
+
     def __init__(self, n_components=components, cv=5,
                  scoring='r', multioutput='uniform_average', tol=1e-15):
         self.n_components = n_components
@@ -385,7 +425,7 @@ class GridCCA(BaseEstimator, RegressorMixin):
         self.y_std_[y_valid] = best.y_std_
         self.y_rotations_[y_valid, :] = best.y_rotations_
 
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -393,6 +433,12 @@ class GridCCA(BaseEstimator, RegressorMixin):
         multioutput = self.multioutput if multioutput is None else multioutput
         return canonical_correlation(self, X, Y,
                                      scoring, multioutput)
+
+    def transform(self, X):
+        return self.best.transform(X[:, self.x_valid_])
+
+    def fit_transform(self, X, Y):
+        return self.fit(X, Y).best.transform(X)
 
 
 class GridRegCCA(BaseEstimator, RegressorMixin):
@@ -441,7 +487,7 @@ class GridRegCCA(BaseEstimator, RegressorMixin):
         self.y_std_ = best.y_std_
         self.y_rotations_ = best.y_rotations_
 
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -452,6 +498,12 @@ class GridRegCCA(BaseEstimator, RegressorMixin):
         multioutput = self.multioutput if multioutput is None else multioutput
         return canonical_correlation(self, X, Y,
                                      scoring, multioutput)
+
+    def transform(self, X):
+        return self.best.transform(X[:, self.x_valid_])
+
+    def fit_transform(self, X, Y):
+        return self.fit(X, Y).best.transform(X)
 
 
 class CCA(SkCCA):
@@ -477,7 +529,7 @@ class CCA(SkCCA):
         super().fit(X, Y)
         self.n_components_ = self.n_components
         self.n_components = N
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -487,6 +539,12 @@ class CCA(SkCCA):
         multioutput = self.multioutput if multioutput is None else multioutput
         return canonical_correlation(self, X, Y,
                                      scoring, multioutput)
+
+    def transform(self, X):
+        return super().transform(X[:, self.x_valid_])
+
+    def fit_transform(self, X, Y):
+        return self.fit(X, Y).transform(X)
 
 
 class PLS(SkPLS):
@@ -510,7 +568,7 @@ class PLS(SkPLS):
         super().fit(X, Y)
         self.n_components_ = self.n_components
         self.n_components = N
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
         return self
 
     def score(self, X, Y, scoring=None, multioutput=None):
@@ -521,9 +579,16 @@ class PLS(SkPLS):
         return canonical_correlation(self, X, Y,
                                      scoring, multioutput)
 
+    def transform(self, X):
+        return super().transform(X[:, self.x_valid_])
+
+    def fit_transform(self, X, Y):
+        return self.fit(X, Y).transform(X)
+
 
 class RegCCA(CCA):
     """Wrapper to get sklearn API for Regularized CCA """
+
     def __init__(self, alpha=0., n_components=-1,
                  scoring='r', multioutput='uniform_average',
                  tol=1e-15):
@@ -565,7 +630,7 @@ class RegCCA(CCA):
                                    reg=self.alpha, numCC=dz)
         self.x_rotations_ = comps[0]
         self.y_rotations_ = comps[1]
-        self.E_ = np.sum(self.x_rotations_**2, 1)
+        self.S_ = np.sum(self.x_rotations_**2, 1)
 
         return self
 
@@ -679,79 +744,3 @@ def score_knockout(model, X, Y, XY_train=None, scoring='r', fix_grid=True):
             score_delta[f] = (score_full - score_ko).mean()
 
     return score_delta
-
-
-if __name__ == '__main__':
-
-    X = np.zeros((10, 100))
-    Y = np.zeros((10, 200))
-    assert validate_number_components(0, X, Y) == 1
-    assert validate_number_components(1, X, Y) == 1
-    assert validate_number_components(.5, X, Y) == 50
-
-    def make_data():
-        n = 1000
-        dx = 4
-        dy = 5
-        X = np.random.randn(n, dx)
-        E = np.eye(dx)
-        E[2:] = 0
-        N = np.random.randn(n, dx)
-        N2 = np.random.randn(n, dy) / 10.
-        F = np.random.randn(dx, dy)
-        Y = (X @ E + N) @ F + N2
-
-        train, test = range(0, n, 2), range(1, n, 2)
-        return X, Y, train, test
-
-    X, Y, train, test = make_data()
-
-    models = (B2B, Forward, Backward, CCA, RegCCA, PLS,
-              GridCCA, GridPLS, GridRegCCA)
-    canonicals = (CCA, RegCCA, PLS, GridCCA, GridPLS, GridRegCCA)
-
-    for scoring in ('r', 'r2'):
-        for mo in ('uniform_average', 'variance_weighted'):
-            params = dict(scoring=scoring, multioutput=mo)
-
-            for model in models:
-                if model in (B2B, Backward):
-                    model = model(scoring=scoring)
-                else:
-                    model = model(scoring=scoring, multioutput=mo)
-                model.fit(X[train], Y[train])
-                assert len(model.E_) == X.shape[1]
-                score = model.score(X[test], Y[test], multioutput='raw_values')
-
-                if isinstance(model, canonicals):
-                    assert len(score) == model.n_components_
-                elif isinstance(model, (B2B, Backward)):
-                    assert len(score) == X.shape[1]
-                elif isinstance(model, Forward):
-                    assert len(score) == Y.shape[1]
-
-                for fix_grid in (False, True):
-                    # assert np.mean(score) > .3
-                    score_delta = score_knockout(model, X[test], Y[test],
-                                                 scoring=scoring,
-                                                 fix_grid=fix_grid)
-                    assert len(score_delta) == X.shape[1]
-                    print(model.__name__, score_delta)
-                    score_delta = score_knockout(model, X[test], Y[test],
-                                                 (X[train], Y[train]),
-                                                 scoring=scoring,
-                                                 fix_grid=fix_grid)
-                    assert len(score_delta) == X.shape[1]
-                    print(model.__name__, score_delta)
-
-    for model in canonicals:
-        for n_components in (-1, 1, 2):
-            if model in (CCA, RegCCA, PLS):
-                m = model(n_components)
-            else:
-                m = model([n_components, ])
-            m.fit(X[train], Y[train])
-            assert len(m.E_) == X.shape[1]
-            score = m.score(X[test], Y[test], multioutput='raw_values')
-            assert len(score) == m.n_components_
-            print(model.__name__, score_delta)
