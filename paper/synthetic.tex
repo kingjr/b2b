@@ -1,19 +1,19 @@
 We evaluate the performance of B2B throughout a series of experiments on
 controlled synthetic data.
 %
-The purpose of these experiments is to evaluate the ability of B2B in terms of
-prediction of independent and identically distributed data, as well as a method
-to recover causal factors.
+The purpose of these experiments is to evaluate the ability of B2B on its
+ability to 1) recover causal factors when the ground truth is known and 2)
+accurately predict independent and identically distributed data otherwise.
 
-The data generating process for each experiment constructs $n=1000$ training examples
-according to the model $Y = (\text{h} XE + N)F$, where $\text{h}$ is a
+The data generating process for each experiment constructs $m=1000$ training examples
+according to the model $Y = (\text{h} XS + N)F$, where $\text{h}$ is a
 scalar that modulates the signal-to-noise ratio.
 %
 Here,
 %\begin{itemize} \item $F \in \mathbb{R}^{d_x \times d_y}$ contains entries
-%drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{n \times d_x}$
-%contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{n
-%\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $E \in
+%drawn from $\mathcal{N}(0, \sigma^2)$, \item $X \in \mathbb{R}^{m \times d_x}$
+%contains rows drawn from $\mathcal{N}(0, \Sigma_X)$, \item $N \in \mathbb{R}^{m
+%\times d_x}$ contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, \item $S \in
 %\mathbb{R}^{d_x \times d_x}$ is a binary diagonal matrix containing $n_c$ ones,
 %\item $\Sigma_X = AA^\top$, where $A \in \mathbb{R}^{d_x \times d_x}$ contains
 %entries drawn from $\mathcal{N}(0, \sigma^2)$, \item $\Sigma_N = BB^\top$,
@@ -21,9 +21,9 @@ Here,
 %$\mathcal{N}(0, \sigma^2)$, \end{itemize}
     $F \in \mathbb{R}^{d_x \times d_y}$ contains entries drawn from
 $\mathcal{N}(0, \sigma^2)$ where $\sigma^2$ is inversely proportional to $d_x$,
-$X \in \mathbb{R}^{n \times d_x}$ contains rows
-drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{n \times d_x}$
-contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $E \in \mathbb{R}^{d_x
+$X \in \mathbb{R}^{m \times d_x}$ contains rows
+drawn from $\mathcal{N}(0, \Sigma_X)$, $N \in \mathbb{R}^{m \times d_x}$
+contains rows drawn from $\mathcal{N}(0, \Sigma_N)$, $S \in \mathbb{R}^{d_x
 \times d_x}$ is a binary diagonal matrix containing $n_c$ ones, $\Sigma_X =
 AA^\top$ where $A \in \mathbb{R}^{d_x \times d_x}$ contains entries drawn from
 $\mathcal{N}(0, \sigma^2)$, $\Sigma_N = BB^\top$ where $B \in \mathbb{R}^{d_x
@@ -35,12 +35,14 @@ $\text{h} \in \left[ 0.001, 10 \right]$. We discard the cases where $n_c > d_x$,
 %
 % Each condition is simulated under $5$ different random seeds.
 
-We compare the performance of B2B against four competing methods, all
-implemented in scikit-learn \citep{sklearn} and pyrcca \citep{bilenko2016pyrcca}:
+We compare the performance of B2B against four baseline methods.
 %
 % To be updated
 
-\subsection{Baseline models}
+\subsubsection{Baseline models}
+
+All baseline methods were based on the implementations of scikit-learn \citep{sklearn} and Pyrcca
+\citep{bilenko2016Pyrcca}. For pedagogical purposes, we briefly summarize them below.
 
 Forward regression consists of an $l2$-regularized "ridge" regression from the
 putative causes $X$ to the observations $Y$: \begin{equation} H_{fwd} = (X^T X
@@ -64,141 +66,80 @@ $X$ and $Y$ are maximally covarying in a latent $Z$ space:
 % \begin{equation} maxcov(XH^T, YG^T) \end{equation}
 \begin{equation} G_{pls},H_{pls} = \argmax_{G,H} \text{cov}(XH^T, YG^T) \end{equation}
 
-We employ five-fold cross-validation to select the optimal number of components
+We employ five-fold nested cross-validation to select the optimal number of components
 for CCA and PLS. Regressions were $\ell2$-regularized with a $\lambda$ regularization
 parameters fitted with the efficient leave-one-out procedure implemented in
 scikit-learn RidgeCV \citep{sklearn}.
 
-\subsection{Evaluating Causal Discovery from models' coefficients}
+\subsubsection{Evaluating Causal Discovery from models' coefficients}
 
-B2B leads to unbiased (i.e. zeros-centered) scalar coefficients for non-causal
-features. In contrast, the Forward, Backward, CCA and PLS models lead to a
-loading vector $H_i$ per feature $i$ (or one vector $G^i$ for the backward
-model). To transform such vector into an estimated causal contribution $\hat E$,
-we take the sum of square coefficients:
+%
+B2B leads to \emph{scalar} coefficients for non-causal
+features. The diagonal of this matrix, $\hat S \in \mathbb{R}^{d_x}$, can thus be directly used
+as a causal contribution estimate. Note that this estimate is unbiased (i.e.
+zeros-centered) only if the second regression $H$ is not regularized.
+
+In contrast, the loading coefficients of the Forward ($H_i \in \mathbb{R}^{d_y}$),
+Backward ($G^i \in \mathbb{R}^{d_y}$), CCA and PLS models ($H_i \in \mathbb{R}^{d_z}$) lead to a
+loading \emph{vector} for each feature $i$.
+To estimate causal contribution, we must thus transform such vectors into
+scalars, by e.g. taking the sum of square coefficients:
 % \begin{equation}
-  $\hat E_i = \sum_j {H^j_i}^2 $
+  $\hat S_i = \sum_j {H^j_i}^2 $
 % \end{equation}
+Note that in such B2B cases, the estimates are thus positive and would thus bias
+a second-level statistical analysis against 0.
 
-To estimate whether models accurately identify causal factors, we compute the
-area-under-the-curve (AUC) across factors $AUC(E, \hat E)$.
-%\begin{equation} AUC = 1 - \sum_1^n (E_k - E_{k-1}) ( \hat{E}_k +
-%\hat{E}_{k-1}) / 2 \end{equation}
-The AUC allows evaluating the capacity of models at detecting the causal
-importance of factors when ground truth labels are available, as is the case in
-this setup.
+Finally, to estimate whether each model accurately identifies causal factors independently of
+their potential biases, we compute the
+area-under-the-curve (AUC) across factors $AUC(S, \hat S)$.
+%\begin{equation} AUC = 1 - \sum_1^m (S_k - S_{k-1}) ( \hat{S}_k +
+%\hat{S}_{k-1}) / 2 \end{equation}
+By definition, this AUC evaluation can only be done when ground truth labels are available, as is the case in
+this synthetic setup, but not in the neuroimaging experiments below.
 
-We report AUC results in Figures~\ref{fig:percondition}~(top) and ~\ref{fig:auc_plots}~(left, in Appendix), and compare favorably to all baselines.
+Figures~\ref{fig:percondition} (top) and~\ref{fig:auc_plots} (top) show the
+results of this AUC evaluation. Note that the figure does not display each
+feature separately, as they are randomly generated. The results show that B2B
+compares favorably to other methods on these synthetic data.
+
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/auc_condition.pdf}
   \includegraphics[width=\linewidth]{figures/r_in_condition.pdf}
   \vspace{-4ex}
-  \caption{Synthetic experiments. Average AUC (top) and Feature Importance $\Delta R$ (bottom) when varying experimental conditions individually. Higher is better. B2B compares favorably in all cases. \label{fig:percondition}}
+  \caption{Synthetic experiments. Average AUC (top) and Feature Importance
+  $\Delta R$ (bottom) when varying experimental conditions individually.
+  Higher is better. B2B compares favorably in all cases.
+  \label{fig:percondition}}
 \end{figure}
 
 
-\subsection{Evaluating Causal Discovery with held-out prediction reliability}
+\subsubsection{Evaluating Causal Discovery through the reliability of held-out prediction}
 
-In most cases, $E$ is not known and AUC can thus not be estimated. To address this issue, we assess the ability of each model to reliably predict
+In most real-world cases, $S$ is not known. Consequently, the above AUC
+evaluation cannot be estimated.
+To address this issue, we assess the ability of each model to reliably predict
 independent and identically distributed data from $Y$, given all of the $X$
-features versus all-but-ones feature $X_{-i}$ (i.e. 'knock-out X'). This procedure
-results in two correlation metrics $R_{full}$ and $R_{knockout}$, whose
-difference $\Delta R_i = R_{full}-R_{knockout}$ indicates how much each $X_i$
-improves the prediction of $Y$.
-%beyond what can be predicted from all other features $X_{-i}$.
-In our figures, $\Delta R$ is the average of $\Delta R_i$. A higher score means that for prediction, the model relies on individual features rather than combinations of features.
+features versus all-but-one feature $X_{-i}$ (i.e. 'knock-out X'). This
+procedure results in two correlation metrics $R_{full}$ and $R_{knockout}$ for
+each feature (for the B2B and Backward models) for each dimension of $Y$ (for
+the Forward model) or each canonical dimension of $Y$ (for CCA and PLS). The
+difference $\Delta R_i = R_{full}-R_{knockout}$ indicates how much each
+$X_i$ improves the prediction of
+a) the target dimension (i.e. $G^iY \in \mathbb{R}$ for B2B,
+b) the average across all of the dimensions $j$ of $Y$
+($\frac{1}{d_y}\sum_{j}^{d_y}\Delta R_i^{j}$) for the
+Forward model or
+c) the average across the canonical dimensions $j$ of $Y$
+($\frac{1}{d_z}\sum_{j}^{d_z}\Delta R_i^{j}$) for CCA and PLS.
+We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess
+feature importance for each model. For the Backward Model, feature importance
+cannot be assessed as the $X$ collinearity is never
+taken into account.
 
-We show in Appendix~\ref{appendix:feature_importance} pseudo-code to assess feature importance for our algorithm as well as baselines. For the Backward Model, feature importance cannot be assessed as the $X$ collinearity is never taken into account.
-
-% Feature importance can be computed similarly for the CCA, PLS and Forward baselines (see Appendix \ref{appendix:feature_importance}). For the Backward Model, feature importance cannot be assessed as there is no prediction.
-
-We show in Figures~\ref{fig:percondition} (bottom) and \ref{fig:auc_plots} (right, in Appendix) that our method outperforms baselines.
-
-%
-% \iffalse
-% For CCA and PLS, feature importance is assessed as follow:
-% \begin{enumerate}
-%   \item Fit $H$ and $G$ given $X_{train}$ and $Y_{train}$
-%   \item For each feature $i$:
-%   \begin{itemize}
-%     \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
-%     \item Fit $H^i_k$ and $G_k$ given $X_{train} K$ and $Y_{train}$
-%   \end{itemize}
-% \end{enumerate}
-% \fi
-% For the Backward Model, feature importance cannot be assessed because there is no prediction.
-% We thus simply
-% report the model performance $R_i = corr(YG_i, X_i)$.
-
-
-% \iffalse
-% \begin{enumerate}
-%
-%   \item Fit $G$ given $X_{train}$ and $Y_{train}$
-%   \item Fit $H$ given $X_{train}$ and $Y_{train} G^T$
-%   \item For each feature $i$:
-%   \begin{itemize}
-%     \item Define $K$, and identity matrix whose row $i$ has been zeroed-out
-%     \item Fit $H^i_k$ given $X_{train} K$ and $Y_{train} G^T$
-%   \end{itemize}
-%
-%   \item Compute $R_{full}$ given $Y_{test} G^T$ and $X_{test}$
-%   \item For all $i \in d_x$:
-%   \begin{itemize}
-%     \item Compute $R^i_{knockout}$ given $Y_{test} G^T$ and $X_{test} K {H^i_k}^T$
-%     \item Compute $R^i_{delta}=R_{full} - R^i_{knockout}$
-%   \end{itemize}
-%   \end{enumerate}
-% \fi
-
-% \iffalse Ridge regression \citep{hoerl1959optimum}, multitask Lasso
-% \citep{argyriou2008convex}, Partial Least Squares or PLS \citep{wold_pls,
-% tenenhaus_pls}, Canonical Correlation Analysis or CCA \citep{cca_hotelling}, and
-% Reduced Rank Regression or RRR \citep{Izenman_rrr}.
-% %
-% Each of these methods estimates a matrix of coefficients $\hat{W} \in
-% \mathbb{R}^{d_x \times d_y}$, from which we estimate the diagonal mask $\hat{E}$
-% using the feature importances $\hat{E}_{i,i} = \| W_{i, :} \|$.
-% %
-% For B2B, we obtain $\hat{E}$ as described in Algorithm~\ref{algorithm:b2br}.
-% %
-%
-%
-% We evaluate seven metrics:
-% %
-% test error in-distribution, test error out-distribution, test error-in
-% distribution after weighting with $\hat{E}$, test error out-distribution after
-% weighting with $\hat{E}$, Sonquist-Morgan false positives on $\hat{E}$,
-% Sonquist-Morgan false negatives on $\hat{E}$, and the area under the ROC curve
-% (AUC) between $\hat{E}$ and $E$.
-% %
-% The ``in-distribution'' metrics measure the test error of each predictor before
-% and after weighting their features by the estimated (continuous!) mask
-% $\hat{E}$.
-% %
-% The ``out-distribution'' metrics are similar, measuring the test error at
-% samples drawn using two different random covariance matrices for both $X$ and
-% $N$.
-% %
-% The false positives, false negatives, and AUC statistics measure the quality of
-% identification of causal factors between $\hat{E}$ and the true, binary $E$.
-%
-% \begin{figure}[htpb] \centering
-% \includegraphics[width=\textwidth]{synthetic.pdf} \caption{Results of synthetic
-% experiments. Each dot depicts the average value of a metric for B2B ($x$-axis)
-% against a competitor ($y$-axis) for each experiment configuration averaged over
-% $20$ random seeds. The prediction error on $Y$ within (in) and outside (out) of
-% the training distribution are weakly but consistently larger for all of the
-% models as compared to B2B with and without the Sonquist binarization (E). The
-% AUC, measuring the ability of each model to separate causal from noncausal
-% factors, is consistently larger in B2B as compared to the other models.}
-% \label{table:synthetic} \end{figure} \fi
-
-% Figure~\ref{table:synthetic} summarizes the results for all experimental
-% conditions, metrics, and methods.
-% %
-% B2B is the method obtaining best test errors, lowest false positive and false
-% negative discovery about $E$, and overall the best AUC when it comes to
-% detecting causal influences.
+Figures~\ref{fig:percondition} (bottom) and~\ref{fig:auc_plots} (right, in
+Appendix) show the results of this evaluation on held-out data.
+Overall both the AUC and the held-out prediction reliability evaluations
+show that B2B compares favorably to the baseline models.

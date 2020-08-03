@@ -58,31 +58,34 @@ Identifying causes solely from observations can be particularly challenging when
 i) potential factors are difficult to manipulate independently and ii)
 observations are multi-dimensional. To address this issue, we
 introduce ``Back-to-Back'' regression (B2B), a linear method designed to efficiently
-measure, from a set of correlated factors, those that most plausibly account for
+estimate, from a set of correlated factors, those that most plausibly account for
 multidimensional observations. First, we prove the consistency of B2B, its links to
-other linear approaches, and show how it provides a robust, unbiased and
+other linear approaches, and show how it can provide a robust, unbiased and
 interpretable scalar estimate for each factor.
 Second, we use a variety of simulated data to show that B2B outperforms
-least-squares regression and cross-decomposition techniques (e.g. canonical
+forward modeling ("encoding"), backward modeling ("decoding") as well as
+cross-decomposition modeling (i.e.. canonical
 correlation analysis and partial least squares) on causal identification when
-the factors and the observations are partially collinear.
-Finally, we apply B2B to magneto-encephalography of 102 subjects
-recorded during a reading task to test whether our method appropriately disentangles
-the respective contribution of word length and word frequency - two correlated
-factors known to cause early and late brain responses respectively. The results
-show that these two factors are better disentangled with B2B than with
-other standard techniques.
+the factors and the observations are not orthogonal.
+Finally, we apply B2B to a hundred magneto-encephalography recordings and to a hundred functional Magnetic
+Resonance Imaging recordings acquired during a one hour reading task. B2B successfully disentangles
+the respective contribution of collinear factors such as word length, word
+frequency in the early visual and late associative cortical
+responses respectively. These factors are better disentangled with B2B than with
+other standard techniques. We discuss how the speed and generality of B2B
+sets the foundations of an omnibus test to disentangle the causal contributions of covarying
+factors in multidimensional observations.
 \end{abstract}
 
 
 \begin{keyword}
-  Cross-Decomposition \sep
   Feature Discovery \sep
-  Magnetoencephalography \sep
+  MEG \sep
+  fMRI \sep
   Decoding \sep
   Encoding \sep
+  Cross-Decomposition \sep
   Reading \sep
-  N400
 \end{keyword}
 
 \end{frontmatter}
@@ -101,7 +104,7 @@ other standard techniques.
   \begin{tikzpicture}
   \newcommand\posY{0}
   \newcommand\posX{3}
-  \newcommand\posE{5}
+  \newcommand\posS{5}
   \newcommand\posN{7}
   \newcommand\posF{10}
 
@@ -109,18 +112,18 @@ other standard techniques.
   \node[] (eq) at (1.5, 0){$=$};
   \node[] (times) at (4, 0){$\times$};
   \node[thick, draw=black, minimum height=3cm, minimum width=1cm, fill=yellow!10] (X) at (\posX, 0){};
-  \node[thick, draw=black, minimum height=1cm, minimum width=1cm, fill=red!10] (E) at (\posE, 0){};
+  \node[thick, draw=black, minimum height=1cm, minimum width=1cm, fill=red!10] (S) at (\posS, 0){};
 
-  \draw[fill=white] (\posE - 0.5 + 0.0, 0.5 - 0.0) rectangle (\posE - 0.5 + 0.0 + 0.1, 0.5 - 0.0 - 0.1);
-  \draw[fill=black] (\posE - 0.5 + 0.1, 0.5 - 0.1) rectangle (\posE - 0.5 + 0.1 + 0.1, 0.5 - 0.1 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.2, 0.5 - 0.2) rectangle (\posE - 0.5 + 0.2 + 0.1, 0.5 - 0.2 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.3, 0.5 - 0.3) rectangle (\posE - 0.5 + 0.3 + 0.1, 0.5 - 0.3 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.4, 0.5 - 0.4) rectangle (\posE - 0.5 + 0.4 + 0.1, 0.5 - 0.4 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.5, 0.5 - 0.5) rectangle (\posE - 0.5 + 0.5 + 0.1, 0.5 - 0.5 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.6, 0.5 - 0.6) rectangle (\posE - 0.5 + 0.6 + 0.1, 0.5 - 0.6 - 0.1);
-  \draw[fill=black] (\posE - 0.5 + 0.7, 0.5 - 0.7) rectangle (\posE - 0.5 + 0.7 + 0.1, 0.5 - 0.7 - 0.1);
-  \draw[fill=white] (\posE - 0.5 + 0.8, 0.5 - 0.8) rectangle (\posE - 0.5 + 0.8 + 0.1, 0.5 - 0.8 - 0.1);
-  \draw[fill=black] (\posE - 0.5 + 0.9, 0.5 - 0.9) rectangle (\posE - 0.5 + 0.9 + 0.1, 0.5 - 0.9 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.0, 0.5 - 0.0) rectangle (\posS - 0.5 + 0.0 + 0.1, 0.5 - 0.0 - 0.1);
+  \draw[fill=black] (\posS - 0.5 + 0.1, 0.5 - 0.1) rectangle (\posS - 0.5 + 0.1 + 0.1, 0.5 - 0.1 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.2, 0.5 - 0.2) rectangle (\posS - 0.5 + 0.2 + 0.1, 0.5 - 0.2 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.3, 0.5 - 0.3) rectangle (\posS - 0.5 + 0.3 + 0.1, 0.5 - 0.3 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.4, 0.5 - 0.4) rectangle (\posS - 0.5 + 0.4 + 0.1, 0.5 - 0.4 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.5, 0.5 - 0.5) rectangle (\posS - 0.5 + 0.5 + 0.1, 0.5 - 0.5 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.6, 0.5 - 0.6) rectangle (\posS - 0.5 + 0.6 + 0.1, 0.5 - 0.6 - 0.1);
+  \draw[fill=black] (\posS - 0.5 + 0.7, 0.5 - 0.7) rectangle (\posS - 0.5 + 0.7 + 0.1, 0.5 - 0.7 - 0.1);
+  \draw[fill=white] (\posS - 0.5 + 0.8, 0.5 - 0.8) rectangle (\posS - 0.5 + 0.8 + 0.1, 0.5 - 0.8 - 0.1);
+  \draw[fill=black] (\posS - 0.5 + 0.9, 0.5 - 0.9) rectangle (\posS - 0.5 + 0.9 + 0.1, 0.5 - 0.9 - 0.1);
 
   \node[] (plus) at (6, 0){$+$};
   \node[thick, draw=black, minimum height=3cm, minimum width=1cm, fill=blue!10] (N) at (\posN, 0){};
@@ -130,62 +133,66 @@ other standard techniques.
 
   \node[] (times2) at (8.5, 0){$\times$};
 
-  \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{n \times d_y}$}};
-  \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{n \times d_x}$}};
-  \node[] (annE) at (\posE, -1.8){\scalebox{0.85}{$E \in \mathbb{D}^{d_x \times d_x}$}};
-  \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{n \times d_x}$}};
+  \node[] (annY) at (\posY, -1.8){\scalebox{0.85}{$Y \in \mathbb{R}^{m \times d_y}$}};
+  \node[] (annX) at (\posX, -1.8){\scalebox{0.85}{$X \in \mathbb{R}^{m \times d_x}$}};
+  \node[] (annS) at (\posS, -1.8){\scalebox{0.85}{$S \in \mathbb{D}^{d_x \times d_x}$}};
+  \node[] (annN) at (\posN, -1.8){\scalebox{0.85}{$N \in \mathbb{R}^{m \times d_x}$}};
   \node[] (annF) at (\posF, -1.8){\scalebox{0.85}{$F \in \mathbb{R}^{d_x \times d_y}$}};
 
   \node[] (labY) at (\posY, 2){Observations};
   \node[] (labX) at (\posX, 2){Factors};
-  \node[] (labE) at (\posE, 2){Cause};
-  \node[] (labE) at (\posE, 1.7){selection};
+  \node[] (labS) at (\posS, 2){Cause};
+  \node[] (labS) at (\posS, 1.7){selection};
   \node[] (labN) at (\posN, 2){Noise};
   \node[] (labF) at (\posF, 2){Cause-effect};
   \node[] (labF) at (\posF, 1.7){mapping};
 
   \node[] (sim1) at (0,-3.25) {\scalebox{0.85}{$X \sim P(X)$}};
   \node[] (sim2) at (0,-3.65) {\scalebox{0.85}{$N \sim P(N)$}};
-  \node[] (reg1) at (6,-3.25) {$\hat{E} = \text{diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
+  \node[] (reg1) at (6,-3.25) {$\hat{S} = \text{diag}(\underbrace{(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2\overbrace{(Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1}^{\text{1) } \hat{X} : \text{ regression from } Y \text{ to } X}}_{\text{2) regression from } X \text{ to } \hat{X}})$};
   \end{tikzpicture}
-  \caption{Back-to-back regression identifies the subset of factors $E_{ii} = 1$ in $X$ that influence some observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and 2) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
+  \caption{Back-to-back regression identifies the subset of factors $S_{ii} = 1$ in $X$ that influence $m$ multidimensional observations $Y$ by 1) regressing from $Y$ to $X$ to obtain $\hat{X}$, and 2) returning the diagonal of the regression coefficients from $X$ to $\hat{X}$.}
 \label{fig:b2b}
 \end{figure}
 
-We consider the measurement of multivariate signal $Y \in \mathbb{R}^{n \times
-d_y}$ (the dependent variables), generated from a set of putative causes $X \in \mathbb{R}^{n \times
-d_x}$ (the independent variables), via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$.
+\subsection{Problem setup}
+
+We consider the measurement of multivariate signal $Y \in \mathbb{R}^{m \times
+d_y}$ (the dependent variables, e.g. the neural responses),
+generated from a set of putative causes $X \in \mathbb{R}^{m \times
+d_x}$ (the independent variables, e.g. the features of a stimulus),
+via some unknown linear apparatus $F \in \mathbb{R}^{d_x \times d_y}$ (e.g. the
+projection of neural activity onto MEG channels or fMRI voxels).
 %
 Not all the variables in $X$ exert a causal influence on $Y$.
 %
-By considering a square binary diagonal matrix of \emph{causal influences} $E
-\in \mathbb{D}^{d_x \times d_x}$, we denote by $XE$ the causal factors of $Y$.
+By considering a square binary diagonal matrix of \emph{causal influences} $S
+\in \mathbb{D}^{d_x \times d_x}$, we denote by $XS$ the causal factors of $Y$.
 %
 In summary, the problem can be formalized as:
 %
 \begin{equation}
-    y_i = (x_i E + n_i) F
+    y_i = (x_i S + n_i) F
     \label{eq:model}
 \end{equation}
 %
-where $i$ is a given sample, and $n_i$ is a sample-specific noise drawn from a
+where $i$ is a given sample, and $n_i$ is a sample-specific additive noise drawn from a
 centered distribution.
 %
-While the triplet of variables $X$ and $N$ are independent, we allow each of
+While $X$ and $N$ are independent, we allow each of
 them to have any form of covariance.
 % what is a general covariance matrix?
 %
-In practice, we observe $n$ samples $(X, Y)$ from the model.
+In practice, we observe $m$ samples $(X, Y)$ from the model.
 %
 This problem space, along with the sizes of all variables involved, is
-illustrated in Figure~\ref{fig:b2b}.
+illustrated in Fig.~\ref{fig:b2b}.
 %
 Given the model in Equation~\cref{eq:model}, the goal of Back-to-Back
-Regression (B2B) is to estimate the matrix of $E$, i.e. to identify the factors
-that most reliably account for the multivariate observations.
+Regression (B2B) is to estimate the matrix $S$, i.e. to identify the factors
+that reliably account for the multivariate observations.
 
 \subsection{Algorithm}
-
 
 Back-to-Back Regression (B2B) consists of two steps.
 %
@@ -198,9 +205,9 @@ of $X$.
 Second, we estimate the linear regression coefficients $\hat H$ from $X$ to
 $\hat X$.
 %
-The diagonal of the regression coefficients $\hat H$, denoted by $\hat{E} =
+The diagonal of the regression coefficients $\hat H$, denoted by $\hat{S} =
 \text{diag}(\hat{H})$, is the desired estimate of the causal influence matrix
-$E$, as detailed in the \ref{appendix:theorem_proof}.
+$S$, as detailed in the \ref{appendix:theorem_proof}.
 
 If using l2-regularized least-squares \citep{hoerl1959optimum, rifkin2007notes},
 B2B has a closed form solution:
@@ -217,25 +224,26 @@ Performing two regressions over the same data sample can result in overfitting,
 as spurious correlations in the data absorbed by the first regression will be
 leveraged by the second one.
 %
-To avoid this issue, we split our sample $(X, Y)$ into two splits $(X_1, Y_1)$
+To avoid this issue, we split our sample $(X, Y)$ into two disjoint sets $(X_1, Y_1)$
 and $(X_2, Y_2)$.
 %
-Then, the first regression is performed using $(X_1, Y_1)$, and the second
+The first regression is performed using $(X_1, Y_1)$, and the second
 regression is performed using $(X_2, Y_2)$.
 %
-To compensate for the reduction in sample size caused by the split, B2B is
-repeated over many random splits, and the final estimate $\hat E$ of the causal
-influence matrix is the average over the estimates associated to each split
+To compensate for the reduction in sample size caused by the split, the two
+successive regressions are
+repeated over many random splits, and the final estimate $\hat S$ of the causal
+influence matrix is the average over the estimates associated with each split
 \citep{breiman1996bagging}.
 %
-To accelerate this ensembling procedure, we implemented an efficient
-leave-one-out cross-validation scheme as detailed in \citep{rifkin2007notes}
+To accelerate this ensembling procedure, we use an efficient
+leave-one-out (LOO) cross-validation scheme as detailed in \citep{rifkin2007notes}
 % http://cbcl.mit.edu/publications/ps/MIT-CSAIL-TR-2007-025.pdf,
 as follows:
 %
 
 \begin{equation}
-\hat{Y} = (\Sigma_X G Y - \text{diag}(\Sigma_X G) Y) \;/\; \text{diag}(I - \Sigma_X G) \qquad \text{(element-wise division)}
+\hat{Y}_{LOO} = (\Sigma_X G Y - \text{diag}(\Sigma_X G) Y) \;/\; \text{diag}(I - \Sigma_X G) \qquad \text{(element-wise division)}
 \end{equation}
 
 where $\Sigma_X$ is the $X$ kernel matrix and where $G$ is computed with an
@@ -249,9 +257,6 @@ eigen decomposition of $X$:
 where $Q$, $V$ and $\lambda$ are the eigen vectors, eigen values and
 regularization, respectively.
 
-%
-% After obtaining $\hat{E}$, we can fit a final regression from $X \hat{E}$ to $Y$.
-
 We summarize the B2B procedure in Algorithm~\ref{algorithm:b2br}.
 %
 The rest of this section provides a theoretical guarantee on the correctness of
@@ -261,19 +266,19 @@ B2B.
 % JR: shall we update algorithm with LOO trick?
 \begin{algorithm}[H]
     %\SetAlgoLined
-    \KwIn{input data $X \in \mathbb{R}^{n \times d_x}$, output data $Y \in \mathbb{R}^{n\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
-    \KwOut{estimate of causal influences $\hat{E} \in \mathbb{D}^{d_x \times d_x}$.}
-    $\hat{E} \leftarrow 0$\;
+    \KwIn{input data $X \in \mathbb{R}^{m \times d_x}$, output data $Y \in \mathbb{R}^{m\times d_y}$, number of repetitions $m \in \mathbb{N}$.}
+    \KwOut{estimate of causal influences $\hat{S} \in \mathbb{D}^{d_x \times d_x}$.}
+    $\hat{S} \leftarrow 0$\;
     \For{$i = 1, \ldots, m$}{
         $(X, Y) \leftarrow \text{ShuffleRows}((X, Y))$\;
         $(X_1, Y_1), (X_2, Y_2) \leftarrow \text{SplitRowsInHalf}((X, Y))$\;
         $\hat{G} = \text{LinearRegression}(Y_1, X_1)$ \Comment*[r]{$\hat G = (Y_1^\top Y_1 + \Lambda_Y)^{-1} Y_1^\top X_1$}
         $\hat{H} = \text{LinearRegression}(X_2, Y_2 \hat{G})$ \Comment*[r]{$\hat H=(X_2^\top X_2 + \Lambda_X)^{-1} X_2^\top Y_2 \hat G$}
-        $\hat{E} \leftarrow \hat{E} + \text{diag}(\hat{H})$\;
+        $\hat{S} \leftarrow \hat{S} + \text{diag}(\hat{H})$\;
     }
-    $\hat{E} \leftarrow \hat{E} / m$\;
-    $\hat{W} \leftarrow \text{LinearRegression}(X \hat{E}, Y)$\;
-    \Return{$\hat{E}$, $\hat{W}$}
+    $\hat{S} \leftarrow \hat{S} / m$\;
+    $\hat{W} \leftarrow \text{LinearRegression}(X \hat{S}, Y)$\;
+    \Return{$\hat{S}$, $\hat{W}$}
     \caption{Back-to-back regression.}
     \label{algorithm:b2br}
 \end{algorithm}
@@ -283,27 +288,27 @@ B2B.
 
 \begin{theorem}[B2B consistency - general case]
 
-     Consider the B2B model from Equation $Y = (XE + N)F$, $N$ centered and full
+     Consider the B2B model from Equation $Y = (XS + N)F$, $N$ centered and full
      rank noise.
      %
      Let $Img(M)$ refers to the image of the matrix $M$. If $F$ and $X$ are
-     full-rank on the $Img(E)$, then, the solution of B2B, $\hat H$, will
+     full-rank on the $Img(S)$, then, the solution of B2B, $\hat H$, will
      minimize
      %
-     $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $E\hat H = \hat H$
+     $\min_H  \left \| X - XH\right\| ^2  + \left \| NH\right \| ^2$and satisfy $S\hat H = \hat H$
 \end{theorem}
 %
 \begin{proof}
   See Appendix \ref{appendix:theorem_proof}.
 \end{proof}
 
-Since  $E\hat H = \hat H$, we have
+Since  $S\hat H = \hat H$, we have
 \begin{equation}
-  \hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top.
+  \hat H = \arg \min_H  \left \| X - XSH\right\| ^2  + \left \| NSH\right \| ^2 = (S X^\top XS +SN^\top NS) ^\dagger SXX^\top.
 \end{equation}
-% So, $\hat H = \arg \min_H  \left \| X - XEH\right\| ^2  + \left \| NEH\right \| ^2 = (E X^\top XE +EN^\top NE) ^\dagger EXX^\top$.
+% So, $\hat H = \arg \min_H  \left \| X - XSH\right\| ^2  + \left \| NSH\right \| ^2 = (S X^\top XS +SN^\top NS) ^\dagger SXX^\top$.
 
-Assuming, without loss of generality, that the active features in $E$ are the $k
+Assuming, without loss of generality, that the active features in $S$ are the $k
 \in \mathbb{Z}: k \in [0, d_x]$ first features, and rewriting $X=(X_1,X_2)$ and
 $N=(N_1,N_2)$ ($X_1$ and $N_1$ containing the $k$ first features), we have:
 
@@ -328,108 +333,115 @@ where $\Sigma_{A B}$ is the covariance of $A$ and $B$, and:
 % $$
 %
 In the absence of noise, we have $\Sigma_{N_1 N_1}=0$, and so
-$\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(E)$$
-Therefore, we recover $E$ from $\hat H$.
+$\text{diag}_k(\hat H)=I$, and $$\text{diag}(\hat H) = \text{diag}(S)$$
+Therefore, we recover $S$ from $\hat H$.
 
 
-In the presence of noise, the causal factors of $E$ correspond to the positive
+In the presence of additive noise, the causal factors of $S$ correspond to the positive
 elements of $\text{diag}(\hat H)$. The methods to recover them are presented in
-the Appendix \ref{recovering}.
+the Appendix (\ref{recovering}).
+
+Note that $hat \S $ is unbiased, in the sense that it is centered around zero when there is no
+effect, only if the second regression $H$ is not regularized. Second-level
+statistics testing whether $hat \S$ is superior to 0 are thus only valid if $H$
+is not regularized.
 
 \section{Experiments}
 
-We perform two sets of experiments to evaluate B2B: one on controlled synthetic
-data, and a second one on a real, large-scale magneto-encephalography (MEG)
+We perform three sets of experiments to evaluate B2B: one on controlled synthetic
+data, a second one on a real, large-scale functional Magnetic Resonance Imaging
+(fMRI) dataset and a third one on a real, large-scale magneto-encephalography (MEG)
 dataset.
 %
 We use scikit-learn's PLS and RidgeCV \citep{sklearn} as well as Pyrcca's
-regularized canonical component analysis (RegCCA, \citep{bilenko2016pyrcca})
-objects to compare B2B against the standard baselines.
+regularized canonical component analysis (RegCCA, \citep{bilenko2016Pyrcca})
+objects to compare B2B against the standard baselines, with common
+hyper-parameter optimizations.
 
-\subsection{Synthetic data}
+\subsection{Synthetic Experiment}
 \label{sec:experiment_synthetic}
-
 \input{synthetic.tex}
+
+\subsection{functional Magnetic Resonance Imaging Experiment}
+\label{sec:experiment_fmri}
+\input{fmri_exps.tex}
+
+\subsection{Magneto-encephalograph Experiment}
+\label{sec:experiment_real}
 \input{meg_exps.tex}
 
-\subsection{Magnetoencephalography data}
-\label{sec:experiment_real}
+\section{Discussion}
 
-\section{Related work}
+Here, we introduce B2B, a method to disentangle the causal contribution of
+collinear factors from multidimensional observations. After proving the validity
+of B2B, we show that it generally compares favorably against baseline models
+both on a wide spectrum of synthetic data and on two large neuroimaging datasets.
 
-Forward and cross-decomposition models have been used to identify the causal
-contribution of correlated factors onto multi-dimensional observations (e.g.
-\citep{naselaris2011encoding}). These approaches typically lead to multiple
-coefficients for each features (i.e. one per dimension of $Y$ or one per
-component respectively). Furthermore, these coefficients can be difficult to
-summarize into a single causal estimate. By contrast, B2B quickly (Fig.
-\ref{fig:duration}) leads to a single unbiased scalar values $\hat E$ tending
-towards 1 and 0 for causal and non-causal features respectively.
+In addition, B2B can be very fast to compute as long as both $H$ and $G$ are based
+on l2 optimization with l2 regularization (Supplementary
+Fig.~\ref{fig:duration}), as is done in the above experiments. However, B2B
+does not need not be limited to l2 optimization and regularization: the $H$ and $G$ operators
+can in principle be found with e.g. support vector or random forest regression.
+We reserve the study of these computational variants for future work.
 
-A variety of other statistical methods applied to neuroimaging data have been
-proposed to clarify what is being represented in brain responses - i.e. what
-feature causes specific brain activity. One of the popular linear method is
-Representational Similarity Analysis (RSA)
-\citep{kriegeskorte2008representational}, and consists in analyzing the
-similarity of brain responses associated with specific categorical conditions
-(e.g. distinct images), by (1) fitting one-against-all classifiers on each
-condition and (2) testing whether these classifiers can discriminate all other
-conditions. The resulting confusion matrix is then analyzed in an unsupervised
-manner to reveal which conditions lead to similar brain activity patterns. B2B
-differs from RSA in that (1) it uses regressions instead of classifications, and
-can thus generalize to new items and new contexts and (2) it is fully
-supervised.
+Like forward and cross-decomposition models, B2B is limited by the correlations
+between factors. At the extreme, if two factors are identical, and thus fully
+correlated, no statistical method can disentangle their relative causal
+contribution, and intervention is thus mandatory. In practice, this implies that, like
+general linear models, B2B will best work with high signal-to-noise ratio and/or
+orthogonal factors, and will see its sensitivity diminish when the
+signal-to-noise ratio of collinear factors drops.
 
-Finally, CCA has been used in neuroimaging for a variety of purposes such as
-denoising and subject alignment \citep{cca_hotelling, de2019multiway}. While CCA
-relates to B2B, these two methods diverge in several ways. First, CCA and B2B
-have different objectives: CCA aims to find the potentially numerous and poorly
-interpretable components where X and Y are maximally correlated, whereas B2B
+In the present neuroimaging context, B2B follows a long series of statistical
+methods designed to characterize brain representations - i.e. to identify what
+sensory feature causes specific brain responses \citep{naselaris2011encoding}.
+In this regard, CCA and PLS have been used in electrophysiology and neuroimaging
+to track representations (e.g. \citep{musch2020transformation}) as well as
+to denoise recordings as well as to align subjects \citep{cca_hotelling, de2019multiway}. While
+CCA and PLS relates to B2B, these methods diverge in several important ways.
+First, they have different objectives: CCA aims to find the potentially numerous and poorly
+interpretable components where $X$ and $Y$ are maximally correlated, whereas B2B
 aims to recover the causal factors from X to Y. Second, B2B is not symmetric
 between $X$ and $Y$: it aims to identify specific causal features by first
-optimizing over the decoders $G$ and then over $H$. By contrast, CCA is
-symmetric between $X$ and $Y$, and aims to find $G$ and $H$ such that they
+optimizing over the decoders $G$ and then over $H$. By contrast, CCA and PLS are
+symmetric between $X$ and $Y$, and aims to find $G$ and $H$ jointly such that they
 project $X$ and $Y$ on maximally correlated dimensions. Third, CCA is based an
 eigen decomposition of $XH$ and $YG$ - the corresponding canonical components
 are thus mixing the $X$ features in way that limit interpretability and
 potentially dilute the impact of each feature onto multiple components. In
-contrast B2B assesses each feature $X^j$ on a single $Y$ component specifically
-selected to maximize signal-to-noise ratio of that feature $j$. Fourth, and
-unlike B2B, CCA does not separately optimize two distinct regularization
-parameters for $G$ and $H$. Finally, CCA does not use different data splits to
-estimate $G$ and $H$. Together, these differences may explain why B2B reliably
-outperform CCA on estimating causal influences (Figs. \ref{fig:percondition} and
+contrast B2B assesses each feature $X_i$ on a single $Y$ component specifically
+selected to maximize signal-to-noise ratio of that feature $i$. Fourth CCA does
+not separately optimize two distinct regularization parameters for $G$ and $H$,
+whereas B2B does. Finally, CCA does not use different data splits to
+estimate $G$ and $H$. Together, these differences may explain why B2B generally
+outperform CCA on estimating causal influences (Figs.~\ref{fig:percondition} and
 \ref{fig:auc_plots}).
 
-% I find a bit surprising to mention causality literature in ML at the end. I
-% would have expected this in the introduction to convince reviewer that know
-% your stuff.
+One popular method to investigate multidimensional patterns of brain activity is
+Representational Similarity Analysis (RSA)
+\citep{kriegeskorte2008representational}. RSA quantifies the
+similarity of brain responses associated with specific categorical conditions
+(e.g. distinct images), by (1) fitting one-against-all classifiers on each
+category and (2) testing whether these classifiers discriminates all other
+categories. The resulting categories $\times$ categories confusion matrix is
+then analyzed, generally in an unsupervised manner, to reveal the categories
+that present similar brain activity patterns. B2B
+subsumes RSA in that (1) it can use regressions instead of one-hot
+classifications and (2) it is fully supervised.
+Consequently, and unlike RSA, B2B (1) provides interpretable coefficients and
+(2) can generalize to new items and new contexts. In practice, these elements
+allow B2B to apply to event-related paradigms and latent variable analyses,
+whereas RSA can only be applied when the same one-hot-encoded condition is
+repeated multiple times.
 
-
-
-\section{Conclusion}
-In this work, we proposed Back-to-Back (B2B) regression, a linear method to
-disentangle confounded factors from multidimensional observations.
-%
-B2B repeatedly performs two successive multidimensional regressions on
-independent subsets of the data: the first regression is applied on the output
-domain (as in backward decoding), whereas the second regression is applied on
-the input domain (as in forward encoding).
-%
-We provided a theoretical guarantee about the consistency of B2B, and compared
-it to several baselines in controlled synthetic experiments.
-%
-We also applied B2B to a recent brain imaging dataset, analyzing the timing of
-brain responses and their connection to word features.
-%
-We obtained results consistent with prior work in neuroscience literature,
-confirming the reliability of B2B for real data analysis.
-%
+More generally, the present empirical results, together with their theoretical
+foundations, suggest that B2B may serve as a method of choice for causal
+discovery when feature-wise intervention is limited.
 
 \section{Acknowledgements}
 We are thankful to Gael Varoquaux and Alexandre Gramfort for the valuable
 feedback. This work was supported by ANR-17-EURE-0017 and the Fyssen Foundation
-to JRK.
+to JRK for his work at PSL.
 
 
 \bibliography{paper}
